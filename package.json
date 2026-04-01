@@ -10,29 +10,24 @@
     "prebuild": "expo prebuild --clean",
     "prebuild:android": "expo prebuild --platform android --clean",
     "reset-project": "node ./scripts/reset-project.js",
-    "lint": "expo lint", 
-   
+    "lint": "expo lint",
     "update:preview": "eas update --branch preview --message",
     "update:production": "eas update --branch production --message",
     "update:list": "eas update:list",
     "update:rollback": "eas update:republish --branch",
-
     "build:dev": "eas build --profile development --platform android",
     "build:preview": "eas build --profile preview --platform android",
     "build:production": "eas build --profile production --platform android",
     "build:view": "eas build:view",
     "build:cancel": "eas build:cancel",
-
     "eas:login": "eas login",
     "eas:whoami": "eas whoami",
     "eas:init": "eas init",
     "eas:configure": "eas build:configure",
-
     "clean": "rm -rf node_modules .expo dist android/.gradle android/build",
     "clean:install": "rm -rf node_modules && npm install",
     "doctor": "expo doctor",
     "typecheck": "tsc --noEmit"
-    
   },
   "dependencies": {
     "@expo/vector-icons": "^15.0.3",
@@ -57,6 +52,7 @@
     "expo-status-bar": "~3.0.9",
     "expo-symbols": "~1.0.8",
     "expo-system-ui": "~6.0.9",
+    "expo-updates": "~29.0.16",
     "expo-web-browser": "~15.0.10",
     "react": "19.1.0",
     "react-dom": "19.1.0",
