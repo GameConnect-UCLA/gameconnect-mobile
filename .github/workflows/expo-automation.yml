@@ -1,3 +1,4 @@
+# .github/workflows/expo-preview.yml
 name: Expo CI/CD
 
 on:
@@ -6,96 +7,147 @@ on:
     types: [opened, synchronize, reopened]
 
 jobs:
+  # ─────────────────────────────────────────────────────────────
+  # Filter: Detect if changes are JS-only or include native code
+  # ─────────────────────────────────────────────────────────────
   filter:
     runs-on: ubuntu-latest
     outputs:
       native: ${{ steps.changes.outputs.native }}
       js: ${{ steps.changes.outputs.js }}
     steps:
-      - uses: actions/checkout@v4
-      - uses: dorny/paths-filter@v3
+      - name: 📦 Checkout code
+        uses: actions/checkout@v4
+
+      - name: 🔍 Detect changed paths
+        uses: dorny/paths-filter@v3
         id: changes
         with:
           filters: |
             native:
               - 'android/**'
+              - 'ios/**'
               - 'app.json'
+              - 'app.config.js'
+              - 'app.config.ts'
               - 'package.json'
               - 'package-lock.json'
+              - 'yarn.lock'
               - 'eas.json'
+              - 'expo-plugins/**'
+              - 'plugins/**'
             js:
               - 'app/**'
+              - 'src/**'
               - 'components/**'
               - 'hooks/**'
               - 'constants/**'
               - 'assets/**'
               - 'scripts/**'
-              - '**/*.{js,ts,tsx,css,json}'
+              - '**/*.{js,jsx,ts,tsx}'
+              - '**/*.{css,scss,json}'
 
+  # ─────────────────────────────────────────────────────────────
+  # Job: Create OTA preview update (JS/TS changes only)
+  # ─────────────────────────────────────────────────────────────
   pr-ota-update:
+    name: 🚀 OTA Preview Update
     needs: filter
     if: needs.filter.outputs.js == 'true' && needs.filter.outputs.native == 'false'
     runs-on: ubuntu-latest
     permissions:
-      pull-requests: write
+      pull-requests: write  # Required to comment on PRs
+      contents: read
+
     steps:
-      - uses: actions/checkout@v4
-      - uses: actions/setup-node@v4
+      - name: 📦 Checkout code
+        uses: actions/checkout@v4
+
+      - name: 🟢 Setup Node.js
+        uses: actions/setup-node@v4
         with:
           node-version: 22
           cache: 'npm'
 
-      - name: Install dependencies
-        run: npm install
-
-      - name: Setup Expo
+      - name: 🔐 Setup Expo & EAS
         uses: expo/expo-github-action@v8
         with:
           expo-version: latest
           eas-version: latest
           token: ${{ secrets.EXPO_TOKEN }}
 
-      - name: EAS Update
-        id: update
-        run: |
-          # Use preview channel for OTA as requested
-          UPDATE_INFO=$(eas update --branch pr-${{ github.event.number }} --message "Update for PR #${{ github.event.number }}" --non-interactive --json)
-          PREVIEW_URL=$(echo $UPDATE_INFO | jq -r '.[0].expoLink')
-          DEEP_LINK=$(echo $UPDATE_INFO | jq -r '.[0].deepLink')
-          echo "url=$PREVIEW_URL" >> $GITHUB_OUTPUT
-          echo "deeplink=$DEEP_LINK" >> $GITHUB_OUTPUT
+      - name: 📦 Install dependencies
+        run: npm ci
 
-      - name: Comment PR with QR
-        uses: mshick/add-pr-comment@v2
+      - name: 🚀 Create preview update with QR comment
+        uses: expo/expo-github-action/preview@v8
         with:
-          message: |
-            🚀 **EAS Update generado con éxito!**
+          # Create update on branch named like: pr-123
+          command: eas update --branch pr-${{ github.event.number }} --message "PR #${{ github.event.number }} - ${{ github.event.pull_request.title }}"
+          
+          # Custom comment in Spanish with QR and link
+          comment: |
+            ## 🚀 **Actualización de prueba disponible**
+
             Puedes probar los cambios de este PR directamente en tu **Development Build** escaneando el código QR:
 
-            ![QR Code](https://api.qrserver.com/v1/create-qr-code/?size=250x250&data=${{ steps.update.outputs.deeplink }})
+            {qr}
 
-            [Abrir actualización en el navegador](${{ steps.update.outputs.url }})
+            🔗 [Abrir actualización en el navegador]({link})
 
+            ---
+            **Detalles:**
+            - 🌿 Branch: `pr-${{ github.event.number }}`
+            - 💬 Mensaje: `PR #${{ github.event.number }} - ${{ github.event.pull_request.title }}`
+            - 📱 Platform: Android
+            - ⏰ Creado: $(date -u +"%Y-%m-%d %H:%M UTC")
+
+            > 💡 **Nota:** Requiere tener instalado el **Development Build**. Si la app no se actualiza, ve a *Ajustes → Apps → [Tu App] → Almacenamiento → Borrar datos* y escanea nuevamente.
+
+  # ─────────────────────────────────────────────────────────────
+  # Job: Warn when native changes are detected (no auto-build)
+  # ─────────────────────────────────────────────────────────────
   pr-native-warning:
+    name: ⚠️ Native Changes Warning
     needs: filter
     if: needs.filter.outputs.native == 'true'
     runs-on: ubuntu-latest
     permissions:
       pull-requests: write
+      contents: read
+
     steps:
-      - name: Native changes warning
+      - name: ⚠️ Comment PR about native changes
         uses: mshick/add-pr-comment@v2
         with:
           message: |
-            ⚠️ **Cambios nativos detectados**
-            Se han detectado cambios que afectan el código nativo (Android, package.json, app.json, etc.).
+            ## ⚠️ **Cambios nativos detectados**
 
-            **Importante:** No se genera ningún build automático para conservar el cuota de EAS Build. Después de hacer merge a `dev`, necesitarás generar un nuevo **Development Build (APK)** manualmente:
+            Se han detectado modificaciones que afectan el código nativo:
+            - 📁 `android/`, `ios/`
+            - ⚙️ `app.json`, `eas.json`, `package.json`
+            - 🔌 Plugins o configuración nativa
 
+            ### 🔧 ¿Qué hacer ahora?
+
+            **Para probar localmente:**
             ```bash
-            # Opción 1: Build en la nube de EAS
-            npm run build:dev
-
-            # Opción 2: Build local (no consume cuota de EAS)
+            # Opción recomendada: Build local (no consume cuota de EAS)
             eas build --profile development --platform android --local
+
+            # Opción alternativa: Build en la nube de EAS (consume minutos)
+            npm run build:dev
             ```
+
+            **Para release a producción:**
+            Solo el **Tech Lead** debe generar el build de producción:
+            ```bash
+            # Crear tag y build de producción
+            git tag v1.0.0 && git push origin v1.0.0
+            # El CI/CD generará automáticamente el build de producción
+            ```
+
+            > 📋 **Política del equipo:** Los builds de producción solo se generan al crear un tag Git (`v*`). Esto conserva nuestra cuota gratuita de EAS Build (50h/mes).
+
+          # Update comment if it already exists (avoids duplicates)
+          message-id: native-warning-${{ github.event.number }}
