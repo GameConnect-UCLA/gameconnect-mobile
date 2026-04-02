@@ -82,28 +82,13 @@ jobs:
       - name: 🚀 Create preview update with QR comment
         uses: expo/expo-github-action/preview@v8
         with:
-          # Create update on branch named like: pr-123
-          command: eas update --branch pr-${{ github.event.number }} --message "PR #${{ github.event.number }} - ${{ github.event.pull_request.title }}"
-          
-          # Custom comment in Spanish with QR and link
+          command: eas update --branch pr-${{ github.event.number }} --message "PR #${{ github.event.number }}"
           comment: |
-            ## 🚀 **Actualización de prueba disponible**
-
-            Puedes probar los cambios de este PR directamente en tu **Development Build** escaneando el código QR:
-
+            ## 🚀 Actualización disponible
+      
             {qr}
-
-            🔗 [Abrir actualización en el navegador]({link})
-
-            ---
-            **Detalles:**
-            - 🌿 Branch: `pr-${{ github.event.number }}`
-            - 💬 Mensaje: `PR #${{ github.event.number }} - ${{ github.event.pull_request.title }}`
-            - 📱 Platform: Android
-            - ⏰ Creado: $(date -u +"%Y-%m-%d %H:%M UTC")
-
-            > 💡 **Nota:** Requiere tener instalado el **Development Build**. Si la app no se actualiza, ve a *Ajustes → Apps → [Tu App] → Almacenamiento → Borrar datos* y escanea nuevamente.
-
+      
+            [Ver actualización]({link})
   # ─────────────────────────────────────────────────────────────
   # Job: Warn when native changes are detected (no auto-build)
   # ─────────────────────────────────────────────────────────────
