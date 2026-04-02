@@ -3,7 +3,7 @@
 > [!NOTE]
 > [Breve descripción del proyecto: qué es GameConnect, qué problema resuelve y a quién va dirigido]
 
-App móvil **solo Android** para conectar jugadores de UCLA. Este proyecto usa Expo + React Native y está orientado a desarrollo interno — no hay intención de publicar en Play Store.
+App móvil **solo Android** para conectar jugadores de UCLA. Este proyecto usa Expo + React Native y está orientado a desarrollo interno.
 
 ---
 
@@ -38,9 +38,11 @@ Antes de empezar, asegúrate de tener instalado:
 
 ---
 
-## Setup Inicial
+## Setup Inicial y Development Build
 
-Sigue estos pasos para correr el proyecto por primera vez:
+Este proyecto utiliza **Expo Development Builds**. A diferencia de *Expo Go*, esto nos permite incluir dependencias nativas personalizadas y tener un control total sobre el entorno de ejecución.
+
+**Importante:** Una vez que instales el APK de desarrollo en tu emulador o dispositivo físico, **no es necesario volver a compilar o generar otro APK** mientras no se agreguen nuevas dependencias nativas de Android. Los cambios en el código de React Native se reflejan instantáneamente mediante el servidor de desarrollo.
 
 ### 1. Clonar el repositorio
 
@@ -55,7 +57,7 @@ cd gameconnect-mobile
 npm install
 ```
 
-### 3. Generar el proyecto nativo Android
+### 3. Generar el proyecto nativo Android (Solo la primera vez)
 
 ```bash
 npm run prebuild
@@ -72,41 +74,54 @@ npm run start
 Esto abre la interfaz de Expo. Desde ahí puedes:
 
 - Presionar **`a`** para abrir directamente en el emulador Android
-- Escanear el QR con la app Expo Go (limitado, no soporta módulos nativos)
-
-### 5. (Opcional) Limpiar cache si algo falla
-
-```bash
-npm run start:clean
-```
+- Escanear el QR con la app de desarrollo instalada en tu dispositivo.
 
 ---
 
-## Workflow de Desarrollo
+## Flujo de Trabajo y Automatización (CI/CD)
 
-El flujo recomendado para trabajar en el proyecto es:
+Hemos automatizado el flujo de integración y despliegue continuo para facilitar el desarrollo y las pruebas:
+
+### 1. Pull Requests a `dev` / `development`
+Cada vez que se abre o actualiza un PR hacia la rama de desarrollo, se genera automáticamente un **EAS Update**.
+- **¿Qué es EAS Update?** Es una actualización "Over-The-Air" (OTA) que envía solo los cambios en JavaScript y assets. Es casi instantáneo.
+- **Diferencia con EAS Build:** Un *Build* genera un binario completo (.apk) y tarda ~15 min. Un *Update* actualiza la lógica de la app ya instalada en segundos.
+- **Acceso:** Podrás probar los cambios del PR directamente escaneando el QR que aparecerá en un comentario automático antes de hacer el merge.
+
+### 2. Merge a `dev`
+Al hacer merge en la rama de desarrollo, se dispara un **EAS Build** para generar un nuevo **APK de desarrollo**. Esto asegura que siempre haya una versión instalable base actualizada con las últimas dependencias nativas.
+
+### 3. Merge a `main`
+Al hacer merge en la rama principal, se genera un **EAS Build** de tipo **Preview**. Este es un APK optimizado para pruebas finales antes de un lanzamiento.
+
+### 4. Releases
+Los builds de **Producción (Release)** se realizarán de forma **manual** por los responsables del proyecto para garantizar la estabilidad de las versiones oficiales.
+
+---
+
+## Workflow de Desarrollo Local
+
+El flujo recomendado para trabajar localmente es:
 
 ```
 1. Escribir código
        ↓
-2. npm run start          → Ver cambios en el emulador/dispositivo (hot reload)
+2. npm run start          → Ver cambios en el emulador (Fast Refresh)
        ↓
 3. npm run lint           → Revisar errores de estilo
        ↓
 4. npm run typecheck      → Verificar tipos de TypeScript
        ↓
-5. Commit & push
-       ↓
-6. npm run build:dev      → Generar APK de desarrollo (si se necesita build nativo)
+5. Commit & push          → Dispara EAS Update en el PR
 ```
 
 ### Hot Reload
 
 Expo recarga automáticamente los cambios en JavaScript/TypeScript. No necesitas reiniciar el servidor tras cada cambio. Solo necesitas reiniciar (`npm run start:clean`) si:
 
-- Agregas o modificas dependencias nativas
-- Cambias la configuración de `app.json`
-- El hot reload deja de funcionar correctamente
+- Agregas o modificas dependencias nativas (requerirá nuevo `prebuild` o descargar nuevo APK de dev).
+- Cambias la configuración de `app.json`.
+- El hot reload deja de funcionar correctamente.
 
 ---
 
@@ -129,15 +144,16 @@ Todos los comandos se ejecutan desde la carpeta `gameconnect-mobile/`.
 | `npm run lint` | Ejecuta ESLint con la configuración de Expo |
 | `npm run typecheck` | Verifica errores de TypeScript sin generar archivos (`tsc --noEmit`) |
 
-### Builds con EAS
+### Builds con EAS (CI/CD)
 
-| Comando | Descripción |
-|---|---|
-| `npm run build:dev` | Build de desarrollo → APK debug para pruebas locales |
-| `npm run build:preview` | Build de preview → APK para compartir con el equipo |
-| `npm run build:production` | Build de producción → App Bundle optimizado |
+| Perfil | Trigger | Resultado |
+|---|---|---|
+| `EAS Update` | Pull Request a `dev` | Actualización JS accesible vía QR en comentario |
+| `development` | Merge a `dev` | Genera nuevo APK de Desarrollo |
+| `preview` | Merge a `main` | Genera nuevo APK de Preview (Release candidate) |
+| `production` | Manual | Genera App Bundle final optimizado |
 
-> **Nota:** El proyecto genera **APKs** para distribución interna. No está configurado para Play Store. Los builds se realizan en la nube de EAS.
+> **Nota:** El proyecto genera **APKs** para distribución interna. No está configurado para Play Store. 
 
 ### Actualizaciones OTA (Over-The-Air)
 
