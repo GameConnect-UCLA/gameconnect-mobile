@@ -7,9 +7,6 @@ on:
     types: [opened, synchronize, reopened]
 
 jobs:
-  # ─────────────────────────────────────────────────────────────
-  # Filter: Detect if changes are JS-only or include native code
-  # ─────────────────────────────────────────────────────────────
   filter:
     runs-on: ubuntu-latest
     outputs:
@@ -47,9 +44,6 @@ jobs:
               - '**/*.{js,jsx,ts,tsx}'
               - '**/*.{css,scss,json}'
 
-  # ─────────────────────────────────────────────────────────────
-  # Job: Create OTA preview update (JS/TS changes only)
-  # ─────────────────────────────────────────────────────────────
   pr-ota-update:
     name: 🚀 OTA Preview Update
     needs: filter
@@ -82,16 +76,8 @@ jobs:
       - name: 🚀 Create preview update with QR comment
         uses: expo/expo-github-action/preview@v8
         with:
-          command: eas update --branch pr-${{ github.event.number }} --message "PR #${{ github.event.number }}"
-          comment: |
-            ## 🚀 Actualización disponible
-      
-            {qr}
-      
-            [Ver actualización]({link})
-  # ─────────────────────────────────────────────────────────────
-  # Job: Warn when native changes are detected (no auto-build)
-  # ─────────────────────────────────────────────────────────────
+          command: eas update --auto -p android --branch ${{ github.event.pull_request.head.ref }}
+
   pr-native-warning:
     name: ⚠️ Native Changes Warning
     needs: filter
