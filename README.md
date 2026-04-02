@@ -56,6 +56,9 @@ cd gameconnect-mobile
 ```bash
 npm install
 ```
+```bash
+npm install
+```
 
 ### 3. Generar el proyecto nativo Android (Solo la primera vez)
 
@@ -80,22 +83,31 @@ Esto abre la interfaz de Expo. Desde ahí puedes:
 
 ## Flujo de Trabajo y Automatización (CI/CD)
 
-Hemos automatizado el flujo de integración y despliegue continuo para facilitar el desarrollo y las pruebas:
+La automatización del proyecto está diseñada para **conservar el cuota gratuito de EAS Build** (30 builds/mes). Los builds se generan únicamente de forma manual o local, nunca automáticamente.
 
-### 1. Pull Requests a `dev` / `development`
-Cada vez que se abre o actualiza un PR hacia la rama de desarrollo, se genera automáticamente un **EAS Update**.
-- **¿Qué es EAS Update?** Es una actualización "Over-The-Air" (OTA) que envía solo los cambios en JavaScript y assets. Es casi instantáneo.
-- **Diferencia con EAS Build:** Un *Build* genera un binario completo (.apk) y tarda ~15 min. Un *Update* actualiza la lógica de la app ya instalada en segundos.
-- **Acceso:** Podrás probar los cambios del PR directamente escaneando el QR que aparecerá en un comentario automático antes de hacer el merge.
+### 1. Pull Requests a `dev`
+Cada vez que se abre o actualiza un PR hacia `dev`, se genera automáticamente un **EAS Update** (actualización OTA) siempre que los cambios sean solo en JavaScript/assets.
+- **¿Qué es EAS Update?** Es una actualización "Over-The-Air" que envía solo los cambios en JavaScript y assets. Es casi instantáneo.
+- **Diferencia con EAS Build:** Un *Build* genera un binario completo (.apk) y consume cuota de EAS. Un *Update* actualiza la app ya instalada en segundos y **no consume cuota**.
+- **Acceso:** Escanea el QR que aparece en un comentario automático del PR para probar los cambios en tu **Development Build** antes de hacer merge.
 
-### 2. Merge a `dev`
-Al hacer merge en la rama de desarrollo, se dispara un **EAS Build** para generar un nuevo **APK de desarrollo**. Esto asegura que siempre haya una versión instalable base actualizada con las últimas dependencias nativas.
+### 2. Cambios nativos en PRs
+Si un PR incluye cambios en archivos nativos (`android/`, `package.json`, `app.json`, etc.), el bot agregará un comentario de advertencia indicando que será necesario generar un nuevo Development Build después del merge.
 
-### 3. Merge a `main`
-Al hacer merge en la rama principal, se genera un **EAS Build** de tipo **Preview**. Este es un APK optimizado para pruebas finales antes de un lanzamiento.
+> **No se genera ningún build automático.** Esto es intencional para conservar el cuota de EAS Build.
+
+### 3. Builds — Estrictamente manuales
+Los builds se generan únicamente cuando los desarrolladores lo necesiten, de dos formas:
+
+| Método | Comando | Cuota EAS |
+|---|---|---|
+| **Cloud (EAS)** | `npm run build:dev` | Sí consume |
+| **Local** | `eas build --profile development --platform android --local` | No consume |
+
+> **Recomendación:** Usa builds locales siempre que sea posible. Solo usa builds en la nube cuando necesites compartir el APK con alguien que no puede compilar localmente.
 
 ### 4. Releases
-Los builds de **Producción (Release)** se realizarán de forma **manual** por los responsables del proyecto para garantizar la estabilidad de las versiones oficiales.
+Los builds de **Producción (Release)** se realizan de forma **manual** por los responsables del proyecto.
 
 ---
 
@@ -112,16 +124,21 @@ El flujo recomendado para trabajar localmente es:
        ↓
 4. npm run typecheck      → Verificar tipos de TypeScript
        ↓
-5. Commit & push          → Dispara EAS Update en el PR
+5. Commit & push → Abrir PR a `dev` → EAS Update automático (si solo JS)
+       ↓
+6. Si hubo cambios nativos → npm run build:dev (o --local)
 ```
 
-### Hot Reload
+### ¿Cuándo necesitas un nuevo Development Build?
 
-Expo recarga automáticamente los cambios en JavaScript/TypeScript. No necesitas reiniciar el servidor tras cada cambio. Solo necesitas reiniciar (`npm run start:clean`) si:
+Solo necesitas generar un nuevo APK de desarrollo si:
 
-- Agregas o modificas dependencias nativas (requerirá nuevo `prebuild` o descargar nuevo APK de dev).
-- Cambias la configuración de `app.json`.
+- Agregas o modificas **dependencias nativas** (cambios en `package.json` + `package-lock.json`)
+- Cambias la configuración de `app.json`
+- Modificas código en `android/`
 - El hot reload deja de funcionar correctamente.
+
+En cualquier otro caso (cambios en JS/TS, componentes, hooks, assets, etc.), **un EAS Update es suficiente** y no necesitas un nuevo build.
 
 ---
 
@@ -144,16 +161,15 @@ Todos los comandos se ejecutan desde la carpeta `gameconnect-mobile/`.
 | `npm run lint` | Ejecuta ESLint con la configuración de Expo |
 | `npm run typecheck` | Verifica errores de TypeScript sin generar archivos (`tsc --noEmit`) |
 
-### Builds con EAS (CI/CD)
+### Builds con EAS
 
-| Perfil | Trigger | Resultado |
+| Perfil | Comando | Uso |
 |---|---|---|
-| `EAS Update` | Pull Request a `dev` | Actualización JS accesible vía QR en comentario |
-| `development` | Merge a `dev` | Genera nuevo APK de Desarrollo |
-| `preview` | Merge a `main` | Genera nuevo APK de Preview (Release candidate) |
-| `production` | Manual | Genera App Bundle final optimizado |
+| `development` | `npm run build:dev` | Genera APK de desarrollo (dev client) |
+| `preview` | `npm run build:preview` | Genera APK de preview para compartir con el equipo |
+| `production` | `npm run build:production` | Genera App Bundle final optimizado |
 
-> **Nota:** El proyecto genera **APKs** para distribución interna. No está configurado para Play Store. 
+> **Nota:** Ningún build se genera automáticamente. Todos los builds son manuales o locales para conservar el cuota de EAS.
 
 ### Actualizaciones OTA (Over-The-Air)
 
@@ -164,7 +180,7 @@ Todos los comandos se ejecutan desde la carpeta `gameconnect-mobile/`.
 | `npm run update:list` | Lista las actualizaciones publicadas |
 | `npm run update:rollback` | Revive una actualización anterior |
 
-> Las actualizaciones OTA solo aplican cambios en JavaScript/assets. Si modificaste código nativo o dependencias nativas, necesitas un build nuevo.
+> Las actualizaciones OTA no consumen cuota de EAS Build y son el método preferido para desplegar cambios en JavaScript/assets.
 
 ### Mantenimiento
 
