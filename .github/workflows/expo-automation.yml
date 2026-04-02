@@ -60,9 +60,10 @@ jobs:
         run: |
           # Use preview channel for OTA as requested
           UPDATE_INFO=$(eas update --branch pr-${{ github.event.number }} --message "Update for PR #${{ github.event.number }}" --non-interactive --json)
-          GROUP_ID=$(echo $UPDATE_INFO | jq -r '.[0].group')
-          PREVIEW_URL="https://expo.dev/preview?url=https://u.expo.dev/f1f590b9-7197-419f-b813-eaa0c5f0c561?update-group-id=$GROUP_ID"
+          PREVIEW_URL=$(echo $UPDATE_INFO | jq -r '.[0].expoLink')
+          DEEP_LINK=$(echo $UPDATE_INFO | jq -r '.[0].deepLink')
           echo "url=$PREVIEW_URL" >> $GITHUB_OUTPUT
+          echo "deeplink=$DEEP_LINK" >> $GITHUB_OUTPUT
 
       - name: Comment PR with QR
         uses: mshick/add-pr-comment@v2
@@ -71,7 +72,7 @@ jobs:
             🚀 **EAS Update generado con éxito!**
             Puedes probar los cambios de este PR directamente en tu **Development Build** escaneando el código QR:
 
-            ![QR Code](https://api.qrserver.com/v1/create-qr-code/?size=250x250&data=${{ steps.update.outputs.url }})
+            ![QR Code](https://api.qrserver.com/v1/create-qr-code/?size=250x250&data=${{ steps.update.outputs.deeplink }})
 
             [Abrir actualización en el navegador](${{ steps.update.outputs.url }})
 
