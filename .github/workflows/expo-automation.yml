@@ -1,0 +1,197 @@
+name: Expo CI/CD
+
+on:
+  pull_request:
+    branches: [dev, main]
+    types: [opened, synchronize, reopened]
+  push:
+    branches: [dev, main]
+
+jobs:
+  filter:
+    if: github.event_name == 'pull_request'
+    runs-on: ubuntu-latest
+    outputs:
+      native: ${{ steps.changes.outputs.native }}
+      js: ${{ steps.changes.outputs.js }}
+    steps:
+      - uses: actions/checkout@v4
+      - uses: dorny/paths-filter@v3
+        id: changes
+        with:
+          filters: |
+            native:
+              - 'android/**'
+              - 'app.json'
+              - 'package.json'
+              - 'package-lock.json'
+              - 'eas.json'
+            js:
+              - 'app/**'
+              - 'components/**'
+              - 'hooks/**'
+              - 'constants/**'
+              - 'assets/**'
+              - 'scripts/**'
+              - '**/*.{js,ts,tsx,css,json}'
+
+  pr-native-warning:
+    needs: filter
+    if: github.event_name == 'pull_request' && needs.filter.outputs.native == 'true'
+    runs-on: ubuntu-latest
+    permissions:
+      pull-requests: write
+    steps:
+      - name: Native changes warning
+        uses: mshick/add-pr-comment@v2
+        with:
+          message: |
+            ⚠️ **Cambios nativos detectados**
+            Se han detectado cambios que afectan el código nativo (Android). 
+            
+            **Importante:** Después de hacer merge a `dev`, será necesario descargar una nueva versión del **Development Build (APK)** para que los cambios se reflejen correctamente en tu dispositivo o emulador.
+
+  pr-js-update:
+    needs: filter
+    if: github.event_name == 'pull_request' && needs.filter.outputs.js == 'true' && needs.filter.outputs.native == 'false'
+    runs-on: ubuntu-latest
+    permissions:
+      pull-requests: write
+    steps:
+      - uses: actions/checkout@v4
+      - uses: actions/setup-node@v4
+        with:
+          node-version: 18
+          cache: 'npm'
+
+      - name: Install dependencies
+        run: npm install
+
+      - name: Setup Expo
+        uses: expo/expo-github-action@v8
+        with:
+          expo-version: latest
+          eas-version: latest
+          token: ${{ secrets.EXPO_TOKEN }}
+
+      - name: EAS Update
+        id: update
+        run: |
+          # Crear actualización y obtener el JSON de salida
+          UPDATE_INFO=$(eas update --branch pr-${{ github.event.number }} --message "Update for PR #${{ github.event.number }}" --non-interactive --json)
+          
+          # Extraer el Group ID para construir la URL de preview
+          # Se usa el primer elemento del array (usualmente hay uno por plataforma)
+          GROUP_ID=$(echo $UPDATE_INFO | jq -r '.[0].group')
+          
+          # Construir la URL de preview
+          # El ID del proyecto es f1f590b9-7197-419f-b813-eaa0c5f0c561
+          PREVIEW_URL="https://expo.dev/preview?url=https://u.expo.dev/f1f590b9-7197-419f-b813-eaa0c5f0c561?update-group-id=$GROUP_ID"
+          
+          echo "url=$PREVIEW_URL" >> $GITHUB_OUTPUT
+
+      - name: Comment PR with QR
+        uses: mshick/add-pr-comment@v2
+        with:
+          message: |
+            🚀 **EAS Update generado con éxito!**
+            Puedes probar los cambios de este PR directamente en tu **Development Build** escaneando el código QR:
+
+            ![QR Code](https://api.qrserver.com/v1/create-qr-code/?size=250x250&data=${{ steps.update.outputs.url }})
+
+            [Abrir actualización en el navegador](${{ steps.update.outputs.url }})
+
+  merge-build:
+    if: github.event_name == 'push'
+    runs-on: ubuntu-latest
+    permissions:
+      contents: read
+      issues: write
+      pull-requests: write
+    steps:
+      - uses: actions/checkout@v4
+      - uses: actions/setup-node@v4
+        with:
+          node-version: 18
+          cache: 'npm'
+
+      - name: Install dependencies
+        run: npm install
+
+      - name: Setup Expo
+        uses: expo/expo-github-action@v8
+        with:
+          expo-version: latest
+          eas-version: latest
+          token: ${{ secrets.EXPO_TOKEN }}
+
+      - name: Determine Profile
+        id: profile
+        run: |
+          if [[ "${{ github.ref }}" == "refs/heads/main" ]]; then
+            echo "profile=preview" >> $GITHUB_OUTPUT
+          else
+            echo "profile=development" >> $GITHUB_OUTPUT
+          fi
+
+      - name: EAS Build
+        id: build
+        continue-on-error: true
+        run: |
+          # Intentar build sin esperar a que termine (--no-wait) para ahorrar minutos de CI
+          # La verificación de límite ocurre antes de empezar
+          eas build --profile ${{ steps.profile.outputs.profile }} --platform android --non-interactive --no-wait 2> build_error.txt || exit_code=$?
+          
+          if [[ $exit_code -ne 0 ]]; then
+            cat build_error.txt
+            if grep -qi "limit" build_error.txt; then
+              echo "error_type=limit" >> $GITHUB_OUTPUT
+            else
+              echo "error_type=generic" >> $GITHUB_OUTPUT
+            fi
+            exit 1
+          fi
+
+      - name: Handle Build Limit Error
+        if: failure() && steps.build.outputs.error_type == 'limit'
+        uses: actions/github-script@v7
+        with:
+          script: |
+            const profile = "${{ steps.profile.outputs.profile }}";
+            const message = `🚨 **Límite mensual de EAS Build excedido**
+            No se pudo generar el APK automáticamente porque se ha superado el límite de builds gratuitos en Expo.
+            
+            Por favor, genera el build localmente usando:
+            \`\`\`bash
+            npm run build:${profile} -- --local
+            \`\`\`
+            O descarga la última versión exitosa desde el [dashboard de Expo](https://expo.dev/accounts/gameconnect/projects/gameconnect-mobile/builds).`;
+            
+            // Intentar comentar en el PR asociado si existe
+            try {
+              const prs = await github.rest.repos.listPullRequestsAssociatedWithCommit({
+                owner: context.repo.owner,
+                repo: context.repo.repo,
+                commit_sha: context.sha
+              });
+              
+              if (prs.data.length > 0) {
+                await github.rest.issues.createComment({
+                  owner: context.repo.owner,
+                  repo: context.repo.repo,
+                  issue_number: prs.data[0].number,
+                  body: message
+                });
+                return;
+              }
+            } catch (e) {
+              console.log("Error buscando PR:", e);
+            }
+            
+            // Si no hay PR o falla lo anterior, crear un Issue de alerta
+            await github.rest.issues.create({
+              owner: context.repo.owner,
+              repo: context.repo.repo,
+              title: "⚠️ Límite de EAS Build Alcanzado",
+              body: message
+            });
