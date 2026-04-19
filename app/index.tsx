@@ -9,7 +9,7 @@ export default function Index() {
         alignItems: "center",
       }}
     >
-      <Text>Welcome to GameConnect</Text>
+      <Text>Welcome ALL to GameConnect!</Text>
     </View>
   );
 }
