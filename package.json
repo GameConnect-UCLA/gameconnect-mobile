@@ -25,8 +25,7 @@
     "clean": "rm -rf node_modules .expo dist android/.gradle android/build",
     "clean:install": "rm -rf node_modules && npm install",
     "doctor": "expo doctor",
-    "typecheck": "tsc --noEmit",
-    "ios": "expo run:ios"
+    "typecheck": "tsc --noEmit"
   },
   "dependencies": {
     "@expo/vector-icons": "^15.0.3",
