@@ -1,9 +1,9 @@
 import { View, Text, StyleSheet } from 'react-native';
 
-export default function FeedScreen() {
+export default function CreatePostScreen() {
   return (
     <View style={styles.container}>
-      <Text style={styles.text}>Feed / Inicio</Text>
+      <Text style={styles.text}>Crear Publicación</Text>
     </View>
   );
 }

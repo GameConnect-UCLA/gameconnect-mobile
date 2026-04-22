@@ -1,9 +1,11 @@
 import { View, Text, StyleSheet } from 'react-native';
+import { Stack } from 'expo-router';
 
-export default function FeedScreen() {
+export default function ExploreScreen() {
   return (
     <View style={styles.container}>
-      <Text style={styles.text}>Feed / Inicio</Text>
+      <Stack.Screen options={{ presentation: 'modal', title: 'Explorar' }} />
+      <Text style={styles.text}>Explorar / Búsqueda</Text>
     </View>
   );
 }

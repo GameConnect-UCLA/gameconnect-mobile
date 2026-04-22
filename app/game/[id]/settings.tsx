@@ -1,9 +1,12 @@
 import { View, Text, StyleSheet } from 'react-native';
+import { useLocalSearchParams } from 'expo-router';
 
-export default function FeedScreen() {
+export default function GameSettingsScreen() {
+  const { id } = useLocalSearchParams();
+
   return (
     <View style={styles.container}>
-      <Text style={styles.text}>Feed / Inicio</Text>
+      <Text style={styles.text}>Ajustes del Juego ID: {id}</Text>
     </View>
   );
 }
