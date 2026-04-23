@@ -1,15 +1,7 @@
-import { Text, View } from "react-native";
+import { Redirect } from "expo-router";
 
 export default function Index() {
-  return (
-    <View
-      style={{
-        flex: 1,
-        justifyContent: "center",
-        alignItems: "center",
-      }}
-    >
-      <Text>Welcome to GameConnect</Text>
-    </View>
-  );
+  // In a real app, logic here would check if user is authenticated
+  // and redirect to (tabs) or (auth) accordingly.
+  return <Redirect href="/login" />;
 }

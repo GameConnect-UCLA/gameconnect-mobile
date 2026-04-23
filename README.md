@@ -1,43 +1,42 @@
 # GameConnect Mobile
 
-> [!NOTE]
-> [Breve descripción del proyecto: qué es GameConnect, qué problema resuelve y a quién va dirigido]
+Red social móvil especializada en el ecosistema de videojuegos. Permite a jugadores conectarse, descubrir títulos, compartir publicaciones y chatear en tiempo real.
 
-App móvil **solo Android** para conectar jugadores de UCLA. Este proyecto usa Expo + React Native y está orientado a desarrollo interno.
+Proyecto académico — Laboratorio III, Universidad Centroccidental "Lisandro Alvarado".
 
 ---
 
-## Tech Stack
+## Stack
 
-| Tecnología | Versión | Para qué se usa |
-|---|---|---|
-| [Expo SDK](https://docs.expo.dev/) | 54 | Framework base del proyecto |
-| [React Native](https://reactnative.dev/) | 0.81 | UI nativa |
-| [Expo Router](https://docs.expo.dev/router/introduction/) | 6 | Navegación basada en archivos |
-| [TypeScript](https://www.typescriptlang.org/) | 5.9 | Tipado estático (modo estricto) |
-| [React Query](https://tanstack.com/query/latest) | 5 | Gestión de estado del servidor y data fetching |
-| [Socket.IO Client](https://socket.io/docs/v4/client-api/) | 4 | Comunicación en tiempo real |
-| [React Native Reanimated](https://docs.swmansion.com/react-native-reanimated/) | 4 | Animaciones de alto rendimiento |
-| [Expo SQLite](https://docs.expo.dev/versions/latest/sdk/sqlite/) | 16 | Base de datos local (con soporte FTS) |
-| [Expo Secure Store](https://docs.expo.dev/versions/latest/sdk/securestore/) | 15 | Almacenamiento seguro de credenciales |
-| [Expo Notifications](https://docs.expo.dev/versions/latest/sdk/notifications/) | 0.32 | Notificaciones push |
+| Capa | Tecnología |
+|---|---|
+| Cliente móvil | React Native + Expo (SDK 54) |
+| Routing | Expo Router |
+| Estado global | Zustand |
+| Server state / caché | TanStack Query v5 |
+| Autenticación | JWT + Refresh Token (expo-secure-store) |
+| Tiempo real | Socket.io-client |
+| Notificaciones push | Expo FCM (Firebase Cloud Messaging) |
+| Animaciones | React Native Reanimated 4 |
+| Backend | NestJS (repositorio separado) |
 
 ---
 
 ## Prerequisitos
 
-Antes de empezar, asegúrate de tener instalado:
+Antes de correr el proyecto asegúrate de tener instalado:
 
-- **Node.js** ≥ 18 — [Descargar](https://nodejs.org/)
-- **npm** ≥ 9 — Viene con Node.js
-- **Android Studio** — [Descargar](https://developer.android.com/studio)
-  - Incluye el SDK de Android y el emulador
-  - [Guía de configuración del emulador](https://docs.expo.dev/workflow/android-studio-emulator/)
-- **EAS CLI** — Instalar con `npm install -g eas-cli`
-  - [Documentación de EAS](https://docs.expo.dev/build/introduction/)
+- [Node.js](https://nodejs.org/) v18 o superior
+- [Expo CLI](https://docs.expo.dev/get-started/installation/) — `npm install -g expo-cli`
+- [EAS CLI](https://docs.expo.dev/eas/) — `npm install -g eas-cli` (para builds en la nube)
+- Es necesario compilar un development build (APK de desarrollo) e instalarlo en el dispositivo de pruebas, o en su defecto configurar un emulador con el android sdk. 
+- El backend de GameConnect corriendo localmente o en un servidor accesible
 
 ---
 
+<<<<<<< HEAD
+## Instalación y setup
+=======
 ## Setup Inicial y Development Build
 
 Este proyecto utiliza **Expo Development Builds**. A diferencia de *Expo Go*, esto nos permite incluir dependencias nativas personalizadas y tener un control total sobre el entorno de ejecución.
@@ -45,21 +44,57 @@ Este proyecto utiliza **Expo Development Builds**. A diferencia de *Expo Go*, es
 **Importante:** Una vez que instales el APK de desarrollo en tu emulador o dispositivo físico, **no es necesario volver a compilar o generar otro APK** mientras no se agreguen nuevas dependencias nativas de Android. Los cambios en el código de React Native se reflejan instantáneamente mediante el servidor de desarrollo.
 
 ### 1. Clonar el repositorio
+>>>>>>> dev
 
 ```bash
-git clone <URL_DEL_REPO>
+# 1. Clonar el repositorio
+git clone https://github.com/[org]/gameconnect-mobile.git
 cd gameconnect-mobile
+
+# 2. Instalar dependencias
+npm install
+
+# 3. Configurar variables de entorno
+cp .env.example .env
+# Edita .env con tus valores (ver sección siguiente)
+
+# 4. Correr en modo desarrollo
+npx expo start
+
+# Para correr específicamente en Android
+npx expo start --android
 ```
-
-### 2. Instalar dependencias
-
 ```bash
 npm install
 ```
+
+<<<<<<< HEAD
+Para generar un APK de desarrollo con EAS:
+
 ```bash
-npm install
+eas build --profile development --platform android
 ```
 
+---
+
+## Variables de entorno
+
+Copia `.env.example` a `.env` y completa los valores. Nunca subas `.env` al repositorio.
+
+```env
+# URL base del backend (sin slash al final)
+EXPO_PUBLIC_API_URL=http://localhost:3000
+
+# URL del servidor de WebSockets
+EXPO_PUBLIC_WS_URL=http://localhost:3000
+```
+
+Todas las variables del cliente deben tener el prefijo `EXPO_PUBLIC_` para ser accesibles desde la app. Las variables sin ese prefijo solo están disponibles en tiempo de build.
+
+---
+
+## Estructura del proyecto
+=======
 ### 3. Generar el proyecto nativo Android (Solo la primera vez)
 
 ```bash
@@ -194,120 +229,46 @@ Todos los comandos se ejecutan desde la carpeta `gameconnect-mobile/`.
 ---
 
 ## Estructura del Proyecto
+>>>>>>> dev
 
 ```
 gameconnect-mobile/
-├── app/                        # Rutas (Expo Router - file-based routing)
-│   ├── _layout.tsx             # Layout raíz (ThemeProvider + Stack)
-│   ├── (tabs)/                 # Grupo de rutas con bottom tabs
-│   │   ├── _layout.tsx         # Layout de las tabs
-│   │   ├── index.tsx           # Pantalla principal
-│   │   └── explore.tsx         # Pantalla de exploración
-│   └── modal.tsx               # Pantalla modal
-│
-├── components/                 # Componentes reutilizables
-│   ├── themed-text.tsx         # Texto con soporte dark/light mode
-│   ├── themed-view.tsx         # View con soporte dark/light mode
-│   ├── parallax-scroll-view.tsx # ScrollView con efecto parallax
-│   ├── external-link.tsx       # Link externo (abre navegador)
-│   ├── haptic-tab.tsx          # Tab con feedback háptico
-│   ├── hello-wave.tsx          # Animación de onda
-│   └── ui/                     # Componentes UI genéricos
-│       ├── collapsible.tsx
-│       ├── icon-symbol.tsx
-│       └── icon-symbol.ios.tsx
-│
-├── hooks/                      # Custom hooks
-│   ├── use-color-scheme.ts     # Detecta tema del sistema
-│   └── use-theme-color.ts      # Resuelve colores según tema
-│
-├── constants/                  # Constantes de la app
-│   └── theme.ts                # Paleta de colores y tipografías
-│
-├── assets/                     # Imágenes, iconos, fuentes
-│   └── images/
-│
-├── scripts/                    # Scripts de mantenimiento
-│   └── reset-project.js
-│
-├── app.json                    # Configuración de Expo
-├── eas.json                    # Configuración de EAS Build
-├── tsconfig.json               # Configuración de TypeScript
-├── eslint.config.js            # Configuración de ESLint
-├── expo-env.d.ts               # Tipos de entorno Expo
-│
-├── .env.development            # Variables de entorno (desarrollo)
-├── .env.preview                # Variables de entorno (preview)
-└── .env.production             # Variables de entorno (producción)
+├── app/          # Rutas de navegación (Expo Router). Solo rutas, sin lógica.
+├── src/
+│   ├── api/      # Funciones de comunicación con el backend.
+│   ├── store/    # Estado global de la app (Zustand).
+│   ├── hooks/    # Lógica React reutilizable y queries (TanStack Query).
+│   ├── components/ # Componentes visuales reutilizables.
+│   ├── lib/      # Configuración de librerías externas.
+│   └── types/    # Interfaces y tipos TypeScript globales.
+├── assets/       # Imágenes, íconos y fuentes estáticas.
+└── constants/    # Constantes globales (theme, config).
 ```
 
----
-
-## Arquitectura
-
-### Navegación
-
-El proyecto usa **Expo Router** con navegación basada en archivos:
-
-- Cada archivo en `app/` es una ruta
-- Los grupos entre paréntesis `(tabs)` no aparecen en la URL
-- El layout `_layout.tsx` define la estructura de navegación padre
-
-### Path Alias
-
-Se usa `@/` como alias para importar desde la raíz del proyecto:
-
-```typescript
-import { ThemedText } from '@/components/themed-text';
-import { useColorScheme } from '@/hooks/use-color-scheme';
-```
-
-### Theming
-
-El sistema de temas soporta **modo claro y oscuro** automáticamente:
-
-- Los colores se definen en `constants/theme.ts`
-- Los hooks `useColorScheme` y `useThemeColor` resuelven el color correcto
-- Los componentes `ThemedText` y `ThemedView` aplican colores automáticamente
-
-### Data Fetching
-
-Se usa **React Query** (`@tanstack/react-query`) para:
-
-- Caché de datos del servidor
-- Reintentos automáticos
-- Estados de loading y error
-
-### Comunicación en Tiempo Real
-
-**Socket.IO** está disponible para funcionalidades en tiempo real como [completar según necesidades del proyecto].
-
-### Base de Datos Local
-
-**Expo SQLite** con soporte para FTS (Full Text Search) está configurado para almacenamiento local offline. En Android, FTS está deshabilitado por defecto para reducir el tamaño del build.
+Para más detalle sobre convenciones de código, nomenclatura, estructura de rutas y flujo de Git, ver [CONVENTIONS.md](./CONVENTIONS.md).
 
 ---
 
-## Perfiles de Build
+## Links útiles
 
-El archivo `eas.json` define tres perfiles:
-
-| Perfil | Tipo | Distribución | Uso |
-|---|---|---|---|
-| `development` | APK debug | Interna | Desarrollo y pruebas locales |
-| `preview` | APK release | Interna | Compartir con el equipo para testing |
-| `production` | App Bundle | [Interna/Play Store] | Build optimizado para release |
-
-> Todos los builds se ejecutan en la infraestructura cloud de EAS. Puedes ver el progreso con `npm run build:view`.
+| Recurso | Link |
+|---|---|
+| Prototipo Figma | [Ver prototipo](https://www.figma.com/design/JYdiHOGm0ENknYF7M3ASWV/Videojuego?node-id=0-1) |
+| Spec doc | [Ver documento](./docs/Spec_Doc_Lab3.pdf) |
+| Diagrama de arquitectura | [Ver en Excalidraw](https://excalidraw.com) |
+| Diagrama MER | [Ver en dbdiagram.io](https://dbdiagram.io) |
+<!-- | Repositorio backend | [gameconnect-api](https://github.com/[org]/gameconnect-api) | -->
 
 ---
 
-## Recursos Útiles
+## Equipo
 
-- [Documentación de Expo](https://docs.expo.dev/)
-- [Tutorial de Expo Router](https://docs.expo.dev/router/introduction/)
-- [Guía de Development Builds](https://docs.expo.dev/develop/development-builds/introduction/)
-- [Configurar emulador Android](https://docs.expo.dev/workflow/android-studio-emulator/)
-- [EAS Build](https://docs.expo.dev/build/introduction/)
-- [EAS Update](https://docs.expo.dev/eas-update/introduction/)
-- [Comunidad Expo en Discord](https://chat.expo.dev)
+| Nombre | GitHub |
+|---|---|
+| Adrián Pereira | [@usuario](https://github.com) |
+| Dehucarlys Azuaje | [@usuario](https://github.com) |
+| Edgar López | [@usuario](https://github.com) |
+| Hanuman Sanchez | [@usuario](https://github.com) |
+| José Alvarado | [@usuario](https://github.com) |
+
+Asignatura: Laboratorio III — Prof. Jorge Chiquín
