@@ -1,10 +1,17 @@
-import { View, Text, StyleSheet } from 'react-native';
+import { ImageBackground, StyleSheet, Text, View } from 'react-native';
+import Header from '../../src/components/ui/feed-header';
 
 export default function FeedScreen() {
   return (
-    <View style={styles.container}>
-      <Text style={styles.text}>Feed / Inicio</Text>
-    </View>
+    <ImageBackground
+      source={require('../../assets/images/bgbody.png')}
+      style={styles.container}
+    >
+      <Header />
+      <View style={styles.container}>
+        <Text style={styles.text}>Feed / Inicio</Text>
+      </View>
+    </ImageBackground>
   );
 }
 
@@ -17,4 +24,7 @@ const styles = StyleSheet.create({
   text: {
     fontSize: 20,
   },
+  header:{
+
+  }
 });
