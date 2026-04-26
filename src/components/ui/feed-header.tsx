@@ -15,15 +15,23 @@ export default function Header() {
 
         {/* Iconos de búsqueda y chat */}
         <View style={styles.iconsContainer}>
-          <TouchableOpacity><Ionicons name="search" size={24} color="black" /></TouchableOpacity>
-          <TouchableOpacity style={{ marginLeft: 15 }}><Ionicons name="chatbubble-ellipses-outline" size={24} color="black" /></TouchableOpacity>
+          <TouchableOpacity>
+            <Ionicons name="search" size={24} color="#111111" />
+          </TouchableOpacity>
+          <TouchableOpacity style={{ marginLeft: 15 }}>
+            <Ionicons name="chatbubble-ellipses-outline" size={24} color="#111111" />
+          </TouchableOpacity>
         </View>
       </View>
 
       {/* Barra de búsqueda */}
       <View style={styles.searchBar}>
-        <Ionicons name="search" size={18} color="gray" />
-        <TextInput placeholder="Buscar publicaciones..." style={styles.input} />
+        <Ionicons name="search" size={18} color="#666666" />
+        <TextInput
+          placeholder="Buscar publicaciones..."
+          placeholderTextColor="#666666"
+          style={styles.input}
+        />
       </View>
       {/* Línea divisoria suave */}
       <View style={styles.smoothBorderline} />
@@ -77,7 +85,7 @@ const styles = StyleSheet.create({
   input: { 
     marginLeft: 10, 
     flex: 1,
-    color: '#fff',
+    color: '#111111',
     fontSize: 16
   },
   smoothBorderline:{
