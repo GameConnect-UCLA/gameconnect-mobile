@@ -1,23 +1,21 @@
-import { View, Text, StyleSheet } from 'react-native';
+import GameProfileView from '@/src/components/games/game-profile';
+import { mockGameProfiles } from '@/src/hooks/mock-data/mock-game';
 import { useLocalSearchParams } from 'expo-router';
+import { Text, View } from 'react-native';
 
-export default function GameProfileScreen() {
-  const { id } = useLocalSearchParams();
+export default function GamePage() {
+  const { id } = useLocalSearchParams<{ id?: string | string[] }>();
+  const gameId = Array.isArray(id) ? id[0] : id;
 
-  return (
-    <View style={styles.container}>
-      <Text style={styles.text}>Perfil del Juego ID: {id}</Text>
-    </View>
-  );
+  const game = mockGameProfiles.find((g) => g.id === gameId);
+
+  if (!game) {
+    return (
+      <View style={{ flex: 1, justifyContent: 'center', alignItems: 'center' }}>
+        <Text>Juego no encontrado</Text>
+      </View>
+    );
+  }
+
+  return <GameProfileView game={game} />;
 }
-
-const styles = StyleSheet.create({
-  container: {
-    flex: 1,
-    justifyContent: 'center',
-    alignItems: 'center',
-  },
-  text: {
-    fontSize: 20,
-  },
-});
