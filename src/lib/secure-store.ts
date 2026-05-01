@@ -1,18 +1,26 @@
-import * as SecureStore from "expo-secure-store"
+import * as SecureStore from 'expo-secure-store'
 
-async function secureSave(key: string, value: string) {
-    await SecureStore.setItemAsync(key, value);
+const KEYS = {
+  ACCESS_TOKEN: 'accessToken',
+  REFRESH_TOKEN: 'refreshToken',
+} as const
+
+type StoreKey = (typeof KEYS)[keyof typeof KEYS]
+
+const save = async (key: StoreKey, value: string): Promise<void> => {
+  await SecureStore.setItemAsync(key, value)
 }
 
-async function secureGet(key: string) {
-    let result = await SecureStore.getItemAsync(key);
-    if (result) {
-        console.log(result);
-    } else {
-        console.log('No values stored under that key.');
-    }
+const get = async (key: StoreKey): Promise<string | null> => {
+  return SecureStore.getItemAsync(key)
 }
 
-export {
-    secureGet, secureSave
-}; 
+const remove = async (key: StoreKey): Promise<void> => {
+  await SecureStore.deleteItemAsync(key)
+}
+
+const clearAll = async (): Promise<void> => {
+  await Promise.all(Object.values(KEYS).map(remove))
+}
+
+export const secureStore = { save, get, remove, clearAll, KEYS }
