@@ -14,6 +14,13 @@ export type AuthResponse = AuthTokens & {
   user: User
 }
 
+export type SignUpInfo = {
+  email: string, 
+  username: string,
+  password: string, 
+  birthDate: string
+}
+
 export type AuthError =
   | 'INVALID_CREDENTIALS'
   | 'NETWORK_ERROR'

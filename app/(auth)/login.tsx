@@ -3,25 +3,19 @@ import { View, Text, TextInput, Pressable, ActivityIndicator, StyleSheet } from 
 import { Link, useRouter } from 'expo-router'
 import { useLogin } from '@/src/hooks/useAuth'
 
-
-
-
 export default function LoginScreen() {
   const [email, setEmail] = useState('')
   const [password, setPassword] = useState('')
   const { mutate, isPending, error, isError } = useLogin();
   const router = useRouter()
 
-
   const handleLogin = () => {
     // agregar verificacion de campos 
     mutate({ email, password }, {
       onSuccess: () => router.replace("/(tabs)")
     })
-   
+
   }
-
-
 
   return (
     <View style={styles.container}>
@@ -59,8 +53,8 @@ export default function LoginScreen() {
       <Link href="/(tabs)">
         <Text style={styles.link}>Go to Tabs (bypass auth)</Text>
       </Link>
-      <Link href="/register">
-        <Text style={styles.link}>Don't have an account? Register</Text>
+      <Link href="/signup">
+        <Text style={styles.link}>Don't have an account? Sign Up</Text>
       </Link>
     </View>
   );

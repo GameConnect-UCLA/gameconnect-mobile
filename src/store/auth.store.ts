@@ -1,7 +1,7 @@
 import { create } from 'zustand'
 import type { AuthError } from '@/src/types/auth.types'
 
-type AuthState = {
+export type AuthState = {
   isAuthenticated: boolean
   accessToken: string | null
   // isLoading: boolean

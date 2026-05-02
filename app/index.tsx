@@ -17,9 +17,9 @@ export default function Index() {
     );
   }
 
-  console.log(isAuthenticated);
-  console.log(aToken);
-  console.log(data);
+  // console.log(isAuthenticated);
+  // console.log(aToken);
+  // console.log(data);
   
   
   
