@@ -1,27 +1,25 @@
 import { useState } from 'react'
 import { View, Text, TextInput, Pressable, ActivityIndicator, StyleSheet } from 'react-native'
 import { Link, useRouter } from 'expo-router'
-import { useAuth } from '@/src/hooks/useAuth'
+import { ERROR_MESSAGES, useLogin } from '@/src/hooks/useAuth'
 import { useAuthStore } from '@/src/store/auth.store'
 
 
-const ERROR_MESSAGES: Record<string, string> = {
-  INVALID_CREDENTIALS: 'Email o contraseña incorrectos',
-  NETWORK_ERROR: 'Sin conexión, intenta de nuevo',
-  SERVER_ERROR: 'Error del servidor, intenta más tarde',
-}
+
 
 export default function LoginScreen() {
   const [email, setEmail] = useState('')
   const [password, setPassword] = useState('')
-  const { login } = useAuth()
-  const { isLoading, error } = useAuthStore()
+  const { mutate, isPending, error, isError } = useLogin();
   const router = useRouter()
 
 
-  const handleLogin = async () => {
-    const success = await login({ email, password })
-    if (success) router.replace('/(tabs)')
+  const handleLogin = () => {
+    // agregar verificacion de campos 
+    mutate({ email, password }, {
+      onSuccess: () => router.replace("/(tabs)")
+    })
+   
   }
 
 
@@ -29,9 +27,9 @@ export default function LoginScreen() {
   return (
     <View style={styles.container}>
 
-      {error && (
+      {isError && (
         <Text style={{ color: 'red' }}>
-          {ERROR_MESSAGES[error] ?? 'Error desconocido'}
+          {error.message ?? 'Error desconocido'}
         </Text>
       )}
       <Text style={styles.title}>Login</Text>
@@ -54,7 +52,7 @@ export default function LoginScreen() {
       />
 
       <Pressable style={styles.loginBtn} onPress={handleLogin}>
-        {isLoading ? <ActivityIndicator style={styles.loading} />
+        {isPending ? <ActivityIndicator style={styles.pending} />
           : <Text>Login</Text>}
       </Pressable>
 
@@ -93,7 +91,7 @@ const styles = StyleSheet.create({
     minWidth: 120,
     color: "#000"
   },
-  loading: {
+  pending: {
     marginHorizontal: 0,
     marginVertical: 0
   },
