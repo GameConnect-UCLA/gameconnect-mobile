@@ -1,9 +1,16 @@
 import { Ionicons } from '@expo/vector-icons';
+import { Redirect, useRouter } from 'expo-router';
 import React from 'react';
-import { Image, StyleSheet, Text, TextInput, TouchableOpacity, View } from 'react-native';
+import { Image, Pressable, StyleSheet, Text, TextInput, TouchableOpacity, View } from 'react-native';
 import { SafeAreaView } from 'react-native-safe-area-context';
 
 export default function Header() {
+
+  const router = useRouter(); 
+  const openChat =() => {
+    alert("chat")
+    router.push("/chat")
+  }
   return (
     <SafeAreaView style={styles.safeArea}>
       <View style={styles.containerHeader}>
@@ -18,9 +25,11 @@ export default function Header() {
           <TouchableOpacity>
             <Ionicons name="search" size={24} color="#111111" />
           </TouchableOpacity>
-          <TouchableOpacity style={{ marginLeft: 15 }}>
+
+          <TouchableOpacity style={{ marginLeft: 15 }} onPress={openChat}>
             <Ionicons name="chatbubble-ellipses-outline" size={24} color="#111111" />
           </TouchableOpacity>
+
         </View>
       </View>
 
