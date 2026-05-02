@@ -1,8 +1,7 @@
 import { useState } from 'react'
 import { View, Text, TextInput, Pressable, ActivityIndicator, StyleSheet } from 'react-native'
 import { Link, useRouter } from 'expo-router'
-import { ERROR_MESSAGES, useLogin } from '@/src/hooks/useAuth'
-import { useAuthStore } from '@/src/store/auth.store'
+import { useLogin } from '@/src/hooks/useAuth'
 
 
 

@@ -1,26 +1,28 @@
 import { Redirect } from 'expo-router'
-import { useAuthStore } from '@/src/store/auth.store'
-import { secureStore } from "@/src/lib/secure-store"
-import { useEffect } from 'react';
+import { useSessionCheck } from '@/src/hooks/useAuth';
+import { ActivityIndicator, View } from 'react-native';
+import { useAuthStore } from '@/src/store/auth.store';
 
 export default function Index() {
-  const isAuthenticated = useAuthStore((s) => s.isAuthenticated)
-  const { setAuthenticated } = useAuthStore(); 
+  const isAuthenticated = useAuthStore((s) => s.isAuthenticated); 
+  const aToken = useAuthStore((s) => s.accessToken); 
+  const { data, isLoading} = useSessionCheck();
 
-  useEffect(() => {
 
-    const checkRefreshToken = async () => {
-    
-    if (isAuthenticated) return; 
-    const refreshToken = await secureStore.get(secureStore.KEYS.REFRESH_TOKEN)
-    // alert(refreshToken)
-    if (refreshToken) setAuthenticated(refreshToken); 
+  if (isLoading) {
+    return (
+      <View style={{ flex: 1, justifyContent: 'center', alignItems: 'center' }}>
+        <ActivityIndicator size="large" color="#0000ff" />
+      </View>
+    );
   }
 
-  checkRefreshToken();
-
-  }, [])
-
+  console.log(isAuthenticated);
+  console.log(aToken);
+  console.log(data);
   
-  return <Redirect href={isAuthenticated ? '/(tabs)' : '/(auth)/login'} />
+  
+  
+  
+  return <Redirect href={data ? '/(tabs)' : '/(auth)/login'} />
 }

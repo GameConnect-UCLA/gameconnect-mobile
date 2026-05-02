@@ -3,7 +3,7 @@ import { secureStore } from '@/src/lib/secure-store'
 import { useAuthStore } from '@/src/store/auth.store'
 import { type AuthError, type LoginCredentials } from '@/src/types/auth.types'
 import { User } from '../types/user.types'
-import { useMutation, useQueryClient } from '@tanstack/react-query'
+import { useQuery,useMutation, useQueryClient } from '@tanstack/react-query'
 
 const mapToAuthError = (e: unknown): AuthError => {
     if (e instanceof ApiError) {
@@ -77,3 +77,23 @@ export const useLogout = () => {
 
     return { logout}
 }
+
+export const useSessionCheck = () => {
+  const setAuthenticated = useAuthStore((s) => s.setAuthenticated);
+
+  return useQuery({
+    queryKey: ['sessionCheck'],
+    queryFn: async () => {
+      const token = await secureStore.get(secureStore.KEYS.ACCESS_TOKEN);
+      
+      if (token) {
+        setAuthenticated(token);
+        return true; // Sesión válida
+      }
+      
+      return false; // No hay sesión
+    },
+    staleTime: Infinity, // Solo se ejecuta una vez mientras la app esté viva
+    retry: false,
+  });
+};
