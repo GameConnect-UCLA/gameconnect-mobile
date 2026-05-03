@@ -1,23 +1,44 @@
-import { StyleSheet, Text, TextInput, View } from 'react-native'
+import { StyleSheet, Text, TextInput, TouchableOpacity, View } from 'react-native'
 import React from 'react'
 import { Ionicons } from '@expo/vector-icons'
 
-const SearchBar = () => {
+type Props = {
+  value: string;
+  onChangeText: (text: string) => void;
+  placeholder?: string;
+};
+
+const SearchBar = ({
+  value,
+  onChangeText,
+  placeholder = "Buscar...",
+}: Props) => {
   return (
-          <View style={styles.searchContainer}>
-        <Ionicons name="search" size={styles.searchIcon.width} />
-        <TextInput
-          style={styles.searchInput}
-          placeholder="Buscar conversaciones..."
-          placeholderTextColor="#999"
-        />
-      </View>
+    <View style={styles.searchContainer}>
+      <Ionicons name="search" size={styles.searchIcon.width} />
+      <TextInput
+        style={styles.searchInput}
+        placeholder={placeholder}
+        placeholderTextColor="#999"
+        value={value}
+        onChangeText={onChangeText}
+        returnKeyType="search"
+      />
+      {value.length > 0 && (
+        <TouchableOpacity
+          onPress={() => onChangeText("")}
+          hitSlop={{ top: 8, bottom: 8, left: 8, right: 8 }}
+        >
+          <Ionicons name="close-circle" size={18} color="#aaa" />
+        </TouchableOpacity>
+      )}
+    </View>
   )
 }
 
 const styles = StyleSheet.create({
 
-      searchContainer: {
+  searchContainer: {
     flexDirection: "row",
     alignItems: "center",
     marginHorizontal: 16,
