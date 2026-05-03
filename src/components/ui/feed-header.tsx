@@ -8,7 +8,6 @@ export default function Header() {
 
   const router = useRouter(); 
   const openChat =() => {
-    alert("chat")
     router.push("/chat")
   }
   return (

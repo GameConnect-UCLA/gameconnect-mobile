@@ -108,7 +108,7 @@ const styles = StyleSheet.create({
   },
   convoTime: {
     fontSize: 12,
-    color: TEXT_MUTED,
+    color: "111",
     flexShrink: 0,
   },
   memberCount: {

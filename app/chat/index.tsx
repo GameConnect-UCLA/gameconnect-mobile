@@ -15,9 +15,13 @@ import ActiveAvatar from "@/src/components/chat/ActiveAvatar";
 import ConversationRow from "@/src/components/chat/ConversationRow";
 import SearchBar from "@/src/components/ui/SearchBar";
 import { ACTIVE_USERS, CONVERSATIONS } from "@/src/hooks/mock-data/mock-chat";
+import { useRouter } from "expo-router";
+
 const BG = require("@/assets/images/bgbody.png");
 
 export default function MessagesScreen() {
+  const router = useRouter(); 
+
   return (
     <ImageBackground style={styles.safe} source={BG}>
       <SafeAreaView style={styles.safe}>
@@ -25,7 +29,7 @@ export default function MessagesScreen() {
 
         {/* Header */}
         <View style={styles.header}>
-          <TouchableOpacity style={styles.headerBtn} hitSlop={{ top: 8, bottom: 8, left: 8, right: 8 }}>
+          <TouchableOpacity style={styles.headerBtn} hitSlop={{ top: 8, bottom: 8, left: 8, right: 8 }} onPress={() => router.back()}>
             <Text style={styles.headerBack}>‹</Text>
           </TouchableOpacity>
 
