@@ -1,9 +1,10 @@
-import { View, Text, StyleSheet } from 'react-native';
+import { StyleSheet, View } from 'react-native';
+import UserProfileScreen from '../../src/components/user/user-profile';
 
 export default function ProfileScreen() {
   return (
     <View style={styles.container}>
-      <Text style={styles.text}>Mi Perfil</Text>
+      <UserProfileScreen />
     </View>
   );
 }
