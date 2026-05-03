@@ -4,6 +4,7 @@ export type ActiveUser = {
   id: string;
   name: string;
   avatar: ImageSourcePropType;
+  conversationId?: string
 };
 
 export type Conversation = {

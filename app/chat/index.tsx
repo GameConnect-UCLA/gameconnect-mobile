@@ -7,7 +7,8 @@ import {
   StyleSheet,
   StatusBar,
   Platform,
-  ImageBackground
+  ImageBackground,
+  ActivityIndicator
 } from "react-native";
 import { Ionicons } from "@expo/vector-icons";
 import { SafeAreaView } from "react-native-safe-area-context";
@@ -16,11 +17,20 @@ import ConversationRow from "@/src/components/chat/ConversationRow";
 import SearchBar from "@/src/components/ui/SearchBar";
 import { ACTIVE_USERS, CONVERSATIONS } from "@/src/hooks/mock-data/mock-chat";
 import { useRouter } from "expo-router";
+import { useChatSearch } from "@/src/hooks/chat/useChatSearch";
 
 const BG = require("@/assets/images/bgbody.png");
 
 export default function MessagesScreen() {
   const router = useRouter(); 
+    const {
+    query,
+    setQuery,
+    localResults,
+    remoteResults,
+    isSearching,
+    isFiltering,
+  } = useChatSearch(CONVERSATIONS);
 
   return (
     <ImageBackground style={styles.safe} source={BG}>
@@ -42,11 +52,15 @@ export default function MessagesScreen() {
         </View>
 
         {/* Search */}
-        <SearchBar />
+        <SearchBar value={query} onChangeText={setQuery} placeholder="Search chats..." />
+
+
 
         <ScrollView showsVerticalScrollIndicator={false} style={styles.scroll}>
           {/* Active Now */}
-          <View style={styles.section}>
+
+          {!isFiltering && (
+            <View style={styles.section}>
             <Text style={styles.sectionTitle}>Activos Ahora</Text>
             <ScrollView
               horizontal
@@ -54,19 +68,56 @@ export default function MessagesScreen() {
               contentContainerStyle={styles.activeList}
             >
               {ACTIVE_USERS.map((u) => (
-                <ActiveAvatar key={u.id} user={u} />
+                <ActiveAvatar key={u.id} user={u} onPress={() => router.push(`/chat/${u.conversationId}`)} />
               ))}
             </ScrollView>
           </View>
+          )}
+          
+          {!isFiltering &&  <View style={styles.divider} />}
 
-          <View style={styles.divider} />
+          {/* Local Search Results */}
 
-          {/* Conversation list */}
-          <View style={styles.convoList}>
-            {CONVERSATIONS.map((c) => (
-              <ConversationRow key={c.id} item={c} />
-            ))}
-          </View>
+          {localResults.length > 0 ? (
+
+            <View style={styles.convoList}>
+              {isFiltering && (
+                 <View style={styles.section}>
+                <Text style={styles.sectionTitle}>Conversaciones</Text>
+                </View>
+              )}
+              {localResults.map((c) => (
+                <ConversationRow key={c.id} item={c} onPress={() => router.push(`/chat/${c.id}`)}/>
+              ))}
+            </View>
+          ) : (
+             isFiltering && !isSearching && remoteResults.length === 0 && (
+              <Text>
+                No se encontraron conversaciones con "{query}"
+              </Text>
+            )
+          )}
+
+          {/* Remote Search Results */}
+
+           {isFiltering && (isSearching || remoteResults.length > 0) && (
+            <View style={styles.convoList}>
+               <View style={styles.section}>
+              <Text style={styles.sectionTitle}>Usuarios</Text>
+              </View>
+              {isSearching ? (
+                <ActivityIndicator
+                  size="small"
+                  color="#033563"
+                />
+              ) : (
+                remoteResults.map((u) => (
+                  <ConversationRow key={u.id} item={u} onPress={() => router.push(`/chat/${u.id}`)} />
+                ))
+              )}
+            </View>
+          )}
+
         </ScrollView>
       </SafeAreaView>
     </ImageBackground>

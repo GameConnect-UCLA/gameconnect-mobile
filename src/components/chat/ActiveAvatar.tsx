@@ -2,7 +2,7 @@ import { ActiveUser } from "@/src/types/chat.types";
 import { useRef } from "react";
 import { Animated, TouchableOpacity, View, Image, Text, StyleSheet } from "react-native";
 
-export default function ActiveAvatar({ user }: { user: ActiveUser }) {
+export default function ActiveAvatar({ user, onPress }: { user: ActiveUser, onPress?: () => void }) {
   const scale = useRef(new Animated.Value(1)).current;
 
   const onPressIn = () =>
@@ -12,6 +12,7 @@ export default function ActiveAvatar({ user }: { user: ActiveUser }) {
 
   return (
     <TouchableOpacity
+      onPress={onPress}
       activeOpacity={1}
       onPressIn={onPressIn}
       onPressOut={onPressOut}

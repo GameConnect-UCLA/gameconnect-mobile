@@ -4,7 +4,7 @@ import { Animated, StyleSheet, TouchableOpacity, View, Image, Text } from "react
 
 
 
-export default function ConversationRow({ item }: { item: Conversation }) {
+export default function ConversationRow({ item, onPress }: { item: Conversation, onPress: () => void }) {
   const scale = useRef(new Animated.Value(1)).current;
 
   const onPressIn = () =>
@@ -25,6 +25,7 @@ export default function ConversationRow({ item }: { item: Conversation }) {
       activeOpacity={1}
       onPressIn={onPressIn}
       onPressOut={onPressOut}
+      onPress={onPress}
     >
       <Animated.View style={[styles.convoRow, { transform: [{ scale }] }]}>
         <View style={styles.avatarContainer}>
@@ -53,11 +54,8 @@ export default function ConversationRow({ item }: { item: Conversation }) {
   );
 }
 
-const SAND_BG = "#d4b896";
-const CARD_BG = "rgba(255,255,255,0.45)";
+
 const TEXT_PRIMARY = "#111";
-const TEXT_SECONDARY = "#555";
-const TEXT_MUTED = "#888";
 const ACCENT = "#6c5ce7";
 const DIVIDER = "rgba(0,0,0,0.08)";
 

@@ -10,9 +10,9 @@ export const CHAT_IMAGES = {
 } as const;
 
 export const ACTIVE_USERS: ActiveUser[] = [
-  { id: "1", name: "Luna", avatar: CHAT_IMAGES.luna },
-  { id: "2", name: "Game", avatar: CHAT_IMAGES.game },
-  { id: "3", name: "Diego", avatar: CHAT_IMAGES.diego },
+  { id: "1", name: "Luna", avatar: CHAT_IMAGES.luna, conversationId: "1" },
+  { id: "2", name: "Game", avatar: CHAT_IMAGES.game, conversationId: "2"  },
+  { id: "3", name: "Diego", avatar: CHAT_IMAGES.diego, conversationId: "4"  },
 ];
 
 
