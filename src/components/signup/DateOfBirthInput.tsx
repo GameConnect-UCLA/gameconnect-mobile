@@ -7,6 +7,8 @@ interface Props {
   value: string; // Formato DD/MM/AAAA
   onChange: (text: string) => void;
   error?: string;
+  containerStyle?: any;
+  style?: any;
 }
 
 export const DateOfBirthInput = ({ label, value, onChange, error }: Props) => {
@@ -45,15 +47,18 @@ export const DateOfBirthInput = ({ label, value, onChange, error }: Props) => {
 };
 
 const styles = StyleSheet.create({
- 
-  label: { marginBottom: 5, fontWeight: '600', color: '#333' },
+  container: {width: '100%', marginBottom: 5},
+  label: { fontSize: 14, marginBottom: 2, fontWeight: '600', color: '#333' },
   textInput: {
     height: 40,
-    padding: 5,
-    marginHorizontal: 8,
-    borderWidth: 1,
-    minWidth: 120,
-    color: "#000"
+    paddingBottom: 5,
+    //marginHorizontal: 8,
+    borderWidth: 0,
+    borderBottomWidth: 1,
+    borderBottomColor: '#ccc',
+    //minWidth: 120,
+    color: "#000",
+    fontSize: 16,
   },
   inputError: { borderColor: '#e74c3c' },
   errorText: { color: '#e74c3c', fontSize: 12, marginTop: 4 },

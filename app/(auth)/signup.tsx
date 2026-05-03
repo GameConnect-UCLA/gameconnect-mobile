@@ -1,133 +1,91 @@
-import { Text, View, StyleSheet, TextInput, Pressable, ActivityIndicator } from 'react-native';
+import { Text, StyleSheet, TextInput, Pressable, ActivityIndicator, ImageBackground, } from 'react-native';
 import { Link, useRouter } from 'expo-router';
 import { useState } from 'react';
 import { useSignup } from '@/src/hooks/useAuth';
 import { DateOfBirthInput } from '@/src/components/signup/DateOfBirthInput';
+import { AuthCard } from '@/src/components/auth/auth-card';
+import { AuthTitle } from '@/src/components/auth/auth-title';
+import { AuthBackground } from '@/src/components/auth/auth-background';
 
 export default function SignUpScreen() {
-  const [email, setEmail] = useState('')
-  const [username, setUsername] = useState('')
-  const [password, setPassword] = useState('');
-  const [repeatPassword, setRepeatPassword] = useState('');
-  const [birthDate, setBirthDate] = useState("")
-  const [successMessage, setSuccessMessage] = useState("")
+  const [form, setForm] = useState({ email: '', username: '', password: '', repeatPassword: '', birthDate: '' });
+  const [successMessage, setSuccessMessage] = useState("");
   const { mutate, isPending, error, isError } = useSignup();
-  const router = useRouter()
-
+  const router = useRouter();
+  const titleimage = require("../../assets/images/title.png");
   const handleSignup = () => {
-    
-    // agregar verificacion de cada campo
-    mutate({email, username, password, birthDate})
-    setTimeout(() => {
-      setSuccessMessage("Registro Exitoso!")
-    }, 2000)
-    setSuccessMessage("")
-    router.replace("/(tabs)/profile"); 
-  }
+    if (form.password !== form.repeatPassword) return alert("Las contraseñas no coinciden");
+    mutate(form, {
+      onSuccess: () => {
+        setSuccessMessage("¡Registro Exitoso!");
+        setTimeout(() => router.replace("/(tabs)/profile"), 1500);
+      }
+    });
+  };
 
   return (
-    <View style={styles.container}>
-      {
-        !!successMessage && (
-          <Text style={{ color: 'green' }}>
-          {successMessage}
-        </Text>
-      )}
-        
-      {isError && (
-        <Text style={{ color: 'red' }}>
-          {error.message ?? 'Error desconocido'}
-        </Text>
-      )}
-      <Text style={styles.title}>Sign Up</Text>
+    <AuthBackground>
+      <AuthTitle />
+      <AuthCard>
+        {!!successMessage && <Text style={styles.successText}>{successMessage}</Text>}
+        {isError && <Text style={styles.errorText}>{error.message ?? 'Error'}</Text>}
 
-      <TextInput
-        placeholder="example@email.com"
-        placeholderTextColor={"gray"}
-        onChangeText={setEmail}
-        defaultValue={email}
-        style={styles.textInput}
-      />
+        <TextInput
+          placeholder="Correo Electrónico"
+          placeholderTextColor="gray"
+          onChangeText={(val) => setForm({...form, email: val})}
+          style={styles.input}    
+        />
 
-      <TextInput
-        placeholder="username"
-        placeholderTextColor={"gray"}
-        onChangeText={setUsername}
-        defaultValue={username}
-        style={styles.textInput}
-      />
+        <TextInput
+          placeholder="Usuario"
+          placeholderTextColor="gray"
+          onChangeText={(val) => setForm({...form, username: val})}
+          style={styles.input}
+        />
 
-      <TextInput
-        placeholder="password"
-        placeholderTextColor={"gray"}
-        onChangeText={setPassword}
-        defaultValue={password}
-        secureTextEntry={true}
-        style={styles.textInput}
-      />
+        <TextInput
+          placeholder="Contraseña"
+          placeholderTextColor="gray"
+          secureTextEntry
+          onChangeText={(val) => setForm({...form, password: val})}
+          style={styles.input}
+        />
 
-          <TextInput
-        placeholder="repeat password"
-        placeholderTextColor={"gray"}
-        onChangeText={setRepeatPassword}
-        defaultValue={repeatPassword}
-        secureTextEntry={true}
-        style={styles.textInput}
-      />
+        <TextInput
+          placeholder="Confirmar Contraseña"
+          placeholderTextColor="gray"
+          secureTextEntry
+          onChangeText={(val) => setForm({...form, repeatPassword: val})}
+          style={styles.input}
+        />
 
         <DateOfBirthInput 
-        label="Fecha de Nacimiento"
-        value={birthDate}
-        onChange={setBirthDate}
-      />
+          label="Fecha de Nacimiento"
+          value={form.birthDate}
+          onChange={(val) => setForm({...form, birthDate: val})}
+          containerStyle={styles.dateInput}
+        />
 
-      <Pressable style={styles.loginBtn} onPress={handleSignup}>
-        {isPending ? <ActivityIndicator style={styles.pending} />
-          : <Text>Sign Up</Text>}
-      </Pressable>
+        <Pressable style={styles.btn} onPress={handleSignup} disabled={isPending}>
+          {isPending ? <ActivityIndicator color="#fff" /> : <Text style={styles.btnText}>Regístrate</Text>}
+        </Pressable>
 
-
-      <Link href="/(tabs)">
-        <Text style={styles.link}>Have an account? Login</Text>
-      </Link>
-
-    </View>
+        <Link href="/(tabs)" style={styles.link}>
+          <Text style={styles.linkText}>¿Ya posees cuenta? Ingresa Aquí</Text>
+        </Link>
+      </AuthCard>
+    </AuthBackground>
   );
 }
 
 const styles = StyleSheet.create({
-  container: {
-    flex: 1,
-    justifyContent: 'center',
-    alignItems: 'center',
-    gap: 10
-  },
-  title: {
-    fontSize: 24,
-    fontWeight: 'bold',
-    marginBottom: 20,
-  },
-  link: {
-    color: 'blue',
-    marginTop: 10,
-  },
-  textInput: {
-    height: 40,
-    padding: 5,
-    marginHorizontal: 8,
-    borderWidth: 1,
-    minWidth: 120,
-    color: "#000"
-  },
-  pending: {
-    marginHorizontal: 0,
-    marginVertical: 0
-  },
-  loginBtn: {
-    borderColor: "black",
-    borderStyle: "solid",
-    borderWidth: 1,
-    padding: 4,
-    backgroundColor: "yellow"
-  }
+  input: { height: 45, borderBottomWidth: 1, borderBottomColor: '#ccc', marginBottom: 15, fontSize: 16 },
+  dateInput: { borderBottomWidth: 1, borderBottomColor: '#ccc' },
+  btn: { backgroundColor: "#9b1999", borderRadius: 25, padding: 15, alignItems: 'center', marginTop: 20 },
+  btnText: { color: 'white', fontWeight: 'bold', fontSize: 18 },
+  link: { marginTop: 15, alignSelf: 'center' },
+  linkText: { color: '#555', fontSize: 13 },
+  successText: { color: 'green', textAlign: 'center', marginBottom: 10 },
+  errorText: { color: 'red', textAlign: 'center', marginBottom: 10 }
 });
