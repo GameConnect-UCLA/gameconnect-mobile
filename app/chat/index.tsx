@@ -45,7 +45,7 @@ export default function MessagesScreen() {
 
           <Text style={styles.headerTitle}>Mensajes</Text>
 
-          <TouchableOpacity style={styles.headerBtn} hitSlop={{ top: 8, bottom: 8, left: 8, right: 8 }}>
+          <TouchableOpacity style={styles.headerBtn} hitSlop={{ top: 8, bottom: 8, left: 8, right: 8 }} onPress={() => router.push("/chat/newgroup")}>
             {/* Group icon */}
             <Ionicons name="people-circle" size={styles.groupIcon.width} color={styles.groupIcon.backgroundColor} />
           </TouchableOpacity>
