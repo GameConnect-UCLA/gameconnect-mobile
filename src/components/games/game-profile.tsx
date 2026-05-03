@@ -2,15 +2,15 @@ import { Ionicons } from '@expo/vector-icons';
 import { useRouter } from 'expo-router';
 import React, { useState } from 'react';
 import {
-  Image,
-  ImageBackground,
-  ScrollView,
-  StatusBar,
-  StyleSheet,
-  Text,
-  TouchableOpacity,
-  useWindowDimensions,
-  View,
+    Image,
+    ImageBackground,
+    ScrollView,
+    StatusBar,
+    StyleSheet,
+    Text,
+    TouchableOpacity,
+    useWindowDimensions,
+    View,
 } from 'react-native';
 import { SafeAreaView, useSafeAreaInsets } from 'react-native-safe-area-context';
 import { GameProfile } from '../../types/game.types';
@@ -37,6 +37,13 @@ export default function GameProfileView({ game }: Props) {
               <View style={styles.headerOverlay}>
                 <TouchableOpacity onPress={() => router.back()} style={styles.backButton}>
                   <Ionicons name="chevron-back" size={28} color="#fff" />
+                </TouchableOpacity>
+                <TouchableOpacity
+                  onPress={() => router.push(`/game/${game.id}/settings`)}
+                  style={styles.editButton}
+                >
+                  <Ionicons name="create-outline" size={18} color="#fff" />
+                  <Text style={styles.editButtonText}>Editar</Text>
                 </TouchableOpacity>
               </View>
             </View>
@@ -130,12 +137,29 @@ const styles = StyleSheet.create({
     paddingTop: 10,
     paddingHorizontal: 10,
     zIndex: 3,
+    flexDirection: 'row',
+    justifyContent: 'space-between',
+    alignItems: 'flex-start',
   },
   backButton: {
     width: 36,
     height: 36,
     alignItems: 'center',
     justifyContent: 'center',
+  },
+  editButton: {
+    flexDirection: 'row',
+    alignItems: 'center',
+    gap: 6,
+    paddingHorizontal: 12,
+    paddingVertical: 8,
+    borderRadius: 999,
+    backgroundColor: 'rgba(0, 58, 99, 0.66)',
+  },
+  editButtonText: {
+    color: '#fff',
+    fontSize: 13,
+    fontWeight: '700',
   },
   infoContainer: {
     marginTop: 230,
