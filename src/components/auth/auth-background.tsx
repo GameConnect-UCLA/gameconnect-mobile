@@ -8,7 +8,7 @@ interface AuthBackgroundProps {
 export function AuthBackground({ children }: AuthBackgroundProps) {
   return (
     <ImageBackground 
-      source={require("../../../assets/images/splash-background.png")} 
+      source={require("../../../assets/images/background.png")} 
       style={styles.container} 
       resizeMode="cover"
     >
