@@ -49,5 +49,17 @@ export const mockGameProfiles: GameProfile[] = [
     tags: ['Simulación', 'Indie', 'Relajante'],
     description: 'Has heredado la vieja granja de tu abuelo en Stardew Valley. Equipado con herramientas de mano y unas cuantas monedas, te propones comenzar tu nueva vida.',
     reviews: []
+  },
+  {
+    id: 'g5',
+    title: 'Resident Evil 4',
+    developer: '@Capcom',
+    cover_url: 'https://images.unsplash.com/photo-1503095396549-807759245b35',
+    background_url: '../../assets/images/bgbody.png',
+    rating_score: '4.9 / 5',
+    rating_count: '(11k)',
+    tags: ['Horror', 'Acción', 'Remake'],
+    description: 'Leon Kennedy regresa en un remake que moderniza la experiencia original sin perder su esencia. Intensidad, terror y acción perfectamente balanceados.',
+    reviews: []
   }
 ];

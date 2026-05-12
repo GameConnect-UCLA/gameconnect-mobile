@@ -14,6 +14,7 @@ export enum UserState {
 
 export interface User {
   id: string;
+  display_name: string;
   username: string;
   role: UserRole;
   email: string;

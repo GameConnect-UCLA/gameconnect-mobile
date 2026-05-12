@@ -2,18 +2,20 @@ import { Ionicons } from '@expo/vector-icons';
 import { useRouter } from 'expo-router';
 import React, { useState } from 'react';
 import {
-    Image,
-    ImageBackground,
-    ScrollView,
-    StatusBar,
-    StyleSheet,
-    Text,
-    TouchableOpacity,
-    useWindowDimensions,
-    View,
+  Image,
+  ImageBackground,
+  ScrollView,
+  StatusBar,
+  StyleSheet,
+  Text,
+  TouchableOpacity,
+  useWindowDimensions,
+  View,
 } from 'react-native';
 import { SafeAreaView, useSafeAreaInsets } from 'react-native-safe-area-context';
+import { mockPosts } from '../../hooks/mock-data/mock-posts';
 import { GameProfile } from '../../types/game.types';
+import PostCard from '../posts/post-card';
 
 interface Props {
   game: GameProfile;
@@ -24,6 +26,12 @@ export default function GameProfileView({ game }: Props) {
   const router = useRouter();
   const { height } = useWindowDimensions();
   const insets = useSafeAreaInsets();
+  const relatedPosts = mockPosts.filter((post) => {
+    const matchesGame = post.reviewed_game.toLowerCase() === game.title.toLowerCase();
+    const matchesTab = activeTab === 'Reseñas' ? post.is_review : !post.is_review;
+
+    return matchesGame && matchesTab;
+  });
 
   return (
     <ImageBackground source={require('../../../assets/images/bgbody.png')} style={{ flex: 1 }}>
@@ -98,8 +106,17 @@ export default function GameProfileView({ game }: Props) {
                 ))}
               </View>
 
-              {/* Espacio reservado para contenido futuro (posts/reseñas) */}
-              <View style={styles.emptyPostsArea} />
+              <View style={styles.postsArea}>
+                {relatedPosts.length > 0 ? (
+                  relatedPosts.map((post) => (
+                    <PostCard key={post.id} post={post} separatorColor="rgba(0, 0, 0, 0.12)" />
+                  ))
+                ) : (
+                  <Text style={styles.emptyPostsText}>
+                    No hay publicaciones relacionadas en esta sección.
+                  </Text>
+                )}
+              </View>
             </View>
           </View>
         </ScrollView>
@@ -226,10 +243,19 @@ const styles = StyleSheet.create({
   activeTab: { backgroundColor: '#003A63' },
   tabText: { fontSize: 16, fontWeight: '700', color: '#003A63' },
   activeTabText: { color: '#fff' },
-  emptyPostsArea: {
+  postsArea: {
     flex: 1,
     backgroundColor: 'rgba(227, 227, 227, 0.92)',
     borderTopWidth: 1,
     borderTopColor: 'rgba(0,0,0,0.03)',
+    paddingTop: 10,
+    paddingBottom: 16,
+  },
+  emptyPostsText: {
+    color: '#5C5C5C',
+    fontSize: 14,
+    textAlign: 'center',
+    paddingHorizontal: 20,
+    paddingVertical: 24,
   },
 });
