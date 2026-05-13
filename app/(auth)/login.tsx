@@ -4,7 +4,6 @@ import { Link, useRouter } from 'expo-router';
 import { useLogin } from '@/src/hooks/useAuth';
 import { AuthBackground } from '@/src/components/auth/auth-background';
 import { AuthCard } from '@/src/components/auth/auth-card';
-import { AuthTitle } from '@/src/components/auth/auth-title';
 
 export default function LoginScreen() {
   const [form, setForm] = useState({ email: '', password: '' });
@@ -21,8 +20,6 @@ export default function LoginScreen() {
 
   return (
     <AuthBackground>
-      <AuthTitle />
-
       <AuthCard>
         {isError && <Text style={styles.errorText}>{error.message ?? 'Error desconocido'}</Text>}
 
@@ -53,6 +50,9 @@ export default function LoginScreen() {
 
         <Link href="/(auth)/signup" style={styles.link}>
           <Text style={styles.linkText}>¿No tienes cuenta? Regístrate Aquí</Text>
+        </Link>
+        <Link href="/(auth)/forgot" style={styles.link}>
+          <Text style={styles.linkText}>¿Olvidaste tu contraseña?</Text>
         </Link>
       </AuthCard>
     </AuthBackground>

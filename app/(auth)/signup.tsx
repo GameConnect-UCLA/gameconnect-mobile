@@ -4,7 +4,6 @@ import { useState } from 'react';
 import { useSignup } from '@/src/hooks/useAuth';
 import { DateOfBirthInput } from '@/src/components/signup/DateOfBirthInput';
 import { AuthCard } from '@/src/components/auth/auth-card';
-import { AuthTitle } from '@/src/components/auth/auth-title';
 import { AuthBackground } from '@/src/components/auth/auth-background';
 
 export default function SignUpScreen() {
@@ -25,7 +24,6 @@ export default function SignUpScreen() {
 
   return (
     <AuthBackground>
-      <AuthTitle />
       <AuthCard>
         {!!successMessage && <Text style={styles.successText}>{successMessage}</Text>}
         {isError && <Text style={styles.errorText}>{error.message ?? 'Error'}</Text>}
