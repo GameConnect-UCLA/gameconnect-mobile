@@ -1,12 +1,12 @@
 import { Ionicons } from '@expo/vector-icons';
-import React, { useState } from 'react';
+import React, { useRef, useState } from 'react';
 import {
-    Image,
-    ScrollView,
-    StyleSheet,
-    Text,
-    TouchableOpacity,
-    View,
+  Image,
+  ScrollView,
+  StyleSheet,
+  Text,
+  TouchableOpacity,
+  View,
 } from 'react-native';
 import { Post } from '../../types/post.types';
 
@@ -27,11 +27,23 @@ export default function PostCard({ post, separatorColor = 'transparent' }: Props
   const [isLiked, setIsLiked] = useState(false);
   const [isSaved, setIsSaved] = useState(false);
   const [cardWidth, setCardWidth] = useState(0);
+  const [activeImageIndex, setActiveImageIndex] = useState(0);
+  const galleryRef = useRef<ScrollView>(null);
   const displayedTitle = post.is_review ? post.reviewed_game : post.post_title;
   const contentPreview = post.content.slice(0, 160);
   const displayLikes = isLiked ? post.likes_counter + 1 : post.likes_counter;
 
   const mediaWidth = cardWidth > 0 ? cardWidth : undefined;
+  const hasMultipleImages = post.media.images.length > 1;
+
+  const handleScrollToImage = (index: number) => {
+    if (!hasMultipleImages || !mediaWidth || index < 0 || index >= post.media.images.length) {
+      return;
+    }
+
+    setActiveImageIndex(index);
+    galleryRef.current?.scrollTo({ x: index * mediaWidth, animated: true });
+  };
 
   return (
     <View
@@ -73,24 +85,54 @@ export default function PostCard({ post, separatorColor = 'transparent' }: Props
 
       {post.media.images.length > 0 ? (
         post.media.images.length > 1 ? (
-          <ScrollView
-            horizontal
-            pagingEnabled
-            nestedScrollEnabled
-            decelerationRate="fast"
-            showsHorizontalScrollIndicator={false}
-            style={styles.gallery}
-            contentContainerStyle={styles.galleryContent}
-          >
-            {post.media.images.map((image, index) => (
-              <View
-                key={`${post.id}-${index}`}
-                style={[styles.mediaFrame, mediaWidth ? { width: mediaWidth } : styles.mediaPlaceholder]}
-              >
-                <Image source={{ uri: image }} style={styles.mediaImage} />
-              </View>
-            ))}
-          </ScrollView>
+          <View style={styles.galleryWrapper}>
+            <ScrollView
+              ref={galleryRef}
+              horizontal
+              pagingEnabled
+              nestedScrollEnabled
+              decelerationRate="fast"
+              showsHorizontalScrollIndicator={false}
+              style={styles.gallery}
+              contentContainerStyle={styles.galleryContent}
+              onMomentumScrollEnd={(event) => {
+                if (!mediaWidth) {
+                  return;
+                }
+
+                const nextIndex = Math.round(event.nativeEvent.contentOffset.x / mediaWidth);
+                setActiveImageIndex(nextIndex);
+              }}
+            >
+              {post.media.images.map((image, index) => (
+                <View
+                  key={`${post.id}-${index}`}
+                  style={[styles.mediaFrame, mediaWidth ? { width: mediaWidth } : styles.mediaPlaceholder]}
+                >
+                  <Image source={{ uri: image }} style={styles.mediaImage} />
+                </View>
+              ))}
+            </ScrollView>
+
+            <TouchableOpacity
+              onPress={() => handleScrollToImage(activeImageIndex - 1)}
+              disabled={activeImageIndex === 0}
+              style={[styles.arrowButton, styles.leftArrow, activeImageIndex === 0 && styles.arrowDisabled]}
+            >
+              <Ionicons name="chevron-back" size={22} color="#FFFFFF" />
+            </TouchableOpacity>
+            <TouchableOpacity
+              onPress={() => handleScrollToImage(activeImageIndex + 1)}
+              disabled={activeImageIndex === post.media.images.length - 1}
+              style={[
+                styles.arrowButton,
+                styles.rightArrow,
+                activeImageIndex === post.media.images.length - 1 && styles.arrowDisabled,
+              ]}
+            >
+              <Ionicons name="chevron-forward" size={22} color="#FFFFFF" />
+            </TouchableOpacity>
+          </View>
         ) : (
           <View
             style={[
@@ -248,6 +290,10 @@ const styles = StyleSheet.create({
   galleryContent: {
     paddingRight: 10,
   },
+  galleryWrapper: {
+    marginTop: 12,
+    position: 'relative',
+  },
   mediaFrame: {
     height: 190,
     borderRadius: 14,
@@ -264,6 +310,27 @@ const styles = StyleSheet.create({
     width: '100%',
     height: '100%',
     resizeMode: 'cover',
+  },
+  arrowButton: {
+    position: 'absolute',
+    top: '50%',
+    marginTop: -18,
+    width: 36,
+    height: 36,
+    borderRadius: 18,
+    alignItems: 'center',
+    justifyContent: 'center',
+    backgroundColor: 'rgba(11,75,130,0.75)',
+    zIndex: 4,
+  },
+  leftArrow: {
+    left: 12,
+  },
+  rightArrow: {
+    right: 12,
+  },
+  arrowDisabled: {
+    opacity: 0.35,
   },
   hashtagRow: {
     flexDirection: 'row',
