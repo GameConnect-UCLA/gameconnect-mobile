@@ -1,16 +1,18 @@
-import { Stack } from "expo-router";
-import {
-  QueryClient,
-  QueryClientProvider,
-} from '@tanstack/react-query'
+import { QueryClient, QueryClientProvider } from '@tanstack/react-query';
+import { Stack } from 'expo-router';
 
-const queryClient = new QueryClient()
+// 1. Creamos el cliente que manejará los datos (evita el error que te salió)
+const queryClient = new QueryClient();
 
 export default function RootLayout() {
-
   return (
-     <QueryClientProvider client={queryClient}>
-      <Stack screenOptions={{ headerShown: false }}/>
-     </QueryClientProvider>
+    // 2. Envolvemos toda la app con el proveedor
+    <QueryClientProvider client={queryClient}>
+      <Stack screenOptions={{ headerShown: false }}>
+        {/* Aquí definimos las rutas principales */}
+        <Stack.Screen name="(tabs)" />
+        <Stack.Screen name="user/edit-profile" options={{ presentation: 'modal' }} />
+      </Stack>
+    </QueryClientProvider>
   );
 }
