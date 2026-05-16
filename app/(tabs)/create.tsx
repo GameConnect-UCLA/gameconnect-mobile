@@ -1,20 +1,5 @@
-import { View, Text, StyleSheet } from 'react-native';
+import CreatePostScreen from '@/src/components/create-post/create-post-screen';
 
-export default function CreatePostScreen() {
-  return (
-    <View style={styles.container}>
-      <Text style={styles.text}>Crear Publicación</Text>
-    </View>
-  );
+export default function CreatePostRoute() {
+  return <CreatePostScreen />;
 }
-
-const styles = StyleSheet.create({
-  container: {
-    flex: 1,
-    justifyContent: 'center',
-    alignItems: 'center',
-  },
-  text: {
-    fontSize: 20,
-  },
-});
