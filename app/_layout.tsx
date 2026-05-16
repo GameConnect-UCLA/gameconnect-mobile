@@ -1,3 +1,4 @@
+import AppToast from '@/src/components/ui/app-toast';
 import { QueryClient, QueryClientProvider } from '@tanstack/react-query';
 import { Stack } from 'expo-router';
 
@@ -9,6 +10,7 @@ export default function RootLayout() {
     // 2. Envolvemos toda la app con el proveedor
     <QueryClientProvider client={queryClient}>
       <Stack screenOptions={{ headerShown: false }}>
+        <AppToast/>
         {/* Aquí definimos las rutas principales */}
         <Stack.Screen name="(tabs)" />
         <Stack.Screen name="user/edit-profile" options={{ presentation: 'modal' }} />
