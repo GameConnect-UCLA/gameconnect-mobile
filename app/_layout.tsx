@@ -7,14 +7,11 @@ const queryClient = new QueryClient();
 
 export default function RootLayout() {
   return (
-    // 2. Envolvemos toda la app con el proveedor
     <QueryClientProvider client={queryClient}>
       <Stack screenOptions={{ headerShown: false }}>
-        <AppToast/>
-        {/* Aquí definimos las rutas principales */}
         <Stack.Screen name="(tabs)" />
-        <Stack.Screen name="user/edit-profile" options={{ presentation: 'modal' }} />
       </Stack>
+      <AppToast />
     </QueryClientProvider>
   );
 }
