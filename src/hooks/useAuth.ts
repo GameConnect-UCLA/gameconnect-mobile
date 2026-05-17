@@ -1,7 +1,7 @@
 import { authApi, ApiError } from '@/src/api/auth.api'
 import { secureStore } from '@/src/lib/secure-store'
-import { useAuthStore } from '@/src/store/auth.store'
-import { type AuthError, type LoginCredentials } from '@/src/types/auth.types'
+import { AuthState, useAuthStore } from '@/src/store/auth.store'
+import { SignUpInfo, type AuthError, type LoginCredentials } from '@/src/types/auth.types'
 import { User } from '../types/user.types'
 import { useQuery,useMutation, useQueryClient } from '@tanstack/react-query'
 
@@ -42,10 +42,10 @@ export const useLogin = () => {
     return mutation;
 }
 
-export const useRegister = () => {
+export const useSignup = () => {
     const { setAuthenticated } = useAuthStore()
     const mutation = useMutation({
-        mutationFn: async (user: Partial<User>) => {
+        mutationFn: async (user: SignUpInfo) => {
             try {
                 const { accessToken, refreshToken } = await authApi.register(user)
                 await secureStore.save(secureStore.KEYS.ACCESS_TOKEN, accessToken)
@@ -79,7 +79,7 @@ export const useLogout = () => {
 }
 
 export const useSessionCheck = () => {
-  const setAuthenticated = useAuthStore((s) => s.setAuthenticated);
+  const setAuthenticated = useAuthStore((s: AuthState) => s.setAuthenticated);
 
   return useQuery({
     queryKey: ['sessionCheck'],
