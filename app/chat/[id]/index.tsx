@@ -14,7 +14,6 @@ import { Ionicons } from "@expo/vector-icons";
 import { useLocalSearchParams, useRouter } from "expo-router";
 import { useSafeAreaInsets } from "react-native-safe-area-context";
 import {
-  KeyboardAvoidingView,
   KeyboardAwareScrollView,
   KeyboardStickyView,
 } from "react-native-keyboard-controller";
@@ -30,15 +29,15 @@ export default function ChatDirectScreen() {
   const { data: conversation, isLoading, error } = useConversation(id);
   const [message, setMessage] = useState("");
 
-  // For direct messages, the contact is the first member
-  // For group chats, we might want to show all members or handle differently
   const contact = conversation?.members?.[0];
-
-  // Get display name and avatar
   const displayName = conversation?.name ?? contact?.username ?? "Unknown";
   const avatarSource = contact?.profile_pic
     ? { uri: contact.profile_pic }
     : DEFAULT_AVATAR;
+
+  const navigateToInfo = () => {
+    router.push(`/chat/${id}/info`);
+  };
 
   if (isLoading) {
     return (
@@ -93,13 +92,13 @@ export default function ChatDirectScreen() {
               <Ionicons name="chevron-back" size={28} color="#1a1a1a" />
             </TouchableOpacity>
 
-            <View style={styles.userInfo}>
+            <TouchableOpacity style={styles.userInfo} onPress={navigateToInfo}>
               <Image source={avatarSource} style={styles.avatar} />
               <View style={styles.userTextInfo}>
                 <Text style={styles.userName}>{displayName}</Text>
                 <Text style={styles.userStatus}>last seen recently</Text>
               </View>
-            </View>
+            </TouchableOpacity>
 
             <TouchableOpacity style={styles.menuButton}>
               <Ionicons name="ellipsis-vertical" size={24} color="#1a1a1a" />
@@ -111,7 +110,9 @@ export default function ChatDirectScreen() {
           <View style={styles.messagesArea} />
         </KeyboardAwareScrollView>
 
-        <KeyboardStickyView offset={{ closed: -insets.bottom, opened: insets.bottom/2}}>
+        <KeyboardStickyView
+          offset={{ closed: -insets.bottom, opened: -insets.bottom / 3 }}
+        >
           {/* Input de mensaje */}
           <View style={styles.inputContainer}>
             <TouchableOpacity style={styles.emojiButton}>
