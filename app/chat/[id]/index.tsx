@@ -18,6 +18,7 @@ import {
   KeyboardStickyView,
 } from "react-native-keyboard-controller";
 import { useConversation } from "@/src/hooks/chat/useConversation";
+import ChatOverflowMenu from "@/src/components/chat/ChatOverflowMenu";
 
 const BG = require("@/assets/images/bgbody.png");
 const DEFAULT_AVATAR = require("@/assets/images/default-avatar.jpg");
@@ -28,6 +29,7 @@ export default function ChatDirectScreen() {
   const insets = useSafeAreaInsets();
   const { data: conversation, isLoading, error } = useConversation(id);
   const [message, setMessage] = useState("");
+  const [menuVisible, setMenuVisible] = useState(false);
 
   const contact = conversation?.members?.[0];
   const displayName = conversation?.name ?? contact?.username ?? "Unknown";
@@ -100,7 +102,10 @@ export default function ChatDirectScreen() {
               </View>
             </TouchableOpacity>
 
-            <TouchableOpacity style={styles.menuButton}>
+            <TouchableOpacity
+              style={styles.menuButton}
+              onPress={() => setMenuVisible(true)}
+            >
               <Ionicons name="ellipsis-vertical" size={24} color="#1a1a1a" />
             </TouchableOpacity>
           </View>
@@ -132,6 +137,11 @@ export default function ChatDirectScreen() {
             </TouchableOpacity>
           </View>
         </KeyboardStickyView>
+
+        <ChatOverflowMenu
+          visible={menuVisible}
+          onClose={() => setMenuVisible(false)}
+        />
       </View>
     </ImageBackground>
   );
