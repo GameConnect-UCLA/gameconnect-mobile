@@ -14,12 +14,20 @@ export function useScrollToBottom(options: UseScrollToBottomOptions = {}) {
   }, []);
 
   const handleScroll = useCallback(
-    (event: { nativeEvent: { contentOffset: { y: number }; contentSize: { height: number }; layoutMeasurement: { height: number } } }) => {
-      const { contentOffset, contentSize, layoutMeasurement } = event.nativeEvent;
-      const distanceFromBottom = contentSize.height - layoutMeasurement.height - contentOffset.y;
+    (event: {
+      nativeEvent: {
+        contentOffset: { y: number };
+        contentSize: { height: number };
+        layoutMeasurement: { height: number };
+      };
+    }) => {
+      const { contentOffset, contentSize, layoutMeasurement } =
+        event.nativeEvent;
+      const distanceFromBottom =
+        contentSize.height - layoutMeasurement.height - contentOffset.y;
       setShowButton(distanceFromBottom > threshold);
     },
-    [threshold]
+    [threshold],
   );
 
   return {

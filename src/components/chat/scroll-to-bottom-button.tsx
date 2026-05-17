@@ -5,17 +5,19 @@ import { Ionicons } from "@expo/vector-icons";
 interface ScrollToBottomButtonProps {
   visible: boolean;
   onPress: () => void;
+  bottomOffset?: number;
 }
 
 export default function ScrollToBottomButton({
   visible,
   onPress,
+  bottomOffset = 72,
 }: ScrollToBottomButtonProps) {
   if (!visible) return null;
 
   return (
     <TouchableOpacity
-      style={styles.container}
+      style={[styles.container, { bottom: bottomOffset }]}
       onPress={onPress}
       activeOpacity={0.7}
     >
@@ -28,7 +30,6 @@ const styles = StyleSheet.create({
   container: {
     position: "absolute",
     right: 16,
-    bottom: 100,
     width: 48,
     height: 48,
     borderRadius: 24,

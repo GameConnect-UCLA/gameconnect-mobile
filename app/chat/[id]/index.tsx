@@ -1,8 +1,7 @@
-import React, { useState } from "react";
+import React, { useState, useCallback } from "react";
 import {
   View,
   Text,
-  ScrollView,
   StyleSheet,
   StatusBar,
   ImageBackground,
@@ -11,11 +10,10 @@ import {
 import { useLocalSearchParams, useRouter } from "expo-router";
 import { useSafeAreaInsets } from "react-native-safe-area-context";
 import {
-  KeyboardAvoidingView,
-  KeyboardAwareScrollView,
   KeyboardStickyView,
   KeyboardChatScrollView,
 } from "react-native-keyboard-controller";
+import { useSharedValue } from "react-native-reanimated";
 import { useConversation } from "@/src/hooks/chat/useConversation";
 import ChatHeader from "@/src/components/chat/chat-header";
 import ChatMessageBubble from "@/src/components/chat/chat-message-bubble";
@@ -27,14 +25,25 @@ import { useScrollToBottom } from "@/src/hooks/chat/use-scroll-to-bottom";
 const BG = require("@/assets/images/bgbody.png");
 const DEFAULT_AVATAR = require("@/assets/images/default-avatar.jpg");
 
+const INPUT_CONTAINER_BASE_HEIGHT = 56;
+const INPUT_MAX_HEIGHT = 144;
+
 export default function ChatDirectScreen() {
   const { id } = useLocalSearchParams<{ id: string }>();
   const router = useRouter();
   const insets = useSafeAreaInsets();
-  const { data: conversation, isLoading, error } = useConversation(id);
+  const {
+    data: conversation,
+    messages,
+    isLoading,
+    error,
+    sendMessage,
+  } = useConversation(id);
   const [menuVisible, setMenuVisible] = useState(false);
   const { scrollViewRef, showButton, scrollToBottom, handleScroll } =
     useScrollToBottom();
+
+  const composerHeight = useSharedValue(INPUT_CONTAINER_BASE_HEIGHT);
 
   const contact = conversation?.members?.[0];
   const displayName = conversation?.name ?? contact?.username ?? "Unknown";
@@ -43,11 +52,33 @@ export default function ChatDirectScreen() {
     : DEFAULT_AVATAR;
 
   const currentUserId = "current_user";
-  const messages = conversation?.messages ?? [];
 
   const navigateToInfo = () => {
     router.push(`/chat/${id}/info`);
   };
+
+  const handleHeightChange = useCallback(
+    (height: number) => {
+      composerHeight.value = Math.min(
+        Math.max(height + 24, INPUT_CONTAINER_BASE_HEIGHT),
+        INPUT_MAX_HEIGHT,
+      );
+    },
+    [composerHeight],
+  );
+
+  const handleSend = useCallback(
+    async (text: string) => {
+      scrollToBottom();
+      if (!id) return;
+      try {
+        await sendMessage(text);
+      } catch (err) {
+        console.error("Error en flujo de envío:", err);
+      }
+    },
+    [id, sendMessage, scrollToBottom],
+  );
 
   if (isLoading) {
     return (
@@ -119,15 +150,15 @@ export default function ChatDirectScreen() {
           ))}
         </KeyboardChatScrollView>
 
-        <ScrollToBottomButton
-          visible={showButton}
-          onPress={scrollToBottom}
-        />
-
         <KeyboardStickyView
           offset={{ closed: -insets.bottom, opened: -insets.bottom / 3 }}
         >
-          <ChatInput onSend={() => {}} />
+          <ScrollToBottomButton
+            visible={showButton}
+            onPress={scrollToBottom}
+            bottomOffset={80}
+          />
+          <ChatInput onSend={handleSend} onHeightChange={handleHeightChange} />
         </KeyboardStickyView>
 
         <ChatOverflowMenu
