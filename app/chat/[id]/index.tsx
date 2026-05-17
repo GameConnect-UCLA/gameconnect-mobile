@@ -21,7 +21,8 @@ import ChatHeader from "@/src/components/chat/chat-header";
 import ChatMessageBubble from "@/src/components/chat/chat-message-bubble";
 import ChatInput from "@/src/components/chat/chat-input";
 import ChatOverflowMenu from "@/src/components/chat/ChatOverflowMenu";
-import { Alert } from "react-native";
+import ScrollToBottomButton from "@/src/components/chat/scroll-to-bottom-button";
+import { useScrollToBottom } from "@/src/hooks/chat/use-scroll-to-bottom";
 
 const BG = require("@/assets/images/bgbody.png");
 const DEFAULT_AVATAR = require("@/assets/images/default-avatar.jpg");
@@ -32,6 +33,8 @@ export default function ChatDirectScreen() {
   const insets = useSafeAreaInsets();
   const { data: conversation, isLoading, error } = useConversation(id);
   const [menuVisible, setMenuVisible] = useState(false);
+  const { scrollViewRef, showButton, scrollToBottom, handleScroll } =
+    useScrollToBottom();
 
   const contact = conversation?.members?.[0];
   const displayName = conversation?.name ?? contact?.username ?? "Unknown";
@@ -99,6 +102,9 @@ export default function ChatDirectScreen() {
         />
 
         <KeyboardChatScrollView
+          ref={scrollViewRef}
+          onScroll={handleScroll}
+          scrollEventThrottle={16}
           contentContainerStyle={[
             styles.messagesArea,
             { paddingBottom: insets.bottom },
@@ -112,6 +118,11 @@ export default function ChatDirectScreen() {
             />
           ))}
         </KeyboardChatScrollView>
+
+        <ScrollToBottomButton
+          visible={showButton}
+          onPress={scrollToBottom}
+        />
 
         <KeyboardStickyView
           offset={{ closed: -insets.bottom, opened: -insets.bottom / 3 }}
