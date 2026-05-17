@@ -2,6 +2,8 @@ import { ActiveUser } from "@/src/types/chat.types";
 import { useRef } from "react";
 import { Animated, TouchableOpacity, View, Image, Text, StyleSheet } from "react-native";
 
+const DEFAULT_AVATAR = require("@/assets/images/default-avatar.jpg");
+
 export default function ActiveAvatar({ user, onPress }: { user: ActiveUser, onPress?: () => void }) {
   const scale = useRef(new Animated.Value(1)).current;
 
@@ -20,11 +22,11 @@ export default function ActiveAvatar({ user, onPress }: { user: ActiveUser, onPr
     >
       <Animated.View style={{ transform: [{ scale }] }}>
         <View style={styles.activeAvatarRing}>
-          <Image source={user.avatar} style={styles.activeAvatarImg} />
+          <Image source={user.profile_pic ? { uri: user.profile_pic } : DEFAULT_AVATAR} style={styles.activeAvatarImg} />
         </View>
         <View style={styles.onlineDot} />
         <Text style={styles.activeAvatarName} numberOfLines={1}>
-          {user.name}
+          {user.username}
         </Text>
       </Animated.View>
     </TouchableOpacity>

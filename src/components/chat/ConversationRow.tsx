@@ -1,8 +1,6 @@
 import { Conversation } from "@/src/types/chat.types";
 import { useRef } from "react";
-import { Animated, StyleSheet, TouchableOpacity, View, Image, Text } from "react-native";
-
-
+import { Animated, Image, StyleSheet, Text, TouchableOpacity, View } from "react-native";
 
 export default function ConversationRow({ item, onPress }: { item: Conversation, onPress: () => void }) {
   const scale = useRef(new Animated.Value(1)).current;
@@ -16,9 +14,9 @@ export default function ConversationRow({ item, onPress }: { item: Conversation,
   const onPressOut = () =>
     Animated.spring(scale, { toValue: 1, useNativeDriver: true }).start();
 
-  const preview = item.sender
-    ? `${item.sender}: ${item.lastMessage}`
-    : item.lastMessage;
+  const preview = item.last_message_sender
+    ? `${item.last_message_sender}: ${item.last_message ?? ""}`
+    : (item.last_message ?? "");
 
   return (
     <TouchableOpacity
@@ -29,19 +27,22 @@ export default function ConversationRow({ item, onPress }: { item: Conversation,
     >
       <Animated.View style={[styles.convoRow, { transform: [{ scale }] }]}>
         <View style={styles.avatarContainer}>
-          <Image source={item.avatar} style={styles.convoAvatar} />
+          <Image 
+            source={item.group_picture ? { uri: item.group_picture } : require("@/assets/images/default-avatar.jpg")} 
+            style={styles.convoAvatar} 
+          />
         </View>
 
         <View style={styles.convoContent}>
           <View style={styles.convoHeader}>
             <Text style={styles.convoName} numberOfLines={1}>
-              {item.name}
+              {item.name ?? "Unnamed Chat"}
             </Text>
-            <Text style={styles.convoTime}>{item.time}</Text>
+            <Text style={styles.convoTime}>{item.last_message_time ?? ""}</Text>
           </View>
 
-          {item.isGroup && item.memberCount && (
-            <Text style={styles.memberCount}>{item.memberCount} miembros</Text>
+          {item.is_group && item.member_count && (
+            <Text style={styles.memberCount}>{item.member_count} miembros</Text>
           )}
 
           <Text style={styles.convoPreview} numberOfLines={1}>
