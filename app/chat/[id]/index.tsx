@@ -14,6 +14,7 @@ import {
   KeyboardAvoidingView,
   KeyboardAwareScrollView,
   KeyboardStickyView,
+  KeyboardChatScrollView,
 } from "react-native-keyboard-controller";
 import { useConversation } from "@/src/hooks/chat/useConversation";
 import ChatHeader from "@/src/components/chat/chat-header";
@@ -96,24 +97,23 @@ export default function ChatDirectScreen() {
           onMenuPress={() => setMenuVisible(true)}
           insetsTop={insets.top}
         />
-        <ScrollView>
-          <KeyboardStickyView offset={{ closed: -insets.bottom + 15 }}>
-            <ScrollView contentContainerStyle={styles.messagesScrollContent}>
-              <View style={styles.messagesArea}>
-                {messages.map((msg) => (
-                  <ChatMessageBubble
-                    key={msg.id}
-                    message={msg}
-                    isOwnMessage={msg.sent_by === currentUserId}
-                  />
-                ))}
-              </View>
-            </ScrollView>
-          </KeyboardStickyView>
-        </ScrollView>
+
+        <KeyboardChatScrollView
+          contentContainerStyle={[
+            styles.messagesArea,
+            { paddingBottom: insets.bottom },
+          ]}
+        >
+          {messages.map((msg) => (
+            <ChatMessageBubble
+              key={msg.id}
+              message={msg}
+              isOwnMessage={msg.sent_by === currentUserId}
+            />
+          ))}
+        </KeyboardChatScrollView>
 
         <KeyboardStickyView
-          enabled
           offset={{ closed: -insets.bottom, opened: -insets.bottom / 3 }}
         >
           <ChatInput onSend={() => {}} />
@@ -149,9 +149,8 @@ const styles = StyleSheet.create({
     fontSize: 16,
     color: "#d32f2f",
   },
-  messagesScrollContent: {},
+
   messagesArea: {
-    flex: 1,
     paddingHorizontal: 12,
     paddingVertical: 16,
   },
