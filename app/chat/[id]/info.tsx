@@ -1,4 +1,4 @@
-import React from "react";
+import React, { useState } from "react";
 import {
   View,
   Text,
@@ -10,6 +10,7 @@ import {
   ScrollView,
   ActivityIndicator,
   Alert,
+  Modal,
 } from "react-native";
 import { Ionicons } from "@expo/vector-icons";
 import { useLocalSearchParams, useRouter } from "expo-router";
@@ -37,6 +38,7 @@ export default function ChatInfoScreen() {
   const router = useRouter();
   const insets = useSafeAreaInsets();
   const { data: conversation, isLoading, error } = useConversation(id);
+  const [modalVisible, setModalVisible] = useState(false);
 
   const isGroup = conversation?.is_group ?? false;
   const displayName = conversation?.name ?? "Unknown";
@@ -116,7 +118,9 @@ export default function ChatInfoScreen() {
         <ScrollView showsVerticalScrollIndicator={false}>
           {/* Profile Section */}
           <View style={styles.profileSection}>
-            <Image source={avatarSource} style={styles.bigAvatar} />
+            <TouchableOpacity onPress={() => setModalVisible(true)}>
+              <Image source={avatarSource} style={styles.bigAvatar} />
+            </TouchableOpacity>
             <Text style={styles.profileName}>{displayName}</Text>
             {isGroup ? (
               <Text style={styles.profileStatus}>
@@ -194,6 +198,30 @@ export default function ChatInfoScreen() {
             </View>
           )}
         </ScrollView>
+
+        {/* PFP Modal */}
+        <Modal
+          visible={modalVisible}
+          transparent
+          animationType="fade"
+          onRequestClose={() => setModalVisible(false)}
+        >
+          <TouchableOpacity
+            style={styles.modalOverlay}
+            activeOpacity={1}
+            onPress={() => setModalVisible(false)}
+          >
+            <TouchableOpacity activeOpacity={1}>
+              <Image source={avatarSource} style={styles.modalImage} />
+            </TouchableOpacity>
+            <TouchableOpacity
+              style={styles.modalCloseBtn}
+              onPress={() => setModalVisible(false)}
+            >
+              <Ionicons name="close" size={28} color="#fff" />
+            </TouchableOpacity>
+          </TouchableOpacity>
+        </Modal>
       </View>
     </ImageBackground>
   );
@@ -331,5 +359,23 @@ const styles = StyleSheet.create({
     fontSize: 11,
     fontWeight: "700",
     color: "#fff",
+  },
+  // --- Modal ---
+  modalOverlay: {
+    flex: 1,
+    backgroundColor: "rgba(0,0,0,0.85)",
+    justifyContent: "center",
+    alignItems: "center",
+  },
+  modalImage: {
+    width: "85%",
+    aspectRatio: 1,
+    borderRadius: 16,
+  },
+  modalCloseBtn: {
+    position: "absolute",
+    top: 48,
+    right: 24,
+    padding: 8,
   },
 });
