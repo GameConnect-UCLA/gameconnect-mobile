@@ -41,6 +41,11 @@ export default function ChatDirectScreen() {
     router.push(`/chat/${id}/info`);
   };
 
+  const handleSend = () => {
+    if (message.trim().length === 0) return;
+    setMessage("");
+  };
+
   if (isLoading) {
     return (
       <ImageBackground source={BG} style={styles.background}>
@@ -132,8 +137,15 @@ export default function ChatDirectScreen() {
               onChangeText={setMessage}
             />
 
-            <TouchableOpacity style={styles.micButton}>
-              <Ionicons name="mic-outline" size={26} color="#888" />
+            <TouchableOpacity
+              style={styles.micButton}
+              onPress={message.length > 0 ? handleSend : undefined}
+            >
+              <Ionicons
+                name={message.length > 0 ? "send" : "mic-outline"}
+                size={26}
+                color={message.length > 0 ? "#033563" : "#888"}
+              />
             </TouchableOpacity>
           </View>
         </KeyboardStickyView>
