@@ -37,6 +37,7 @@ export type Conversation = {
   last_message_time?: string;
   last_message_sender?: string;
   members?: GroupMember[];
+  messages?: Message[];
 };
 
 export type GroupMember = {
