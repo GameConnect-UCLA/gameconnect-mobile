@@ -16,7 +16,7 @@ export function useChatSearch(conversations: Conversation[]) {
     if (!query.trim()) return conversations;
     const lower = query.toLowerCase();
     return conversations.filter((c) =>
-      c.name.toLowerCase().includes(lower)
+      c.name?.toLowerCase().includes(lower)
     );
   }, [query, conversations]);
 
