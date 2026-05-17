@@ -11,14 +11,16 @@ import {
 import { useLocalSearchParams, useRouter } from "expo-router";
 import { useSafeAreaInsets } from "react-native-safe-area-context";
 import {
+  KeyboardAvoidingView,
+  KeyboardAwareScrollView,
   KeyboardStickyView,
-  useKeyboardState,
 } from "react-native-keyboard-controller";
 import { useConversation } from "@/src/hooks/chat/useConversation";
 import ChatHeader from "@/src/components/chat/chat-header";
 import ChatMessageBubble from "@/src/components/chat/chat-message-bubble";
 import ChatInput from "@/src/components/chat/chat-input";
 import ChatOverflowMenu from "@/src/components/chat/ChatOverflowMenu";
+import { Alert } from "react-native";
 
 const BG = require("@/assets/images/bgbody.png");
 const DEFAULT_AVATAR = require("@/assets/images/default-avatar.jpg");
@@ -29,7 +31,6 @@ export default function ChatDirectScreen() {
   const insets = useSafeAreaInsets();
   const { data: conversation, isLoading, error } = useConversation(id);
   const [menuVisible, setMenuVisible] = useState(false);
-  const keyboardHeight = useKeyboardState((state) => state.height);
 
   const contact = conversation?.members?.[0];
   const displayName = conversation?.name ?? contact?.username ?? "Unknown";
@@ -95,26 +96,24 @@ export default function ChatDirectScreen() {
           onMenuPress={() => setMenuVisible(true)}
           insetsTop={insets.top}
         />
-
-        <ScrollView
-          contentContainerStyle={[
-            styles.messagesScrollContent,
-            { paddingBottom: 30 + keyboardHeight },
-          ]}
-          keyboardShouldPersistTaps="handled"
-        >
-          <View style={styles.messagesArea}>
-            {messages.map((msg) => (
-              <ChatMessageBubble
-                key={msg.id}
-                message={msg}
-                isOwnMessage={msg.sent_by === currentUserId}
-              />
-            ))}
-          </View>
+        <ScrollView>
+          <KeyboardStickyView offset={{ closed: -insets.bottom + 15 }}>
+            <ScrollView contentContainerStyle={styles.messagesScrollContent}>
+              <View style={styles.messagesArea}>
+                {messages.map((msg) => (
+                  <ChatMessageBubble
+                    key={msg.id}
+                    message={msg}
+                    isOwnMessage={msg.sent_by === currentUserId}
+                  />
+                ))}
+              </View>
+            </ScrollView>
+          </KeyboardStickyView>
         </ScrollView>
 
         <KeyboardStickyView
+          enabled
           offset={{ closed: -insets.bottom, opened: -insets.bottom / 3 }}
         >
           <ChatInput onSend={() => {}} />
@@ -150,10 +149,7 @@ const styles = StyleSheet.create({
     fontSize: 16,
     color: "#d32f2f",
   },
-  messagesScrollContent: {
-    flexGrow: 1,
-    justifyContent: "flex-end",
-  },
+  messagesScrollContent: {},
   messagesArea: {
     flex: 1,
     paddingHorizontal: 12,
