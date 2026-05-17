@@ -48,12 +48,6 @@
       "output": "static",
       "favicon": "./assets/images/favicon.png"
     },
-    "updates": {
-      "url": "https://u.expo.dev/f1f590b9-7197-419f-b813-eaa0c5f0c561"
-    },
-    "runtimeVersion": {
-      "policy": "appVersion"
-    },
     "plugins": [
       [
         "expo-sqlite",
@@ -86,10 +80,7 @@
           "photosPermission": "Allow $(PRODUCT_NAME) to access your photos.",
           "savePhotosPermission": "Allow $(PRODUCT_NAME) to save photos.",
           "isAccessMediaLocationEnabled": true,
-          "granularPermissions": [
-            "audio",
-            "photo"
-          ]
+          "granularPermissions": ["audio", "photo"]
         }
       ],
       "expo-router",
