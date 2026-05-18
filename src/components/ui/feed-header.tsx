@@ -1,9 +1,18 @@
 import { Ionicons } from '@expo/vector-icons';
+import { useRouter } from 'expo-router';
 import React from 'react';
 import { Image, StyleSheet, Text, TextInput, TouchableOpacity, View } from 'react-native';
 import { SafeAreaView } from 'react-native-safe-area-context';
 
-export default function Header() {
+type Props = {
+  onSearchPress?: () => void;
+  onChatPress?: () => void;
+};
+
+export default function Header({ onSearchPress, onChatPress }: Props) {
+  const router = useRouter();
+  const handleSearchPress = onSearchPress ?? (() => router.push('/explore'));
+
   return (
     <SafeAreaView style={styles.safeArea}>
       <View style={styles.containerHeader}>
@@ -15,10 +24,10 @@ export default function Header() {
 
         {/* Iconos de búsqueda y chat */}
         <View style={styles.iconsContainer}>
-          <TouchableOpacity>
+          <TouchableOpacity onPress={handleSearchPress}>
             <Ionicons name="search" size={24} color="#111111" />
           </TouchableOpacity>
-          <TouchableOpacity style={{ marginLeft: 15 }}>
+          <TouchableOpacity onPress={onChatPress} style={{ marginLeft: 15 }}>
             <Ionicons name="chatbubble-ellipses-outline" size={24} color="#111111" />
           </TouchableOpacity>
         </View>

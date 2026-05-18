@@ -2,11 +2,13 @@ import PostCard from '@/src/components/posts/post-card';
 import Header from '@/src/components/ui/feed-header';
 import { usePostStore } from '@/src/store/post.store';
 import { Ionicons } from '@expo/vector-icons';
+import { useRouter } from 'expo-router';
 import React, { useEffect, useRef, useState } from 'react';
 import { FlatList, ImageBackground, StyleSheet, Text, TouchableOpacity, View } from 'react-native';
 import { SafeAreaView } from 'react-native-safe-area-context';
 
 export default function Feed() {
+  const router = useRouter();
   const posts = usePostStore((state) => state.posts);
   const lastAddedId = usePostStore((state) => state.lastAddedId);
   const reloadPosts = usePostStore((state) => state.reloadPosts);
@@ -51,7 +53,7 @@ export default function Feed() {
           </TouchableOpacity>
         </View>
       )}
-      <Header />
+      <Header onSearchPress={() => router.push('/explore')} />
     </View>
   );
 
