@@ -1,8 +1,9 @@
-import React, { useState, useCallback } from "react";
+import React, { useState, useCallback, useEffect } from "react";
 import { View, TextInput, TouchableOpacity, StyleSheet } from "react-native";
 import { Ionicons } from "@expo/vector-icons";
 
 const MAX_INPUT_HEIGHT = 120;
+const BASE_LINE_HEIGHT = 40;
 
 interface ChatInputProps {
   onSend: (text: string) => void;
@@ -11,7 +12,14 @@ interface ChatInputProps {
 
 export default function ChatInput({ onSend, onHeightChange }: ChatInputProps) {
   const [message, setMessage] = useState("");
-  const [inputHeight, setInputHeight] = useState(0);
+  const [inputHeight, setInputHeight] = useState(BASE_LINE_HEIGHT);
+
+  useEffect(() => {
+    if (message === "") {
+      setInputHeight(BASE_LINE_HEIGHT);
+      onHeightChange?.(BASE_LINE_HEIGHT + 16);
+    }
+  }, [message, onHeightChange]);
 
   const handleSend = () => {
     if (message.trim().length === 0) return;
@@ -22,7 +30,7 @@ export default function ChatInput({ onSend, onHeightChange }: ChatInputProps) {
   const handleContentSizeChange = useCallback(
     (event: { nativeEvent: { contentSize: { height: number } } }) => {
       const newHeight = Math.min(
-        Math.max(event.nativeEvent.contentSize.height, 0),
+        Math.max(event.nativeEvent.contentSize.height, BASE_LINE_HEIGHT),
         MAX_INPUT_HEIGHT
       );
       setInputHeight(newHeight);
@@ -40,7 +48,7 @@ export default function ChatInput({ onSend, onHeightChange }: ChatInputProps) {
       <TextInput
         style={[
           styles.textInput,
-          { height: Math.max(40, inputHeight) },
+          { height: inputHeight },
         ]}
         placeholder="Message"
         placeholderTextColor="#aaa"
