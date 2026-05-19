@@ -1,6 +1,15 @@
 import { Ionicons } from '@expo/vector-icons';
 import React from 'react';
-import { ScrollView, StyleSheet, Text, TextInput, TouchableOpacity, View } from 'react-native';
+import {
+  ImageBackground,
+  ScrollView,
+  StyleSheet,
+  Text,
+  TextInput,
+  TouchableOpacity,
+  View,
+} from 'react-native';
+import { useSafeAreaInsets } from 'react-native-safe-area-context'; // Importamos el hook
 
 import { FILTERS, type FilterKey } from './explore.utils';
 
@@ -19,28 +28,43 @@ export default function ExploreStickyHeader({
   onChangeFilter,
   onBackPress,
 }: Props) {
+  const insets = useSafeAreaInsets();
+
   return (
-    <View style={styles.stickyHeader}>
-      <View style={styles.headerRow}>
-        <TouchableOpacity onPress={onBackPress} style={styles.backButton}>
-          <Ionicons name="chevron-back" size={26} color="#1A1A1A" />
-        </TouchableOpacity>
-        <Text style={styles.title}>Explorar</Text>
-        <View style={styles.headerSpacer} />
+    <ImageBackground
+      source={require('../../../assets/images/bgbody.png')}
+      style={[
+        styles.stickyHeader,
+        { paddingTop: insets.top + 8 }
+      ]}
+      imageStyle={styles.backgroundImage}
+    >
+      <View style={styles.contentContainer}>
+        <View style={styles.headerRow}>
+          <TouchableOpacity onPress={onBackPress} style={styles.backButton}>
+            <Ionicons name="chevron-back" size={26} color="#1A1A1A" />
+          </TouchableOpacity>
+          <Text style={styles.title}>Explorar</Text>
+          <View style={styles.headerSpacer} />
+        </View>
+
+        <View style={styles.searchBar}>
+          <Ionicons name="search" size={18} color="#4B4B4B" />
+          <TextInput
+            value={searchQuery}
+            onChangeText={onChangeSearch}
+            placeholder="Juegos, amigos, tendencias..."
+            placeholderTextColor="#707070"
+            style={styles.searchInput}
+          />
+        </View>
       </View>
 
-      <View style={styles.searchBar}>
-        <Ionicons name="search" size={18} color="#4B4B4B" />
-        <TextInput
-          value={searchQuery}
-          onChangeText={onChangeSearch}
-          placeholder="Juegos, amigos, tendencias..."
-          placeholderTextColor="#707070"
-          style={styles.searchInput}
-        />
-      </View>
-
-      <ScrollView horizontal showsHorizontalScrollIndicator={false} contentContainerStyle={styles.filterRail}>
+      <ScrollView
+        horizontal
+        showsHorizontalScrollIndicator={false}
+        contentContainerStyle={styles.filterRail}
+      >
         {FILTERS.map((filter) => {
           const active = activeFilter === filter.key;
 
@@ -56,16 +80,22 @@ export default function ExploreStickyHeader({
           );
         })}
       </ScrollView>
-    </View>
+    </ImageBackground>
   );
 }
 
 const styles = StyleSheet.create({
   stickyHeader: {
-    paddingHorizontal: 16,
-    paddingTop: 8,
-    paddingBottom: 14,
-    backgroundColor: 'transparent',
+    width: '100%', // Asegura que tome todo el ancho
+    paddingBottom: 12,
+    borderBottomWidth: 1,
+    borderBottomColor: 'rgba(17, 17, 17, 0.18)',
+  },
+  backgroundImage: {
+    resizeMode: 'cover',
+  },
+  contentContainer: {
+    paddingHorizontal: 16, // Movemos el padding aquí para no afectar la imagen
   },
   headerRow: {
     flexDirection: 'row',
@@ -78,7 +108,7 @@ const styles = StyleSheet.create({
     borderRadius: 18,
     alignItems: 'center',
     justifyContent: 'center',
-    backgroundColor: 'rgba(255, 255, 255, 0.62)',
+    backgroundColor: '#F2ECE2',
   },
   title: {
     fontSize: 30,
@@ -99,9 +129,9 @@ const styles = StyleSheet.create({
     height: 42,
     paddingHorizontal: 14,
     borderRadius: 18,
-    backgroundColor: 'rgba(255, 255, 255, 0.34)',
+    backgroundColor: '#F2ECE2',
     borderWidth: 1,
-    borderColor: 'rgba(255, 255, 255, 0.42)',
+    borderColor: 'rgba(17, 17, 17, 0.08)',
   },
   searchInput: {
     flex: 1,
@@ -111,7 +141,7 @@ const styles = StyleSheet.create({
   filterRail: {
     paddingTop: 14,
     paddingBottom: 2,
-    gap: 10,
+    paddingHorizontal: 16, // Añadido para que el primer chip no esté pegado al borde izquierdo
   },
   filterChip: {
     flexDirection: 'row',
@@ -119,7 +149,7 @@ const styles = StyleSheet.create({
     paddingHorizontal: 16,
     height: 42,
     borderRadius: 21,
-    backgroundColor: 'rgba(11, 75, 130, 0.9)',
+    backgroundColor: '#0B4B82',
     marginRight: 10,
   },
   filterChipActive: {

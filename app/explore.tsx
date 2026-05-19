@@ -1,20 +1,20 @@
 import { Ionicons } from '@expo/vector-icons';
 import { Stack, useRouter } from 'expo-router';
-import React, { useEffect, useMemo, useState } from 'react';
-import { ImageBackground, ScrollView, StatusBar, StyleSheet, Text, TouchableOpacity, View } from 'react-native';
-import { SafeAreaView } from 'react-native-safe-area-context';
+import React, { useEffect, useMemo, useRef, useState } from 'react';
+import { Animated, ImageBackground, StatusBar, StyleSheet, Text, TouchableOpacity, View } from 'react-native';
+import { useSafeAreaInsets } from 'react-native-safe-area-context';
 
 import ExplorePlayersGrid from '@/src/components/explore/explore-players-grid';
 import ExploreSectionCard from '@/src/components/explore/explore-section-card';
 import ExploreStickyHeader from '@/src/components/explore/explore-sticky-header';
 import {
-  INITIAL_VISIBLE_POSTS,
-  buildTrendLabel,
-  getLevelFromPosts,
-  matchesActiveFilter,
-  normalizeText,
-  type FeaturedPlayer,
-  type FilterKey,
+	INITIAL_VISIBLE_POSTS,
+	buildTrendLabel,
+	getLevelFromPosts,
+	matchesActiveFilter,
+	normalizeText,
+	type FeaturedPlayer,
+	type FilterKey,
 } from '@/src/components/explore/explore.utils';
 import PostCard from '@/src/components/posts/post-card';
 import { mockPosts } from '@/src/hooks/mock-data/mock-posts';
@@ -24,6 +24,26 @@ export default function ExploreScreen() {
 	const [searchQuery, setSearchQuery] = useState('');
 	const [activeFilter, setActiveFilter] = useState<FilterKey>('todo');
 	const [visibleCount, setVisibleCount] = useState(INITIAL_VISIBLE_POSTS);
+
+	const insets = useSafeAreaInsets();
+	const [headerHeight, setHeaderHeight] = useState(insets.top + 160);
+	const scrollY = useRef(new Animated.Value(0)).current;
+
+	const clampedScrollY = Animated.diffClamp(
+		scrollY.interpolate({
+			inputRange: [0, 1],
+			outputRange: [0, 1],
+			extrapolateLeft: 'clamp',
+		}),
+		0,
+		headerHeight
+	);
+
+	const headerTranslateY = clampedScrollY.interpolate({
+		inputRange: [0, headerHeight],
+		outputRange: [0, -headerHeight],
+		extrapolate: 'clamp',
+	});
 
 	useEffect(() => {
 		setVisibleCount(INITIAL_VISIBLE_POSTS);
@@ -112,20 +132,17 @@ export default function ExploreScreen() {
 			<StatusBar barStyle="dark-content" translucent backgroundColor="transparent" />
 			<Stack.Screen options={{ presentation: 'modal', headerShown: false, title: 'Explorar' }} />
 
-			<SafeAreaView style={styles.safeArea} edges={['top']}>
-				<ScrollView
-					stickyHeaderIndices={[0]}
+			<View style={styles.safeArea}>
+				<Animated.ScrollView
 					showsVerticalScrollIndicator={false}
-					contentContainerStyle={styles.contentContainer}
+					contentContainerStyle={[styles.contentContainer, { paddingTop: headerHeight }]}
 					keyboardShouldPersistTaps="handled"
+					onScroll={Animated.event(
+						[{ nativeEvent: { contentOffset: { y: scrollY } } }],
+						{ useNativeDriver: true }
+					)}
+					scrollEventThrottle={16}
 				>
-					<ExploreStickyHeader
-						searchQuery={searchQuery}
-						activeFilter={activeFilter}
-						onChangeSearch={setSearchQuery}
-						onChangeFilter={setActiveFilter}
-						onBackPress={() => router.back()}
-					/>
 
 					<ExploreSectionCard icon={<Ionicons name="flame" size={18} color="#F45A49" />} title="Tendencias ahora">
 						<View style={styles.trendWrap}>
@@ -167,8 +184,24 @@ export default function ExploreScreen() {
 							</TouchableOpacity>
 						) : null}
 					</View>
-				</ScrollView>
-			</SafeAreaView>
+				</Animated.ScrollView>
+
+				<Animated.View
+					style={[
+						styles.headerWrapper,
+						{ transform: [{ translateY: headerTranslateY }] }
+					]}
+					onLayout={(e) => setHeaderHeight(e.nativeEvent.layout.height)}
+				>
+					<ExploreStickyHeader
+						searchQuery={searchQuery}
+						activeFilter={activeFilter}
+						onChangeSearch={setSearchQuery}
+						onChangeFilter={setActiveFilter}
+						onBackPress={() => router.back()}
+					/>
+				</Animated.View>
+			</View>
 		</ImageBackground>
 	);
 }
@@ -179,6 +212,13 @@ const styles = StyleSheet.create({
 	},
 	safeArea: {
 		flex: 1,
+	},
+	headerWrapper: {
+		position: 'absolute',
+		top: 0,
+		left: 0,
+		right: 0,
+		zIndex: 10,
 	},
 	contentContainer: {
 		paddingBottom: 32,
