@@ -26,7 +26,7 @@ export default function ExploreScreen() {
 	const [visibleCount, setVisibleCount] = useState(INITIAL_VISIBLE_POSTS);
 
 	const insets = useSafeAreaInsets();
-	const [headerHeight, setHeaderHeight] = useState(insets.top + 160);
+	const [headerHeight, setHeaderHeight] = useState(160);
 	const scrollY = useRef(new Animated.Value(0)).current;
 
 	const clampedScrollY = Animated.diffClamp(
@@ -124,15 +124,16 @@ export default function ExploreScreen() {
 	const hasMorePosts = visibleCount < filteredPosts.length;
 
 	return (
-		<ImageBackground
-			source={require('../assets/images/bgbody.png')}
-			style={styles.screen}
-			imageStyle={styles.backgroundImage}
-		>
+		<View style={styles.screen}>
+			<ImageBackground
+				source={require('../assets/images/bgbody.png')}
+				style={StyleSheet.absoluteFill}
+				imageStyle={styles.backgroundImage}
+			/>
 			<StatusBar barStyle="dark-content" translucent backgroundColor="transparent" />
 			<Stack.Screen options={{ presentation: 'modal', headerShown: false, title: 'Explorar' }} />
 
-			<View style={styles.safeArea}>
+			<View style={[styles.safeArea, { marginTop: insets.top, overflow: 'hidden' }]}>
 				<Animated.ScrollView
 					showsVerticalScrollIndicator={false}
 					contentContainerStyle={[styles.contentContainer, { paddingTop: headerHeight }]}
@@ -202,7 +203,7 @@ export default function ExploreScreen() {
 					/>
 				</Animated.View>
 			</View>
-		</ImageBackground>
+		</View>
 	);
 }
 

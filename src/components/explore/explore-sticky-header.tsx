@@ -9,7 +9,6 @@ import {
   TouchableOpacity,
   View,
 } from 'react-native';
-import { useSafeAreaInsets } from 'react-native-safe-area-context'; // Importamos el hook
 
 import { FILTERS, type FilterKey } from './explore.utils';
 
@@ -28,14 +27,12 @@ export default function ExploreStickyHeader({
   onChangeFilter,
   onBackPress,
 }: Props) {
-  const insets = useSafeAreaInsets();
-
   return (
     <ImageBackground
       source={require('../../../assets/images/bgbody.png')}
       style={[
         styles.stickyHeader,
-        { paddingTop: insets.top + 8 }
+        { paddingTop: 8 }
       ]}
       imageStyle={styles.backgroundImage}
     >
