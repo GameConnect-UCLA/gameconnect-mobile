@@ -72,6 +72,9 @@ export type Attachment = {
   width?: number;
   height?: number;
   duration?: number;
+  trim_start?: number;
+  trim_end?: number;
+  muted?: boolean;
 };
 
 export type Message = {

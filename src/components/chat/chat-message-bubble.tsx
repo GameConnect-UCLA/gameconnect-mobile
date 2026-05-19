@@ -1,4 +1,4 @@
-import React, { useState, useCallback } from "react";
+import React, { useState, useCallback, useEffect } from "react";
 import {
   View,
   Text,
@@ -6,6 +6,7 @@ import {
   Image,
   TouchableOpacity,
   Modal,
+  Dimensions,
 } from "react-native";
 import { Ionicons } from "@expo/vector-icons";
 import { useVideoPlayer, VideoView } from "expo-video";
@@ -36,20 +37,47 @@ function VideoAttachmentPlayer({
   uri,
   style,
   autoPlay = false,
+  trimStart,
+  trimEnd,
+  muted: isMuted,
 }: {
   uri: string;
   style: View["props"]["style"];
   autoPlay?: boolean;
+  trimStart?: number;
+  trimEnd?: number;
+  muted?: boolean;
 }) {
   const player = useVideoPlayer(
     uri,
-    autoPlay
-      ? (p) => {
-          p.loop = false;
-          p.play();
+    (p) => {
+      p.loop = false;
+      if (isMuted) p.muted = true;
+      if (trimStart !== undefined) {
+        p.currentTime = trimStart;
+      }
+      if (autoPlay) {
+        p.play();
+        if (trimEnd !== undefined) {
+          p.timeUpdateEventInterval = 0.1;
         }
-      : undefined
+      }
+    }
   );
+
+  useEffect(() => {
+    if (trimEnd === undefined) return;
+    const subscription = player.addListener("timeUpdate", (payload) => {
+      if (payload.currentTime >= trimEnd) {
+        player.pause();
+        if (trimStart !== undefined) {
+          player.currentTime = trimStart;
+        }
+      }
+    });
+    return () => subscription.remove();
+  }, [player, trimEnd, trimStart]);
+
   return <VideoView player={player} style={style} nativeControls />;
 }
 
@@ -77,7 +105,13 @@ function AttachmentPreview({
   if (attachment.type === AttachmentType.VIDEO) {
     return (
       <View style={styles.videoContainer}>
-        <VideoAttachmentPlayer uri={attachment.url} style={styles.videoAttachment} />
+        <VideoAttachmentPlayer
+          uri={attachment.url}
+          style={styles.videoAttachment}
+          trimStart={attachment.trim_start}
+          trimEnd={attachment.trim_end}
+          muted={attachment.muted}
+        />
       </View>
     );
   }
@@ -168,6 +202,9 @@ function FullScreenViewer({
             uri={attachment.url}
             style={styles.fullScreenVideo}
             autoPlay
+            trimStart={attachment.trim_start}
+            trimEnd={attachment.trim_end}
+            muted={attachment.muted}
           />
         ) : (
           <View style={styles.fullScreenDocument}>
@@ -247,6 +284,9 @@ export default function ChatMessageBubble({
   );
 }
 
+const { width: SCREEN_W } = Dimensions.get("window");
+const ATTACHMENT_W = SCREEN_W * 0.55;
+
 const styles = StyleSheet.create({
   messageContainer: {
     marginBottom: 8,
@@ -295,8 +335,8 @@ const styles = StyleSheet.create({
     gap: 8,
   },
   imageAttachment: {
-    width: 200,
-    height: 150,
+    width: ATTACHMENT_W,
+    height: ATTACHMENT_W * 0.75,
     borderRadius: 12,
     backgroundColor: "#e0e0e0",
   },
@@ -305,8 +345,8 @@ const styles = StyleSheet.create({
     overflow: "hidden",
   },
   videoAttachment: {
-    width: 200,
-    height: 150,
+    width: ATTACHMENT_W,
+    height: ATTACHMENT_W * 0.75,
   },
   audioContainer: {
     flexDirection: "row",
@@ -333,10 +373,10 @@ const styles = StyleSheet.create({
   documentContainer: {
     flexDirection: "row",
     alignItems: "center",
-    padding: 12,
+    padding: 16,
     borderRadius: 12,
     gap: 12,
-    minWidth: 200,
+    minWidth: ATTACHMENT_W,
   },
   ownDocumentContainer: {
     backgroundColor: "rgba(255,255,255,0.2)",
@@ -368,7 +408,7 @@ const styles = StyleSheet.create({
   },
   fullScreenVideo: {
     width: "100%",
-    height: "60%",
+    height: "70%",
   },
   fullScreenDocument: {
     alignItems: "center",

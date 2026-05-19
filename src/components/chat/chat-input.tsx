@@ -13,6 +13,8 @@ import { File } from "expo-file-system";
 import type { Attachment } from "@/src/types/chat.types";
 import { AttachmentType } from "@/src/types/chat.types";
 import MediaPreview from "./media-preview";
+import ImageEditor from "./image-editor";
+import VideoEditor from "./video-editor";
 
 const MAX_INPUT_HEIGHT = 120;
 const BASE_LINE_HEIGHT = 40;
@@ -28,6 +30,22 @@ export default function ChatInput({ onSend, onHeightChange }: ChatInputProps) {
   const [inputHeight, setInputHeight] = useState(BASE_LINE_HEIGHT);
   const [attachments, setAttachments] = useState<Attachment[]>([]);
   const [showAttachmentMenu, setShowAttachmentMenu] = useState(false);
+  const [showImageEditor, setShowImageEditor] = useState(false);
+  const [showVideoEditor, setShowVideoEditor] = useState(false);
+  const [pendingImage, setPendingImage] = useState<{
+    uri: string;
+    width: number;
+    height: number;
+    fileName?: string;
+    fileSize?: number;
+    mimeType?: string;
+  } | null>(null);
+  const [pendingVideo, setPendingVideo] = useState<{
+    uri: string;
+    fileName?: string;
+    fileSize?: number;
+    mimeType?: string;
+  } | null>(null);
 
   useEffect(() => {
     if (message === "" && attachments.length === 0) {
@@ -81,27 +99,21 @@ export default function ChatInput({ onSend, onHeightChange }: ChatInputProps) {
 
     const result = await ImagePicker.launchImageLibraryAsync({
       mediaTypes: ["images"],
-      allowsEditing: true,
-      aspect: [4, 3],
-      quality: 0.8,
+      allowsEditing: false,
+      quality: 1,
     });
 
     if (!result.canceled && result.assets[0]) {
       const asset = result.assets[0];
-      const file = new File(asset.uri);
-      const exists = file.exists;
-
-      const newAttachment: Attachment = {
-        url: asset.uri,
-        type: AttachmentType.IMAGE,
-        file_name: asset.fileName || `image_${Date.now()}.jpg`,
-        file_size: exists ? file.size : asset.fileSize,
-        mime_type: asset.mimeType || "image/jpeg",
-        width: asset.width,
-        height: asset.height,
-      };
-
-      setAttachments((prev) => [...prev, newAttachment]);
+      setPendingImage({
+        uri: asset.uri,
+        width: asset.width ?? 0,
+        height: asset.height ?? 0,
+        fileName: asset.fileName ?? undefined,
+        fileSize: asset.fileSize,
+        mimeType: asset.mimeType ?? "image/jpeg",
+      });
+      setShowImageEditor(true);
     }
     setShowAttachmentMenu(false);
   };
@@ -120,21 +132,13 @@ export default function ChatInput({ onSend, onHeightChange }: ChatInputProps) {
 
     if (!result.canceled && result.assets[0]) {
       const asset = result.assets[0];
-      const file = new File(asset.uri);
-      const exists = file.exists;
-
-      const newAttachment: Attachment = {
-        url: asset.uri,
-        type: AttachmentType.VIDEO,
-        file_name: asset.fileName || `video_${Date.now()}.mp4`,
-        file_size: exists ? file.size : asset.fileSize,
-        mime_type: asset.mimeType || "video/mp4",
-        width: asset.width,
-        height: asset.height,
-        duration: asset.duration ?? undefined,
-      };
-
-      setAttachments((prev) => [...prev, newAttachment]);
+      setPendingVideo({
+        uri: asset.uri,
+        fileName: asset.fileName ?? undefined,
+        fileSize: asset.fileSize,
+        mimeType: asset.mimeType ?? "video/mp4",
+      });
+      setShowVideoEditor(true);
     }
     setShowAttachmentMenu(false);
   };
@@ -170,6 +174,70 @@ export default function ChatInput({ onSend, onHeightChange }: ChatInputProps) {
   const removeAttachment = (index: number) => {
     setAttachments((prev) => prev.filter((_, i) => i !== index));
   };
+
+  const handleImageEditorConfirm = useCallback(
+    (result: {
+      uri: string;
+      width: number;
+      height: number;
+      fileName: string;
+    }) => {
+      const file = new File(result.uri);
+      const exists = file.exists;
+      const newAttachment: Attachment = {
+        url: result.uri,
+        type: AttachmentType.IMAGE,
+        file_name: result.fileName,
+        file_size: exists ? file.size : undefined,
+        mime_type: pendingImage?.mimeType ?? "image/png",
+        width: result.width,
+        height: result.height,
+      };
+      setAttachments((prev) => [...prev, newAttachment]);
+      setShowImageEditor(false);
+      setPendingImage(null);
+    },
+    [pendingImage]
+  );
+
+  const handleImageEditorCancel = useCallback(() => {
+    setShowImageEditor(false);
+    setPendingImage(null);
+  }, []);
+
+  const handleVideoEditorConfirm = useCallback(
+    (result: {
+      uri: string;
+      trimStart: number;
+      trimEnd: number;
+      muted: boolean;
+      fileName: string;
+      duration: number;
+    }) => {
+      const file = new File(result.uri);
+      const exists = file.exists;
+      const newAttachment: Attachment = {
+        url: result.uri,
+        type: AttachmentType.VIDEO,
+        file_name: result.fileName,
+        file_size: exists ? file.size : pendingVideo?.fileSize,
+        mime_type: pendingVideo?.mimeType ?? "video/mp4",
+        duration: result.duration,
+        trim_start: result.trimStart,
+        trim_end: result.trimEnd,
+        muted: result.muted,
+      };
+      setAttachments((prev) => [...prev, newAttachment]);
+      setShowVideoEditor(false);
+      setPendingVideo(null);
+    },
+    [pendingVideo]
+  );
+
+  const handleVideoEditorCancel = useCallback(() => {
+    setShowVideoEditor(false);
+    setPendingVideo(null);
+  }, []);
 
   const hasBlockingAttachments = attachments.some(
     (att) => att.type === AttachmentType.AUDIO || att.type === AttachmentType.DOCUMENT
@@ -236,6 +304,26 @@ export default function ChatInput({ onSend, onHeightChange }: ChatInputProps) {
           />
         </TouchableOpacity>
       </View>
+      {pendingImage && (
+        <ImageEditor
+          visible={showImageEditor}
+          imageUri={pendingImage.uri}
+          imageWidth={pendingImage.width}
+          imageHeight={pendingImage.height}
+          fileName={pendingImage.fileName}
+          onCancel={handleImageEditorCancel}
+          onConfirm={handleImageEditorConfirm}
+        />
+      )}
+      {pendingVideo && (
+        <VideoEditor
+          visible={showVideoEditor}
+          videoUri={pendingVideo.uri}
+          fileName={pendingVideo.fileName}
+          onCancel={handleVideoEditorCancel}
+          onConfirm={handleVideoEditorConfirm}
+        />
+      )}
     </View>
   );
 }
