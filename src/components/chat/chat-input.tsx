@@ -13,8 +13,7 @@ import { File } from "expo-file-system";
 import type { Attachment } from "@/src/types/chat.types";
 import { AttachmentType } from "@/src/types/chat.types";
 import MediaPreview from "./media-preview";
-import ImageEditor from "./image-editor";
-import VideoEditor from "./video-editor";
+import MediaPreviewModal from "./media-preview-modal";
 
 const MAX_INPUT_HEIGHT = 120;
 const BASE_LINE_HEIGHT = 40;
@@ -23,28 +22,22 @@ const MAX_ATTACHMENTS = 5;
 interface ChatInputProps {
   onSend: (text: string | null, attachments?: Attachment[] | null) => void;
   onHeightChange?: (height: number) => void;
+  recipientName?: string;
 }
 
-export default function ChatInput({ onSend, onHeightChange }: ChatInputProps) {
+export default function ChatInput({
+  onSend,
+  onHeightChange,
+  recipientName,
+}: ChatInputProps) {
   const [message, setMessage] = useState("");
   const [inputHeight, setInputHeight] = useState(BASE_LINE_HEIGHT);
   const [attachments, setAttachments] = useState<Attachment[]>([]);
   const [showAttachmentMenu, setShowAttachmentMenu] = useState(false);
-  const [showImageEditor, setShowImageEditor] = useState(false);
-  const [showVideoEditor, setShowVideoEditor] = useState(false);
-  const [pendingImage, setPendingImage] = useState<{
+  const [mediaPreview, setMediaPreview] = useState<{
     uri: string;
-    width: number;
-    height: number;
-    fileName?: string;
-    fileSize?: number;
-    mimeType?: string;
-  } | null>(null);
-  const [pendingVideo, setPendingVideo] = useState<{
-    uri: string;
-    fileName?: string;
-    fileSize?: number;
-    mimeType?: string;
+    mediaType: "image" | "video";
+    fileName: string;
   } | null>(null);
 
   useEffect(() => {
@@ -63,12 +56,14 @@ export default function ChatInput({ onSend, onHeightChange }: ChatInputProps) {
 
     // Validate: AUDIO and DOCUMENT types block text
     const hasBlockingAttachments = attachments.some(
-      (att) => att.type === AttachmentType.AUDIO || att.type === AttachmentType.DOCUMENT
+      (att) =>
+        att.type === AttachmentType.AUDIO ||
+        att.type === AttachmentType.DOCUMENT,
     );
     if (hasBlockingAttachments && text) {
       Alert.alert(
         "Invalid Message",
-        "Audio and document messages cannot have text content."
+        "Audio and document messages cannot have text content.",
       );
       return;
     }
@@ -77,23 +72,27 @@ export default function ChatInput({ onSend, onHeightChange }: ChatInputProps) {
     setMessage("");
     setAttachments([]);
     setShowAttachmentMenu(false);
+    setMediaPreview(null);
   };
 
   const handleContentSizeChange = useCallback(
     (event: { nativeEvent: { contentSize: { height: number } } }) => {
       const newHeight = Math.min(
         Math.max(event.nativeEvent.contentSize.height, BASE_LINE_HEIGHT),
-        MAX_INPUT_HEIGHT
+        MAX_INPUT_HEIGHT,
       );
       setInputHeight(newHeight);
       onHeightChange?.(newHeight + 16);
     },
-    [onHeightChange]
+    [onHeightChange],
   );
 
   const pickImage = async () => {
     if (attachments.length >= MAX_ATTACHMENTS) {
-      Alert.alert("Limit Reached", `Maximum ${MAX_ATTACHMENTS} attachments allowed.`);
+      Alert.alert(
+        "Limit Reached",
+        `Maximum ${MAX_ATTACHMENTS} attachments allowed.`,
+      );
       return;
     }
 
@@ -105,22 +104,31 @@ export default function ChatInput({ onSend, onHeightChange }: ChatInputProps) {
 
     if (!result.canceled && result.assets[0]) {
       const asset = result.assets[0];
-      setPendingImage({
-        uri: asset.uri,
+      const newAttachment: Attachment = {
+        url: asset.uri,
+        type: AttachmentType.IMAGE,
+        file_name: asset.fileName ?? undefined,
+        file_size: asset.fileSize,
+        mime_type: asset.mimeType ?? "image/jpeg",
         width: asset.width ?? 0,
         height: asset.height ?? 0,
-        fileName: asset.fileName ?? undefined,
-        fileSize: asset.fileSize,
-        mimeType: asset.mimeType ?? "image/jpeg",
+      };
+      setAttachments((prev) => [...prev, newAttachment]);
+      setMediaPreview({
+        uri: asset.uri,
+        mediaType: "image",
+        fileName: asset.fileName ?? "image.jpg",
       });
-      setShowImageEditor(true);
     }
     setShowAttachmentMenu(false);
   };
 
   const pickVideo = async () => {
     if (attachments.length >= MAX_ATTACHMENTS) {
-      Alert.alert("Limit Reached", `Maximum ${MAX_ATTACHMENTS} attachments allowed.`);
+      Alert.alert(
+        "Limit Reached",
+        `Maximum ${MAX_ATTACHMENTS} attachments allowed.`,
+      );
       return;
     }
 
@@ -132,20 +140,30 @@ export default function ChatInput({ onSend, onHeightChange }: ChatInputProps) {
 
     if (!result.canceled && result.assets[0]) {
       const asset = result.assets[0];
-      setPendingVideo({
+      const newAttachment: Attachment = {
+        url: asset.uri,
+        type: AttachmentType.VIDEO,
+        file_name: asset.fileName ?? undefined,
+        file_size: asset.fileSize,
+        mime_type: asset.mimeType ?? "video/mp4",
+        muted: false,
+      };
+      setAttachments((prev) => [...prev, newAttachment]);
+      setMediaPreview({
         uri: asset.uri,
-        fileName: asset.fileName ?? undefined,
-        fileSize: asset.fileSize,
-        mimeType: asset.mimeType ?? "video/mp4",
+        mediaType: "video",
+        fileName: asset.fileName ?? "video.mp4",
       });
-      setShowVideoEditor(true);
     }
     setShowAttachmentMenu(false);
   };
 
   const pickDocument = async () => {
     if (attachments.length >= MAX_ATTACHMENTS) {
-      Alert.alert("Limit Reached", `Maximum ${MAX_ATTACHMENTS} attachments allowed.`);
+      Alert.alert(
+        "Limit Reached",
+        `Maximum ${MAX_ATTACHMENTS} attachments allowed.`,
+      );
       return;
     }
 
@@ -175,80 +193,28 @@ export default function ChatInput({ onSend, onHeightChange }: ChatInputProps) {
     setAttachments((prev) => prev.filter((_, i) => i !== index));
   };
 
-  const handleImageEditorConfirm = useCallback(
-    (result: {
-      uri: string;
-      width: number;
-      height: number;
-      fileName: string;
-    }) => {
-      const file = new File(result.uri);
-      const exists = file.exists;
-      const newAttachment: Attachment = {
-        url: result.uri,
-        type: AttachmentType.IMAGE,
-        file_name: result.fileName,
-        file_size: exists ? file.size : undefined,
-        mime_type: pendingImage?.mimeType ?? "image/png",
-        width: result.width,
-        height: result.height,
-      };
-      setAttachments((prev) => [...prev, newAttachment]);
-      setShowImageEditor(false);
-      setPendingImage(null);
-    },
-    [pendingImage]
-  );
-
-  const handleImageEditorCancel = useCallback(() => {
-    setShowImageEditor(false);
-    setPendingImage(null);
+  const handleMediaPreviewCancel = useCallback(() => {
+    setAttachments([]);
+    setMediaPreview(null);
   }, []);
 
-  const handleVideoEditorConfirm = useCallback(
-    (result: {
-      uri: string;
-      trimStart: number;
-      trimEnd: number;
-      muted: boolean;
-      fileName: string;
-      duration: number;
-    }) => {
-      const file = new File(result.uri);
-      const exists = file.exists;
-      const newAttachment: Attachment = {
-        url: result.uri,
-        type: AttachmentType.VIDEO,
-        file_name: result.fileName,
-        file_size: exists ? file.size : pendingVideo?.fileSize,
-        mime_type: pendingVideo?.mimeType ?? "video/mp4",
-        duration: result.duration,
-        trim_start: result.trimStart,
-        trim_end: result.trimEnd,
-        muted: result.muted,
-      };
-      setAttachments((prev) => [...prev, newAttachment]);
-      setShowVideoEditor(false);
-      setPendingVideo(null);
-    },
-    [pendingVideo]
-  );
-
-  const handleVideoEditorCancel = useCallback(() => {
-    setShowVideoEditor(false);
-    setPendingVideo(null);
+  const handleMutedChange = useCallback((muted: boolean) => {
+    setAttachments((prev) =>
+      prev.map((a) => (a.type === AttachmentType.VIDEO ? { ...a, muted } : a)),
+    );
   }, []);
 
   const hasBlockingAttachments = attachments.some(
-    (att) => att.type === AttachmentType.AUDIO || att.type === AttachmentType.DOCUMENT
+    (att) =>
+      att.type === AttachmentType.AUDIO || att.type === AttachmentType.DOCUMENT,
   );
 
   const canSend = message.trim().length > 0 || attachments.length > 0;
   const showSendIcon = canSend;
 
-  return (
+  const inputContent = (
     <View>
-      {attachments.length > 0 && (
+      {attachments.length > 0 && !mediaPreview && (
         <MediaPreview attachments={attachments} onRemove={removeAttachment} />
       )}
 
@@ -260,7 +226,10 @@ export default function ChatInput({ onSend, onHeightChange }: ChatInputProps) {
           <TouchableOpacity style={styles.attachmentOption} onPress={pickVideo}>
             <Ionicons name="videocam" size={24} color="#033563" />
           </TouchableOpacity>
-          <TouchableOpacity style={styles.attachmentOption} onPress={pickDocument}>
+          <TouchableOpacity
+            style={styles.attachmentOption}
+            onPress={pickDocument}
+          >
             <Ionicons name="document-text" size={24} color="#033563" />
           </TouchableOpacity>
         </View>
@@ -271,16 +240,20 @@ export default function ChatInput({ onSend, onHeightChange }: ChatInputProps) {
           style={styles.emojiButton}
           onPress={() => setShowAttachmentMenu(!showAttachmentMenu)}
         >
-          <Ionicons
-            name={showAttachmentMenu ? "close" : "add-circle-outline"}
-            size={26}
-            color="#888"
-          />
+          {!mediaPreview && (
+            <Ionicons
+              name={showAttachmentMenu ? "close" : "add-circle-outline"}
+              size={26}
+              color="#888"
+            />
+          )}
         </TouchableOpacity>
 
         <TextInput
           style={[styles.textInput, { height: inputHeight }]}
-          placeholder={hasBlockingAttachments ? "Audio/Document only" : "Message"}
+          placeholder={
+            hasBlockingAttachments ? "Audio/Document only" : "Message"
+          }
           placeholderTextColor="#aaa"
           value={message}
           onChangeText={setMessage}
@@ -304,28 +277,28 @@ export default function ChatInput({ onSend, onHeightChange }: ChatInputProps) {
           />
         </TouchableOpacity>
       </View>
-      {pendingImage && (
-        <ImageEditor
-          visible={showImageEditor}
-          imageUri={pendingImage.uri}
-          imageWidth={pendingImage.width}
-          imageHeight={pendingImage.height}
-          fileName={pendingImage.fileName}
-          onCancel={handleImageEditorCancel}
-          onConfirm={handleImageEditorConfirm}
-        />
-      )}
-      {pendingVideo && (
-        <VideoEditor
-          visible={showVideoEditor}
-          videoUri={pendingVideo.uri}
-          fileName={pendingVideo.fileName}
-          onCancel={handleVideoEditorCancel}
-          onConfirm={handleVideoEditorConfirm}
-        />
-      )}
     </View>
   );
+
+  if (mediaPreview) {
+    return (
+      <MediaPreviewModal
+        visible={!!mediaPreview}
+        mediaUri={mediaPreview.uri}
+        mediaType={mediaPreview.mediaType}
+        fileName={mediaPreview.fileName}
+        recipientName={recipientName}
+        onCancel={handleMediaPreviewCancel}
+        onMutedChange={
+          mediaPreview.mediaType === "video" ? handleMutedChange : undefined
+        }
+      >
+        {inputContent}
+      </MediaPreviewModal>
+    );
+  }
+
+  return inputContent;
 }
 
 const styles = StyleSheet.create({

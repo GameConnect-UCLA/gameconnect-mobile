@@ -160,7 +160,7 @@ export default function ChatDirectScreen() {
             onPress={scrollToBottom}
             bottomOffset={80}
           />
-          <ChatInput onSend={handleSend} onHeightChange={handleHeightChange} />
+          <ChatInput onSend={handleSend} onHeightChange={handleHeightChange} recipientName={displayName} />
         </KeyboardStickyView>
 
         <ChatOverflowMenu
