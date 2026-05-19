@@ -1,30 +1,37 @@
 import { Image } from "react-native";
-import { ActiveUser, Conversation, GroupMember, GroupRole, Message, MessageType } from "@/src/types/chat.types";
+import type {
+  ActiveUser,
+  ContactInfo,
+  Conversation,
+  GroupMember,
+  SharedFileItem,
+  SharedLinkItem,
+  SharedMediaItem,
+} from "@/src/types/chat.types";
+import { GroupRole, Message, MessageType } from "@/src/types/chat.types";
 
-// Asset requires
 const lunaAsset = require('@/assets/images/chat/person-1.png');
 const gameAsset = require('@/assets/images/chat/person-2.png');
-const diegoAsset = require('@/assets/images/chat/person-3.png');
 const rpgAsset = require('@/assets/images/chat/group-1.png');
-const tombraiderAsset = require('@/assets/images/chat/group-2.png');
 
-// Resolve to URIs for type-safe usage
 const CHAT_IMAGES = {
   luna: Image.resolveAssetSource(lunaAsset).uri,
   game: Image.resolveAssetSource(gameAsset).uri,
-  diego: Image.resolveAssetSource(diegoAsset).uri,
   rpg: Image.resolveAssetSource(rpgAsset).uri,
-  tombraider: Image.resolveAssetSource(tombraiderAsset).uri,
 } as const;
 
 export const ACTIVE_USERS: ActiveUser[] = [
   { id: "1", username: "Luna", profile_pic: CHAT_IMAGES.luna, conversationId: "1" },
   { id: "2", username: "Game", profile_pic: CHAT_IMAGES.game, conversationId: "2" },
-  { id: "3", username: "Diego", profile_pic: CHAT_IMAGES.diego, conversationId: "4" },
 ];
 
-// Helper to create mock GroupMember
-const createMockMember = (id: string, userId: string, username: string, role: GroupRole = GroupRole.MEMBER): GroupMember => ({
+const createMockMember = (
+  id: string,
+  userId: string,
+  username: string,
+  role: GroupRole = GroupRole.MEMBER,
+  profilePic?: string
+): GroupMember => ({
   id,
   user_id: userId,
   conversation: "",
@@ -32,10 +39,9 @@ const createMockMember = (id: string, userId: string, username: string, role: Gr
   joined_at: new Date().toISOString(),
   left_at: null,
   username,
-  profile_pic: CHAT_IMAGES.luna, // Default avatar for mock members
+  profile_pic: profilePic ?? CHAT_IMAGES.luna,
 });
 
-// Helper to create mock Message
 const createMockMessage = (
   id: string,
   sentBy: string,
@@ -43,13 +49,14 @@ const createMockMessage = (
   text: string,
   sentAt: string,
   replyTo: string | null = null,
-  attachedMedia: string[] | null = null
+  attachedMedia: string[] | null = null,
+  type: MessageType = MessageType.DIRECT_MESSAGE
 ): Message => ({
   id,
   sent_by: sentBy,
   conversation: null,
   reply_to: replyTo,
-  type: MessageType.DIRECT_MESSAGE,
+  type,
   message_text: text,
   attached_media: attachedMedia,
   sent_at: sentAt,
@@ -58,105 +65,67 @@ const createMockMessage = (
   reply_to_message: null,
 });
 
-// Generate timestamps for mock messages (last 24-48 hours)
 const getTimestamp = (minutesAgo: number): string => {
   const date = new Date();
   date.setMinutes(date.getMinutes() - minutesAgo);
   return date.toISOString();
 };
 
-// Generate mock messages for 1:1 conversation with Luna
 const generateLunaMessages = (): Message[] => {
-  const currentUserId = "current_user";
-  const contactUserId = "luna_user";
-  const contactName = "Luna _Streams";
+  const me = "current_user";
+  const luna = "luna_user";
+  const name = "Luna _Streams";
 
   return [
-    createMockMessage("msg1", contactUserId, contactName, "¡Hola! ¿Cómo estás?", getTimestamp(1200)),
-    createMockMessage("msg2", currentUserId, "You", "¡Hola Luna! Todo bien, jugando un poco.", getTimestamp(1195)),
-    createMockMessage("msg3", contactUserId, contactName, "¿A qué estás jugando?", getTimestamp(1180)),
-    createMockMessage("msg4", currentUserId, "You", "Estoy probando el nuevo RPG que salió ayer.", getTimestamp(1175)),
-    createMockMessage("msg5", contactUserId, contactName, "¡Oh sí! Lo vi en Steam, se ve increíble 🎮", getTimestamp(1160)),
-    createMockMessage("msg6", currentUserId, "You", "Sí, los gráficos son impresionantes.", getTimestamp(1155)),
-    createMockMessage("msg7", contactUserId, contactName, "¿Ya llegaste a la primera boss fight?", getTimestamp(1140)),
-    createMockMessage("msg8", currentUserId, "You", "Sí, me costó unas 5 intentos pero lo logré 😅", getTimestamp(1135)),
-    createMockMessage("msg9", contactUserId, contactName, "Jajaja, esos juegos son difíciles al principio", getTimestamp(1120)),
-    createMockMessage("msg10", currentUserId, "You", "Totalmente, pero vale la pena.", getTimestamp(1115)),
-    createMockMessage("msg11", contactUserId, contactName, "Por cierto, ¿viste el trailer del DLC de Elden Ring?", getTimestamp(1100)),
-    createMockMessage("msg12", currentUserId, "You", "¡Sí! Se ve épico, no puedo esperar.", getTimestamp(1095)),
-    createMockMessage("msg13", contactUserId, contactName, "Ya probaste el nuevo DLC?", getTimestamp(1080)),
-    createMockMessage("msg14", currentUserId, "You", "Aún no, lo estoy descargando ahora mismo.", getTimestamp(1075)),
-    createMockMessage("msg15", contactUserId, contactName, "Cuéntame qué tal cuando lo pruebes 👀", getTimestamp(1060)),
-    createMockMessage("msg16", currentUserId, "You", "Por supuesto, te aviso.", getTimestamp(1055)),
-    createMockMessage("msg17", contactUserId, contactName, "Genial, ¿y tienes planeado hacer stream de eso?", getTimestamp(1040)),
-    createMockMessage("msg18", currentUserId, "You", "Sí, probablemente esta noche a las 8.", getTimestamp(1035)),
-    createMockMessage("msg19", contactUserId, contactName, "¡Perfecto! Me conectaré para verlo 🎥", getTimestamp(1020)),
-    createMockMessage("msg20", currentUserId, "You", "¡Genial! Gracias por el apoyo.", getTimestamp(1015)),
-    createMockMessage("msg21", contactUserId, contactName, "¿Tienes alguna build específica en mente?", getTimestamp(1000)),
-    createMockMessage("msg22", currentUserId, "You", "Estoy pensando en ir full mago esta vez.", getTimestamp(995)),
-    createMockMessage("msg23", contactUserId, contactName, "Buena elección, la magia está muy potente en este DLC", getTimestamp(980)),
-    createMockMessage("msg24", currentUserId, "You", "Eso me han dicho, a ver cómo me va.", getTimestamp(975)),
-    createMockMessage("msg25", contactUserId, contactName, "¡Suerte! Nos vemos en el stream 🍀", getTimestamp(960)),
-    createMockMessage("msg26", currentUserId, "You", "¡Nos vemos!", getTimestamp(955)),
+    createMockMessage("dm1", luna, name, "¡Hola! ¿Cómo estás?", getTimestamp(1200)),
+    createMockMessage("dm2", me, "You", "¡Hola Luna! Todo bien, jugando un poco.", getTimestamp(1195)),
+    createMockMessage("dm3", luna, name, "¿A qué estás jugando?", getTimestamp(1180)),
+    createMockMessage("dm4", me, "You", "Estoy probando el nuevo RPG que salió ayer.", getTimestamp(1175)),
+    createMockMessage("dm5", luna, name, "¡Oh sí! Lo vi en Steam, se ve increíble 🎮", getTimestamp(1160)),
+    createMockMessage("dm6", me, "You", "Sí, los gráficos son impresionantes.", getTimestamp(1155)),
+    createMockMessage("dm7", luna, name, "¿Ya llegaste a la primera boss fight?", getTimestamp(1140)),
+    createMockMessage("dm8", me, "You", "Mira esta captura de la pelea 🔥", getTimestamp(1135), null, [
+      "https://picsum.photos/seed/game1/400/400",
+    ]),
+    createMockMessage("dm9", luna, name, "Te comparto mi build actual", getTimestamp(1120), null, [
+      "https://picsum.photos/seed/game8/400/400",
+    ]),
+    createMockMessage("dm10", me, "You", "Acá te mando el clip del boss", getTimestamp(1115), null, [
+      "https://picsum.photos/seed/game9/400/400",
+      "https://picsum.photos/seed/game10/400/400",
+    ]),
+    createMockMessage("dm11", luna, name, "Encontré este mapa secreto!", getTimestamp(1100), null, [
+      "https://picsum.photos/seed/game13/400/400",
+    ]),
+    createMockMessage("dm12", me, "You", "Increíble, se ve genial", getTimestamp(1095)),
+    createMockMessage("dm13", luna, name, "Por cierto, ¿viste el trailer del DLC de Elden Ring?", getTimestamp(1080)),
+    createMockMessage("dm14", me, "You", "¡Sí! Se ve épico, no puedo esperar.", getTimestamp(1075)),
+    createMockMessage("dm15", luna, name, "¿Tienes alguna build específica en mente?", getTimestamp(1060)),
+    createMockMessage("dm16", me, "You", "Full mago esta vez 💫", getTimestamp(1055)),
   ];
 };
 
-// Generate mock messages for 1:1 conversation with GameLink
-const generateGameLinkMessages = (): Message[] => {
-  const currentUserId = "current_user";
-  const contactUserId = "gamelink_user";
-  const contactName = "GameLink";
-
+const generateGroupMessages = (): Message[] => {
   return [
-    createMockMessage("msg1", contactUserId, contactName, "¿Estás online?", getTimestamp(800)),
-    createMockMessage("msg2", currentUserId, "You", "Sí, justo acabo de entrar.", getTimestamp(795)),
-    createMockMessage("msg3", contactUserId, contactName, "¿Jugamos rankend ahora?", getTimestamp(780)),
-    createMockMessage("msg4", currentUserId, "You", "Dale, déjame invitarte.", getTimestamp(775)),
-    createMockMessage("msg5", contactUserId, contactName, "Listo, estoy en el lobby", getTimestamp(760)),
-    createMockMessage("msg6", currentUserId, "You", "Perfecto, iniciando.", getTimestamp(755)),
-    createMockMessage("msg7", contactUserId, contactName, "Buena partida la anterior", getTimestamp(600)),
-    createMockMessage("msg8", currentUserId, "You", "Sí, estuvo reñida hasta el final.", getTimestamp(595)),
-    createMockMessage("msg9", contactUserId, contactName, "Esa jugada en mid fue épica", getTimestamp(580)),
-    createMockMessage("msg10", currentUserId, "You", "¡Gracias! Me arriesgué pero salió bien.", getTimestamp(575)),
-    createMockMessage("msg11", contactUserId, contactName, "¿Otra?", getTimestamp(560)),
-    createMockMessage("msg12", currentUserId, "You", "Dale, pero primero déjame cambiar de build.", getTimestamp(555)),
-    createMockMessage("msg13", contactUserId, contactName, "¿A qué estás pensando cambiar?", getTimestamp(540)),
-    createMockMessage("msg14", currentUserId, "You", "Voy a probar el support, el carry no funcionó.", getTimestamp(535)),
-    createMockMessage("msg15", contactUserId, contactName, "Suena bien, necesitamos más support.", getTimestamp(520)),
-    createMockMessage("msg16", currentUserId, "You", "Exacto, la última partida nos faltó curación.", getTimestamp(515)),
-    createMockMessage("msg17", contactUserId, contactName, "Ya, invita cuando estés listo", getTimestamp(500)),
-    createMockMessage("msg18", currentUserId, "You", "Listo, invitación enviada.", getTimestamp(495)),
-    createMockMessage("msg19", contactUserId, contactName, "Recibida, entrando...", getTimestamp(480)),
-    createMockMessage("msg20", currentUserId, "You", "🎮", getTimestamp(475)),
-  ];
-};
-
-// Generate mock messages for 1:1 conversation with Diego_Pro
-const generateDiegoMessages = (): Message[] => {
-  const currentUserId = "current_user";
-  const contactUserId = "diego_user";
-  const contactName = "Diego_Pro";
-
-  return [
-    createMockMessage("msg1", contactUserId, contactName, "Bro, ¿viste mi último clip?", getTimestamp(2000)),
-    createMockMessage("msg2", currentUserId, "You", "Sí, fue increíble ese headshot.", getTimestamp(1995)),
-    createMockMessage("msg3", contactUserId, contactName, "Esa jugada fue épica", getTimestamp(1980)),
-    createMockMessage("msg4", currentUserId, "You", "¿Cómo hiciste para verlo? Estaba en la smoke.", getTimestamp(1975)),
-    createMockMessage("msg5", contactUserId, contactName, "Jajaja, intuición pura 😎", getTimestamp(1960)),
-    createMockMessage("msg6", currentUserId, "You", "Tienes demasiadas horas en este juego.", getTimestamp(1955)),
-    createMockMessage("msg7", contactUserId, contactName, "Unas 2000 horas ya...", getTimestamp(1940)),
-    createMockMessage("msg8", currentUserId, "You", "¡Wow! Eso explica todo.", getTimestamp(1935)),
-    createMockMessage("msg9", contactUserId, contactName, "¿Tú cuántas tienes?", getTimestamp(1920)),
-    createMockMessage("msg10", currentUserId, "You", "Como 800, me falta mucho.", getTimestamp(1915)),
-    createMockMessage("msg11", contactUserId, contactName, "Está bien, lo importante es divertirse.", getTimestamp(1900)),
-    createMockMessage("msg12", currentUserId, "You", "Totalmente, aunque ganar ayuda 😅", getTimestamp(1895)),
-    createMockMessage("msg13", contactUserId, contactName, "Jajaja cierto, el tilt es real.", getTimestamp(1880)),
-    createMockMessage("msg14", currentUserId, "You", "¿Jugamos mañana?", getTimestamp(1875)),
-    createMockMessage("msg15", contactUserId, contactName, "Dale, a qué hora?", getTimestamp(1860)),
-    createMockMessage("msg16", currentUserId, "You", "¿A las 8 PM te parece?", getTimestamp(1855)),
-    createMockMessage("msg17", contactUserId, contactName, "Perfecto, allí estaré.", getTimestamp(1840)),
-    createMockMessage("msg18", currentUserId, "You", "Genial, nos vemos entonces.", getTimestamp(1835)),
-    createMockMessage("msg19", contactUserId, contactName, "👍", getTimestamp(1820)),
+    createMockMessage("gm1", "user1", "Luna", "¿Alguien ya terminó Elden Ring?", getTimestamp(2000), null, null, MessageType.GROUP_MESSAGE),
+    createMockMessage("gm2", "user3", "Carlos", "Yo voy por la mitad, es enorme", getTimestamp(1990), null, null, MessageType.GROUP_MESSAGE),
+    createMockMessage("gm3", "user4", "Maria", "Acabo de matar a Malenia después de 50 intentos 😭", getTimestamp(1980), null, null, MessageType.GROUP_MESSAGE),
+    createMockMessage("gm4", "user5", "Pedro", "Miren el build que armé", getTimestamp(1970), null, null, MessageType.GROUP_MESSAGE),
+    createMockMessage("gm5", "user1", "Luna", "Miren esta captura del último jefe", getTimestamp(1960), null, [
+      "https://picsum.photos/seed/rpg1/400/400",
+    ], MessageType.GROUP_MESSAGE),
+    createMockMessage("gm6", "user5", "Pedro", "Yo también capture algo increíble", getTimestamp(1950), null, [
+      "https://picsum.photos/seed/rpg2/400/400",
+      "https://picsum.photos/seed/rpg3/400/400",
+    ], MessageType.GROUP_MESSAGE),
+    createMockMessage("gm7", "user3", "Carlos", "A mí me faltan varios jefes aún", getTimestamp(1940), null, null, MessageType.GROUP_MESSAGE),
+    createMockMessage("gm8", "user4", "Maria", "El mapa secreto de la zona subterránea es impresionante", getTimestamp(1930), null, null, MessageType.GROUP_MESSAGE),
+    createMockMessage("gm9", "user1", "Luna", "Confirmo, encontré un pasadizo oculto", getTimestamp(1920), null, [
+      "https://picsum.photos/seed/rpg4/400/400",
+      "https://picsum.photos/seed/rpg5/400/400",
+      "https://picsum.photos/seed/rpg6/400/400",
+    ], MessageType.GROUP_MESSAGE),
+    createMockMessage("gm10", "user5", "Pedro", "¿Alguien quiere cooperar para el jefe final?", getTimestamp(1910), null, null, MessageType.GROUP_MESSAGE),
   ];
 };
 
@@ -167,10 +136,10 @@ export const CONVERSATIONS: Conversation[] = [
     group_picture: CHAT_IMAGES.luna,
     created_by: "user1",
     created_at: new Date().toISOString(),
-    last_message: "¿Ya probaste el nuevo DLC?",
+    last_message: "Full mago esta vez 💫",
     last_message_time: "10:30 AM",
     is_group: false,
-    members: [createMockMember("m1", "user1", "Luna _Streams")],
+    members: [createMockMember("m1", "user1", "Luna _Streams", GroupRole.MEMBER, CHAT_IMAGES.luna)],
     messages: generateLunaMessages(),
   },
   {
@@ -179,11 +148,10 @@ export const CONVERSATIONS: Conversation[] = [
     group_picture: CHAT_IMAGES.game,
     created_by: "user2",
     created_at: new Date().toISOString(),
-    last_message: "¿Jugamos rankend ahora?",
-    last_message_time: "11:15 AM",
+    last_message: undefined,
+    last_message_time: undefined,
     is_group: false,
-    members: [createMockMember("m2", "user2", "GameLink")],
-    messages: generateGameLinkMessages(),
+    members: [createMockMember("m2", "user2", "GameLink", GroupRole.MEMBER, CHAT_IMAGES.game)],
   },
   {
     id: "3",
@@ -191,9 +159,9 @@ export const CONVERSATIONS: Conversation[] = [
     group_picture: CHAT_IMAGES.rpg,
     created_by: "user1",
     created_at: new Date().toISOString(),
-    last_message: "¿Alguien ya terminó Elden Ring?",
+    last_message: "¿Alguien quiere cooperar para el jefe final?",
     last_message_time: "Ayer",
-    last_message_sender: "Luna",
+    last_message_sender: "Pedro",
     member_count: 4,
     is_group: true,
     members: [
@@ -202,34 +170,59 @@ export const CONVERSATIONS: Conversation[] = [
       createMockMember("m5", "user4", "Maria"),
       createMockMember("m6", "user5", "Pedro"),
     ],
-  },
-  {
-    id: "4",
-    name: "Diego_Pro",
-    group_picture: CHAT_IMAGES.diego,
-    created_by: "user3",
-    created_at: new Date().toISOString(),
-    last_message: "Esa jugada fue épica",
-    last_message_time: "Ayer",
-    is_group: false,
-    members: [createMockMember("m7", "user3", "Diego_Pro")],
-    messages: generateDiegoMessages(),
-  },
-  {
-    id: "5",
-    name: "Tomb Raider: Legacy of Atlantis",
-    group_picture: CHAT_IMAGES.tombraider,
-    created_by: "user4",
-    created_at: new Date().toISOString(),
-    last_message: "Nuevo récord!!",
-    last_message_time: "Hace dos días",
-    last_message_sender: "Luis",
-    member_count: 3,
-    is_group: true,
-    members: [
-      createMockMember("m8", "user4", "Luis", GroupRole.OWNER),
-      createMockMember("m9", "user5", "Ana"),
-      createMockMember("m10", "user6", "Roberto"),
-    ],
+    messages: generateGroupMessages(),
   },
 ];
+
+export const MOCK_CONTACT_INFO: Record<string, ContactInfo> = {
+  "user1": {
+    bio: "Streamer de RPGs | Elden Ring fan 🎮",
+    username: "luna_streams",
+    email: "luna@gamemail.com",
+  },
+  "user2": {
+    bio: "Jugador competitivo. #1 en rankeds.",
+    username: "gamelink_off",
+    email: "gamelink@gamemail.com",
+  },
+};
+
+export const MOCK_SHARED_MEDIA: Record<string, SharedMediaItem[]> = {
+  "1": [
+    { id: "sm1", url: "https://picsum.photos/seed/game1/400/400", duration: "11:29", sent_at: getTimestamp(1135), message_id: "dm8" },
+    { id: "sm2", url: "https://picsum.photos/seed/game8/400/400", duration: "12:05", sent_at: getTimestamp(1120), message_id: "dm9" },
+    { id: "sm3", url: "https://picsum.photos/seed/game9/400/400", duration: "09:37", sent_at: getTimestamp(1115), message_id: "dm10" },
+    { id: "sm4", url: "https://picsum.photos/seed/game10/400/400", duration: "14:21", sent_at: getTimestamp(1115), message_id: "dm10" },
+    { id: "sm5", url: "https://picsum.photos/seed/game13/400/400", duration: "13:09", sent_at: getTimestamp(1100), message_id: "dm11" },
+  ],
+  "3": [
+    { id: "sm6", url: "https://picsum.photos/seed/rpg1/400/400", duration: "10:15", sent_at: getTimestamp(1960), message_id: "gm5" },
+    { id: "sm7", url: "https://picsum.photos/seed/rpg2/400/400", duration: "08:42", sent_at: getTimestamp(1950), message_id: "gm6" },
+    { id: "sm8", url: "https://picsum.photos/seed/rpg3/400/400", duration: "09:03", sent_at: getTimestamp(1950), message_id: "gm6" },
+    { id: "sm9", url: "https://picsum.photos/seed/rpg4/400/400", duration: "07:38", sent_at: getTimestamp(1920), message_id: "gm9" },
+    { id: "sm10", url: "https://picsum.photos/seed/rpg5/400/400", duration: "11:14", sent_at: getTimestamp(1920), message_id: "gm9" },
+    { id: "sm11", url: "https://picsum.photos/seed/rpg6/400/400", duration: "06:55", sent_at: getTimestamp(1920), message_id: "gm9" },
+  ],
+};
+
+export const MOCK_SHARED_FILES: Record<string, SharedFileItem[]> = {
+  "1": [
+    { id: "sf1", filename: "Screenshot_2024-01-15_at_14.32.10.png", file_size: "2.4 MB", file_type: "image/png", sent_at: getTimestamp(800), message_id: "dm8" },
+    { id: "sf2", filename: "gameplay_clip_01.mp4", file_size: "15.8 MB", file_type: "video/mp4", sent_at: getTimestamp(780), message_id: "dm10" },
+    { id: "sf3", filename: "build_guide_v3.pdf", file_size: "1.2 MB", file_type: "application/pdf", sent_at: getTimestamp(760), message_id: "dm12" },
+  ],
+  "3": [
+    { id: "sf4", filename: "screenshot_boss_fight.png", file_size: "3.1 MB", file_type: "image/png", sent_at: getTimestamp(1960), message_id: "gm5" },
+    { id: "sf5", filename: "secret_map_location.jpg", file_size: "2.8 MB", file_type: "image/jpeg", sent_at: getTimestamp(1920), message_id: "gm9" },
+  ],
+};
+
+export const MOCK_SHARED_LINKS: Record<string, SharedLinkItem[]> = {
+  "1": [
+    { id: "sl1", url: "https://www.youtube.com/watch?v=eldendringdlc", title: "Elden Ring DLC - Official Trailer", sent_at: getTimestamp(1080), message_id: "dm13" },
+    { id: "sl2", url: "https://steamcommunity.com/sharedfiles/filedetails/?id=123456", title: "Guía completa de builds para Elden Ring", sent_at: getTimestamp(1060), message_id: "dm15" },
+  ],
+  "3": [
+    { id: "sl3", url: "https://eldenring.wiki.fextralife.com", title: "Elden Ring Wiki - Guía interactiva", sent_at: getTimestamp(1940), message_id: "gm7" },
+  ],
+};

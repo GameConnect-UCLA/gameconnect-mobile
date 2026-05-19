@@ -113,3 +113,36 @@ export type ActiveUser = {
   profile_pic: string | null;
   conversationId?: string;
 };
+
+export type SharedMediaItem = {
+  id: string;
+  url: string;
+  duration: string;
+  sent_at: string;
+  message_id: string;
+  width?: number;
+  height?: number;
+};
+
+export type SharedFileItem = {
+  id: string;
+  filename: string;
+  file_size: string;
+  file_type: string;
+  sent_at: string;
+  message_id: string;
+};
+
+export type SharedLinkItem = {
+  id: string;
+  url: string;
+  title: string;
+  sent_at: string;
+  message_id: string;
+};
+
+export type ContactInfo = {
+  bio: string;
+  username: string;
+  email: string;
+};

@@ -46,10 +46,11 @@ export default function ChatDirectScreen() {
   const composerHeight = useSharedValue(INPUT_CONTAINER_BASE_HEIGHT);
 
   const contact = conversation?.members?.[0];
+  const isGroupChat = conversation?.is_group ?? false;
   const displayName = conversation?.name ?? contact?.username ?? "Unknown";
-  const avatarSource = contact?.profile_pic
-    ? { uri: contact.profile_pic }
-    : DEFAULT_AVATAR;
+  const avatarSource = isGroupChat
+    ? (conversation?.group_picture ? { uri: conversation.group_picture } : DEFAULT_AVATAR)
+    : (contact?.profile_pic ? { uri: contact.profile_pic } : DEFAULT_AVATAR);
 
   const currentUserId = "current_user";
 

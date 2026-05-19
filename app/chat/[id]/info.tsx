@@ -16,10 +16,17 @@ import { Ionicons } from "@expo/vector-icons";
 import { useLocalSearchParams, useRouter } from "expo-router";
 import { useSafeAreaInsets } from "react-native-safe-area-context";
 import { useConversation } from "@/src/hooks/chat/useConversation";
+import { useChatInfo } from "@/src/hooks/chat/use-chat-info";
+import ChatMediaGrid from "@/src/components/chat/chat-media-grid";
+import ChatFileList from "@/src/components/chat/chat-file-list";
+import ChatLinkList from "@/src/components/chat/chat-link-list";
 import { GroupRole } from "@/src/types/chat.types";
 
 const BG = require("@/assets/images/bgbody.png");
 const DEFAULT_AVATAR = require("@/assets/images/default-avatar.jpg");
+
+const TAB_LABELS = ["Media", "Archivos", "Enlaces"] as const;
+type Tab = (typeof TAB_LABELS)[number];
 
 const RoleColors: Record<GroupRole, string> = {
   [GroupRole.OWNER]: "#FFD700",
@@ -38,23 +45,28 @@ export default function ChatInfoScreen() {
   const router = useRouter();
   const insets = useSafeAreaInsets();
   const { data: conversation, isLoading, error } = useConversation(id);
+  const { sharedMedia, sharedFiles, sharedLinks, contactInfo } =
+    useChatInfo(conversation);
   const [modalVisible, setModalVisible] = useState(false);
+  const [activeTab, setActiveTab] = useState<Tab>("Media");
 
   const isGroup = conversation?.is_group ?? false;
   const displayName = conversation?.name ?? "Unknown";
   const avatarSource = conversation?.group_picture
     ? { uri: conversation.group_picture }
     : DEFAULT_AVATAR;
-
-  const contact = conversation?.members?.[0];
-
   const handleDeadAction = (action: string) => {
-    Alert.alert(action, "This feature is coming soon.");
+    Alert.alert(action, "Esta función estará disponible próximamente.");
   };
 
-  const navigateToProfile = () => {
-    if (contact?.user_id) {
-      router.push(`/user/${contact.user_id}`);
+  const renderTabContent = () => {
+    switch (activeTab) {
+      case "Media":
+        return <ChatMediaGrid items={sharedMedia} />;
+      case "Archivos":
+        return <ChatFileList items={sharedFiles} />;
+      case "Enlaces":
+        return <ChatLinkList items={sharedLinks} />;
     }
   };
 
@@ -110,7 +122,7 @@ export default function ChatInfoScreen() {
             >
               <Ionicons name="chevron-back" size={28} color="#1a1a1a" />
             </TouchableOpacity>
-            <Text style={styles.headerTitle}>Info</Text>
+            <Text style={styles.headerTitle}>{conversation?.name}</Text>
             <View style={styles.backButton} />
           </View>
         </View>
@@ -131,72 +143,118 @@ export default function ChatInfoScreen() {
             )}
           </View>
 
-          {/* Action Buttons */}
-          <View style={styles.actionsSection}>
-            {!isGroup && contact?.user_id && (
-              <TouchableOpacity
-                style={styles.actionButton}
-                onPress={navigateToProfile}
-              >
-                <Ionicons name="person-outline" size={24} color="#1a1a1a" />
-                <Text style={styles.actionText}>View Profile</Text>
-              </TouchableOpacity>
-            )}
-
+          {/* Action Buttons Row */}
+          <View style={styles.actionRow}>
             <TouchableOpacity
               style={styles.actionButton}
-              onPress={() => handleDeadAction("Report")}
+              onPress={() => router.back()}
             >
-              <Ionicons name="flag-outline" size={24} color="#d32f2f" />
-              <Text style={[styles.actionText, styles.dangerText]}>
-                {isGroup ? "Report Group" : "Report User"}
-              </Text>
+              <Ionicons name="chatbubble-outline" size={22} color="#1a1a1a" />
+              <Text style={styles.actionButtonText}>Message</Text>
             </TouchableOpacity>
-
+            <TouchableOpacity
+              style={styles.actionButton}
+              onPress={() => handleDeadAction("Mute")}
+            >
+              <Ionicons name="volume-mute-outline" size={22} color="#1a1a1a" />
+              <Text style={styles.actionButtonText}>Mute</Text>
+            </TouchableOpacity>
             <TouchableOpacity
               style={styles.actionButton}
               onPress={() => handleDeadAction("Block")}
             >
-              <Ionicons name="ban-outline" size={24} color="#d32f2f" />
-              <Text style={[styles.actionText, styles.dangerText]}>
-                {isGroup ? "Leave Group" : "Block User"}
-              </Text>
+              <Ionicons
+                name="remove-circle-outline"
+                size={22}
+                color="#1a1a1a"
+              />
+              <Text style={styles.actionButtonText}>Block</Text>
+            </TouchableOpacity>
+            <TouchableOpacity
+              style={styles.actionButton}
+              onPress={() => handleDeadAction("Report")}
+            >
+              <Ionicons name="flag-outline" size={22} color="#1a1a1a" />
+              <Text style={styles.actionButtonText}>Report</Text>
             </TouchableOpacity>
           </View>
 
-          {/* Member List (Groups only) */}
-          {isGroup && (
-            <View style={styles.membersSection}>
-              <Text style={styles.sectionTitle}>Members</Text>
-              {conversation?.members?.map((member) => (
-                <View key={member.id} style={styles.memberRow}>
-                  <Image
-                    source={
-                      member.profile_pic
-                        ? { uri: member.profile_pic }
-                        : DEFAULT_AVATAR
-                    }
-                    style={styles.memberAvatar}
-                  />
-                  <View style={styles.memberInfo}>
-                    <Text style={styles.memberName}>
-                      {member.username ?? "Unknown"}
-                    </Text>
-                    <View
-                      style={[
-                        styles.roleBadge,
-                        { backgroundColor: RoleColors[member.role] },
-                      ]}
-                    >
-                      <Text style={styles.roleText}>
-                        {RoleLabels[member.role]}
-                      </Text>
-                    </View>
-                  </View>
+          {/* Contact Info Card */}
+          {contactInfo && (
+            <View style={styles.contactCard}>
+              <View style={styles.contactRow}>
+                <Ionicons name="person-outline" size={18} color="#555" />
+                <Text style={styles.contactText}>{contactInfo.bio}</Text>
+              </View>
+              <View style={styles.contactDivider} />
+              <View style={styles.contactRow}>
+                <Ionicons name="at-outline" size={18} color="#555" />
+                <Text style={styles.contactText}>@{contactInfo.username}</Text>
+                <View style={styles.qrPlaceholder}>
+                  <Ionicons name="qr-code-outline" size={22} color="#033563" />
                 </View>
-              ))}
+              </View>
             </View>
           )}
+
+          {/* Member List (Groups only) */}
+          {isGroup && (
+            <View>
+              <Text style={styles.sectionTitle}>Members</Text>
+              <View style={styles.membersGlassContainer}>
+                {conversation?.members?.map((member) => (
+                  <View key={member.id} style={styles.memberRow}>
+                    <Image
+                      source={
+                        member.profile_pic
+                          ? { uri: member.profile_pic }
+                          : DEFAULT_AVATAR
+                      }
+                      style={styles.memberAvatar}
+                    />
+                    <View style={styles.memberInfo}>
+                      <Text style={styles.memberName}>
+                        {member.username ?? "Unknown"}
+                      </Text>
+                      <View
+                        style={[
+                          styles.roleBadge,
+                          { backgroundColor: RoleColors[member.role] },
+                        ]}
+                      >
+                        <Text style={styles.roleText}>
+                          {RoleLabels[member.role]}
+                        </Text>
+                      </View>
+                    </View>
+                  </View>
+                ))}
+              </View>
+            </View>
+          )}
+
+          {/* Tabs */}
+          <View style={styles.tabContainer}>
+            {TAB_LABELS.map((tab) => (
+              <TouchableOpacity
+                key={tab}
+                style={[styles.tab, activeTab === tab && styles.activeTab]}
+                onPress={() => setActiveTab(tab)}
+              >
+                <Text
+                  style={[
+                    styles.tabText,
+                    activeTab === tab && styles.activeTabText,
+                  ]}
+                >
+                  {tab}
+                </Text>
+              </TouchableOpacity>
+            ))}
+          </View>
+
+          {/* Tab Content */}
+          <View style={styles.tabContent}>{renderTabContent()}</View>
         </ScrollView>
 
         {/* PFP Modal */}
@@ -291,46 +349,115 @@ const styles = StyleSheet.create({
     color: "#666",
     marginTop: 4,
   },
-  // --- Actions Section ---
-  actionsSection: {
-    backgroundColor: "rgba(255,255,255,0.9)",
-    marginHorizontal: 16,
-    borderRadius: 12,
-    paddingVertical: 8,
+  // --- Action Buttons Row ---
+  actionRow: {
+    flexDirection: "row",
+    justifyContent: "space-evenly",
+    paddingHorizontal: 16,
     marginBottom: 16,
   },
   actionButton: {
+    alignItems: "center",
+    justifyContent: "center",
+    backgroundColor: "rgba(255,255,255,0.3)",
+    borderRadius: 14,
+    paddingVertical: 12,
+    paddingHorizontal: 8,
+    minWidth: 72,
+  },
+  actionButtonText: {
+    fontSize: 11,
+    color: "#1a1a1a",
+    fontWeight: "500",
+    marginTop: 6,
+  },
+  // --- Contact Info Card ---
+  contactCard: {
+    backgroundColor: "rgba(255,255,255,0.3)",
+    marginHorizontal: 16,
+    borderRadius: 16,
+    paddingVertical: 12,
+    paddingHorizontal: 16,
+    marginBottom: 16,
+  },
+  contactRow: {
     flexDirection: "row",
     alignItems: "center",
-    paddingHorizontal: 16,
-    paddingVertical: 14,
+    paddingVertical: 8,
   },
-  actionText: {
-    fontSize: 16,
+  contactDivider: {
+    height: 1,
+    backgroundColor: "rgba(255,255,255,0.12)",
+    marginLeft: 30,
+  },
+  contactText: {
+    fontSize: 14,
     color: "#1a1a1a",
-    marginLeft: 16,
-    fontWeight: "500",
+    marginLeft: 12,
+    flex: 1,
   },
-  dangerText: {
-    color: "#d32f2f",
+  qrPlaceholder: {
+    width: 32,
+    height: 32,
+    borderRadius: 8,
+    backgroundColor: "rgba(3, 53, 99, 0.1)",
+    alignItems: "center",
+    justifyContent: "center",
+  },
+  // --- Tabs ---
+  tabContainer: {
+    flexDirection: "row",
+    paddingHorizontal: 16,
+    marginBottom: 12,
+  },
+  tab: {
+    flex: 1,
+    paddingVertical: 8,
+    borderRadius: 20,
+    alignItems: "center",
+    marginHorizontal: 4,
+    borderWidth: 1,
+    borderColor: "#033563",
+    backgroundColor: "transparent",
+  },
+  activeTab: {
+    backgroundColor: "#033563",
+  },
+  tabText: {
+    fontSize: 13,
+    fontWeight: "600",
+    color: "#033563",
+  },
+  activeTabText: {
+    color: "#fff",
+  },
+  // --- Tab Content ---
+  tabContent: {
+    minHeight: 200,
+    marginBottom: 16,
   },
   // --- Members Section ---
-  membersSection: {
-    backgroundColor: "rgba(255,255,255,0.9)",
+  membersGlassContainer: {
     marginHorizontal: 16,
     borderRadius: 12,
-    padding: 16,
+    backgroundColor: "rgba(255,255,255,0.3)",
+    overflow: "hidden",
+    marginBottom: 12,
   },
   sectionTitle: {
     fontSize: 16,
     fontWeight: "700",
     color: "#1a1a1a",
     marginBottom: 12,
+    marginLeft: 16,
   },
   memberRow: {
     flexDirection: "row",
     alignItems: "center",
-    paddingVertical: 10,
+    paddingVertical: 12,
+    paddingHorizontal: 12,
+    borderBottomWidth: 1,
+    borderBottomColor: "rgba(255,255,255,0.12)",
   },
   memberAvatar: {
     width: 44,
