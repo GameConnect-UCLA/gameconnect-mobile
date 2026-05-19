@@ -9,7 +9,7 @@ import {
 import { Ionicons } from "@expo/vector-icons";
 import * as ImagePicker from "expo-image-picker";
 import * as DocumentPicker from "expo-document-picker";
-import * as FileSystem from "expo-file-system";
+import { File } from "expo-file-system";
 import type { Attachment } from "@/src/types/chat.types";
 import { AttachmentType } from "@/src/types/chat.types";
 import MediaPreview from "./media-preview";
@@ -88,13 +88,14 @@ export default function ChatInput({ onSend, onHeightChange }: ChatInputProps) {
 
     if (!result.canceled && result.assets[0]) {
       const asset = result.assets[0];
-      const fileInfo = await FileSystem.getInfoAsync(asset.uri);
+      const file = new File(asset.uri);
+      const exists = file.exists;
 
       const newAttachment: Attachment = {
         url: asset.uri,
         type: AttachmentType.IMAGE,
         file_name: asset.fileName || `image_${Date.now()}.jpg`,
-        file_size: fileInfo.exists ? fileInfo.size : asset.fileSize,
+        file_size: exists ? file.size : asset.fileSize,
         mime_type: asset.mimeType || "image/jpeg",
         width: asset.width,
         height: asset.height,
@@ -119,13 +120,14 @@ export default function ChatInput({ onSend, onHeightChange }: ChatInputProps) {
 
     if (!result.canceled && result.assets[0]) {
       const asset = result.assets[0];
-      const fileInfo = await FileSystem.getInfoAsync(asset.uri);
+      const file = new File(asset.uri);
+      const exists = file.exists;
 
       const newAttachment: Attachment = {
         url: asset.uri,
         type: AttachmentType.VIDEO,
         file_name: asset.fileName || `video_${Date.now()}.mp4`,
-        file_size: fileInfo.exists ? fileInfo.size : asset.fileSize,
+        file_size: exists ? file.size : asset.fileSize,
         mime_type: asset.mimeType || "video/mp4",
         width: asset.width,
         height: asset.height,
@@ -149,13 +151,14 @@ export default function ChatInput({ onSend, onHeightChange }: ChatInputProps) {
 
     if (!result.canceled && result.assets && result.assets[0]) {
       const asset = result.assets[0];
-      const fileInfo = await FileSystem.getInfoAsync(asset.uri);
+      const file = new File(asset.uri);
+      const exists = file.exists;
 
       const newAttachment: Attachment = {
         url: asset.uri,
         type: AttachmentType.DOCUMENT,
         file_name: asset.name,
-        file_size: fileInfo.exists ? fileInfo.size : undefined,
+        file_size: exists ? file.size : undefined,
         mime_type: asset.mimeType,
       };
 

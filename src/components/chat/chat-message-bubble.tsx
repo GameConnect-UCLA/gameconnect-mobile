@@ -8,7 +8,7 @@ import {
   Modal,
 } from "react-native";
 import { Ionicons } from "@expo/vector-icons";
-import { Video, ResizeMode } from "expo-av";
+import { useVideoPlayer, VideoView } from "expo-video";
 import type { Attachment, Message } from "@/src/types/chat.types";
 import { AttachmentType } from "@/src/types/chat.types";
 
@@ -32,6 +32,27 @@ function formatFileSize(bytes?: number): string {
   return `${(bytes / (1024 * 1024)).toFixed(1)} MB`;
 }
 
+function VideoAttachmentPlayer({
+  uri,
+  style,
+  autoPlay = false,
+}: {
+  uri: string;
+  style: View["props"]["style"];
+  autoPlay?: boolean;
+}) {
+  const player = useVideoPlayer(
+    uri,
+    autoPlay
+      ? (p) => {
+          p.loop = false;
+          p.play();
+        }
+      : undefined
+  );
+  return <VideoView player={player} style={style} nativeControls />;
+}
+
 function AttachmentPreview({
   attachment,
   isOwnMessage,
@@ -41,8 +62,6 @@ function AttachmentPreview({
   isOwnMessage: boolean;
   onPress: () => void;
 }) {
-  const [, setVideoStatus] = useState({ isPlaying: false });
-
   if (attachment.type === AttachmentType.IMAGE || attachment.type === AttachmentType.GIF) {
     return (
       <TouchableOpacity onPress={onPress} activeOpacity={0.9}>
@@ -58,18 +77,7 @@ function AttachmentPreview({
   if (attachment.type === AttachmentType.VIDEO) {
     return (
       <View style={styles.videoContainer}>
-        <Video
-          source={{ uri: attachment.url }}
-          style={styles.videoAttachment}
-          useNativeControls
-          resizeMode={ResizeMode.CONTAIN}
-          isLooping={false}
-          onPlaybackStatusUpdate={(status) => {
-            if (status.isLoaded) {
-              setVideoStatus({ isPlaying: status.isPlaying });
-            }
-          }}
-        />
+        <VideoAttachmentPlayer uri={attachment.url} style={styles.videoAttachment} />
       </View>
     );
   }
@@ -156,12 +164,10 @@ function FullScreenViewer({
             resizeMode="contain"
           />
         ) : attachment.type === AttachmentType.VIDEO ? (
-          <Video
-            source={{ uri: attachment.url }}
+          <VideoAttachmentPlayer
+            uri={attachment.url}
             style={styles.fullScreenVideo}
-            useNativeControls
-            resizeMode={ResizeMode.CONTAIN}
-            shouldPlay
+            autoPlay
           />
         ) : (
           <View style={styles.fullScreenDocument}>
