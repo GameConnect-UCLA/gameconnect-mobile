@@ -6,6 +6,15 @@ export enum MessageType {
   DIRECT_MESSAGE = 'DIRECT_MESSAGE'
 }
 
+// Attachment types for media content
+export enum AttachmentType {
+  IMAGE = 'image',
+  VIDEO = 'video',
+  GIF = 'gif',
+  DOCUMENT = 'document',
+  AUDIO = 'audio',
+}
+
 export enum GroupRole {
   OWNER = 'OWNER',
   ADMIN = 'ADMIN',
@@ -52,6 +61,19 @@ export type GroupMember = {
   profile_pic?: string | null;
 };
 
+// Attachment type for media content
+export type Attachment = {
+  url: string;
+  type: AttachmentType;
+  thumbnail_url?: string;
+  file_name?: string;
+  file_size?: number;
+  mime_type?: string;
+  width?: number;
+  height?: number;
+  duration?: number;
+};
+
 export type Message = {
   id: string;
   sent_by: string;
@@ -59,7 +81,7 @@ export type Message = {
   reply_to: string | null;
   type: MessageType;
   message_text: string | null;
-  attached_media: string[] | null; // URLs array
+  attached_media: Attachment[] | null;
   sent_at: string;
   // UI-enhancement fields
   sender_username?: string;

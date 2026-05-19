@@ -15,6 +15,7 @@ import {
 } from "react-native-keyboard-controller";
 import { useSharedValue } from "react-native-reanimated";
 import { useConversation } from "@/src/hooks/chat/useConversation";
+import type { Attachment } from "@/src/types/chat.types";
 import ChatHeader from "@/src/components/chat/chat-header";
 import ChatMessageBubble from "@/src/components/chat/chat-message-bubble";
 import ChatInput from "@/src/components/chat/chat-input";
@@ -69,11 +70,11 @@ export default function ChatDirectScreen() {
   );
 
   const handleSend = useCallback(
-    async (text: string) => {
+    async (text: string | null, attachments?: Attachment[] | null) => {
       scrollToBottom();
       if (!id) return;
       try {
-        await sendMessage(text);
+        await sendMessage(text, attachments);
       } catch (err) {
         console.error("Error en flujo de envío:", err);
       }
