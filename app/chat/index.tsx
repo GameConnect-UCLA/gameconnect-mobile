@@ -15,14 +15,16 @@ import { SafeAreaView } from "react-native-safe-area-context";
 import ActiveAvatar from "@/src/components/chat/ActiveAvatar";
 import ConversationRow from "@/src/components/chat/ConversationRow";
 import SearchBar from "@/src/components/ui/SearchBar";
-import { ACTIVE_USERS, CONVERSATIONS } from "@/src/hooks/mock-data/mock-chat";
+import { ACTIVE_USERS } from "@/src/hooks/mock-data/mock-chat";
 import { useRouter } from "expo-router";
 import { useChatSearch } from "@/src/hooks/chat/useChatSearch";
+import { useConversations } from "@/src/hooks/chat/use-conversations";
 
 const BG = require("@/assets/images/bgbody.png");
 
 export default function MessagesScreen() {
   const router = useRouter(); 
+  const { conversations } = useConversations();
     const {
     query,
     setQuery,
@@ -30,7 +32,7 @@ export default function MessagesScreen() {
     remoteResults,
     isSearching,
     isFiltering,
-  } = useChatSearch(CONVERSATIONS);
+  } = useChatSearch(conversations);
 
   return (
     <ImageBackground style={styles.safe} source={BG}>

@@ -10,19 +10,21 @@ import {
   Image,
   ScrollView,
   Alert,
-  Platform,
 } from "react-native";
 import { Ionicons } from "@expo/vector-icons";
-import { SafeAreaView } from "react-native-safe-area-context";
+import { SafeAreaView, useSafeAreaInsets } from "react-native-safe-area-context";
 import { useRouter } from "expo-router";
 import * as ImagePicker from "expo-image-picker";
 import { ACTIVE_USERS } from "@/src/hooks/mock-data/mock-chat";
 import { createGroup } from "@/src/api/chat.api";
+import { useQueryClient } from "@tanstack/react-query";
 
 const BG = require("@/assets/images/bgbody.png");
 
 export default function NewGroupScreen() {
   const router = useRouter();
+  const queryClient = useQueryClient();
+  const insets = useSafeAreaInsets();
   const [groupName, setGroupName] = useState("");
   const [groupPic, setGroupPic] = useState<string | null>(null);
   const [selectedIds, setSelectedIds] = useState<string[]>([]);
@@ -66,6 +68,7 @@ export default function NewGroupScreen() {
     setIsCreating(true);
     try {
       const newConvo = await createGroup(trimmedName, groupPic, selectedIds);
+      await queryClient.invalidateQueries({ queryKey: ["conversations"] });
       router.replace(`/chat/${newConvo.id}`);
     } catch {
       Alert.alert("Error", "Failed to create group. Please try again.");
@@ -156,7 +159,7 @@ export default function NewGroupScreen() {
         </ScrollView>
 
         {/* Create Button */}
-        <View style={styles.bottomBar}>
+        <View style={[styles.bottomBar, { bottom: insets.bottom + 16 }]}>
           <TouchableOpacity
             style={[
               styles.createButton,
@@ -277,7 +280,6 @@ const styles = StyleSheet.create({
   // Bottom bar
   bottomBar: {
     position: "absolute",
-    bottom: Platform.OS === "android" ? 16 : 32,
     left: 20,
     right: 20,
   },

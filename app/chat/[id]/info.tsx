@@ -1,4 +1,4 @@
-import React, { useState } from "react";
+import React, { useState, useCallback } from "react";
 import {
   View,
   Text,
@@ -16,13 +16,18 @@ import { Ionicons } from "@expo/vector-icons";
 import { useLocalSearchParams, useRouter } from "expo-router";
 import { useSafeAreaInsets } from "react-native-safe-area-context";
 import { useConversation } from "@/src/hooks/chat/useConversation";
+import { useGroupMembers } from "@/src/hooks/chat/use-group-members";
 import { useChatInfo } from "@/src/hooks/chat/use-chat-info";
 import { useChatStore } from "@/src/store/chat.store";
+import { useUserStore } from "@/src/store/user.store";
 import { blockUser, unblockUser } from "@/src/api/chat.api";
 import ChatMediaGrid from "@/src/components/chat/chat-media-grid";
 import ChatFileList from "@/src/components/chat/chat-file-list";
 import ChatLinkList from "@/src/components/chat/chat-link-list";
+import GroupMemberRow from "@/src/components/chat/group-member-row";
 import { GroupRole } from "@/src/types/chat.types";
+import type { GroupMember } from "@/src/types/chat.types";
+import { ACTIVE_USERS } from "@/src/hooks/mock-data/mock-chat";
 
 const BG = require("@/assets/images/bgbody.png");
 const DEFAULT_AVATAR = require("@/assets/images/default-avatar.jpg");
@@ -30,27 +35,29 @@ const DEFAULT_AVATAR = require("@/assets/images/default-avatar.jpg");
 const TAB_LABELS = ["Media", "Archivos", "Enlaces"] as const;
 type Tab = (typeof TAB_LABELS)[number];
 
-const RoleColors: Record<GroupRole, string> = {
-  [GroupRole.OWNER]: "#FFD700",
-  [GroupRole.ADMIN]: "#6c5ce7",
-  [GroupRole.MEMBER]: "#888",
-};
-
-const RoleLabels: Record<GroupRole, string> = {
-  [GroupRole.OWNER]: "Owner",
-  [GroupRole.ADMIN]: "Admin",
-  [GroupRole.MEMBER]: "Member",
-};
-
 export default function ChatInfoScreen() {
   const { id } = useLocalSearchParams<{ id: string }>();
   const router = useRouter();
   const insets = useSafeAreaInsets();
   const { data: conversation, isLoading, error } = useConversation(id);
+  const {
+    promoteMember,
+    demoteMember,
+    removeMember,
+    addMember,
+    isPromoting,
+    isDemoting,
+    isRemoving,
+    isAdding,
+  } = useGroupMembers(id);
   const { sharedMedia, sharedFiles, sharedLinks, contactInfo, contactUserId } =
     useChatInfo(conversation);
   const [modalVisible, setModalVisible] = useState(false);
   const [activeTab, setActiveTab] = useState<Tab>("Media");
+  const [selectedMember, setSelectedMember] = useState<GroupMember | null>(null);
+  const [memberActionVisible, setMemberActionVisible] = useState(false);
+  const [addMemberVisible, setAddMemberVisible] = useState(false);
+  const [addMemberSelected, setAddMemberSelected] = useState<string[]>([]);
 
   const isGroup = conversation?.is_group ?? false;
   const displayName = conversation?.name ?? "Unknown";
@@ -60,6 +67,85 @@ export default function ChatInfoScreen() {
 
   const blockedUserIds = useChatStore((s) => s.blockedUserIds);
   const isContactBlocked = contactUserId ? blockedUserIds.includes(contactUserId) : false;
+  const currentUserId = useUserStore((s) => s.user?.id ?? "current_user");
+  const currentMember = conversation?.members?.find(
+    (m) => m.user_id === currentUserId,
+  );
+  const isCurrentUserOwner = currentMember?.role === GroupRole.OWNER;
+  const isCurrentUserAdmin = currentMember?.role === GroupRole.ADMIN || isCurrentUserOwner;
+  const canManageRoles = isCurrentUserOwner;
+
+  const handleMemberPress = useCallback((member: GroupMember) => {
+    setSelectedMember(member);
+    setMemberActionVisible(true);
+  }, []);
+
+  const handlePromote = useCallback(async () => {
+    if (!selectedMember) return;
+    try {
+      await promoteMember(selectedMember.id);
+    } catch {
+      Alert.alert("Error", "Failed to promote member");
+    }
+    setMemberActionVisible(false);
+    setSelectedMember(null);
+  }, [selectedMember, promoteMember]);
+
+  const handleDemote = useCallback(async () => {
+    if (!selectedMember) return;
+    try {
+      await demoteMember(selectedMember.id);
+    } catch {
+      Alert.alert("Error", "Failed to demote member");
+    }
+    setMemberActionVisible(false);
+    setSelectedMember(null);
+  }, [selectedMember, demoteMember]);
+
+  const handleRemoveMember = useCallback(async () => {
+    if (!selectedMember) return;
+    Alert.alert(
+      "Remove Member",
+      `Are you sure you want to remove ${selectedMember.username ?? "this member"} from the group?`,
+      [
+        { text: "Cancel", style: "cancel" },
+        {
+          text: "Remove",
+          style: "destructive",
+          onPress: async () => {
+            try {
+              await removeMember(selectedMember.id);
+            } catch {
+              Alert.alert("Error", "Failed to remove member");
+            }
+            setMemberActionVisible(false);
+            setSelectedMember(null);
+          },
+        },
+      ],
+    );
+  }, [selectedMember, removeMember]);
+
+  const handleAddMemberToggle = useCallback((userId: string) => {
+    setAddMemberSelected((prev) =>
+      prev.includes(userId) ? prev.filter((id) => id !== userId) : [...prev, userId],
+    );
+  }, []);
+
+  const handleAddMemberConfirm = useCallback(async () => {
+    for (const userId of addMemberSelected) {
+      try {
+        await addMember(userId);
+      } catch {
+        Alert.alert("Error", `Failed to add member ${userId}`);
+      }
+    }
+    setAddMemberSelected([]);
+    setAddMemberVisible(false);
+  }, [addMemberSelected, addMember]);
+
+  const existingMemberIds = conversation?.members?.map((m) => m.user_id) ?? [];
+  const availableUsers = ACTIVE_USERS.filter((u) => !existingMemberIds.includes(u.id));
 
   const handleBlockToggle = () => {
     if (!contactUserId) return;
@@ -205,6 +291,18 @@ export default function ChatInfoScreen() {
               <Ionicons name="volume-mute-outline" size={22} color="#1a1a1a" />
               <Text style={styles.actionButtonText}>Mute</Text>
             </TouchableOpacity>
+            {isGroup && isCurrentUserAdmin && (
+              <TouchableOpacity
+                style={styles.actionButton}
+                onPress={() => {
+                  setAddMemberSelected([]);
+                  setAddMemberVisible(true);
+                }}
+              >
+                <Ionicons name="person-add-outline" size={22} color="#1a1a1a" />
+                <Text style={styles.actionButtonText}>Add</Text>
+              </TouchableOpacity>
+            )}
             {!isGroup && (
               <TouchableOpacity
                 style={styles.actionButton}
@@ -253,31 +351,15 @@ export default function ChatInfoScreen() {
               <Text style={styles.sectionTitle}>Members</Text>
               <View style={styles.membersGlassContainer}>
                 {conversation?.members?.map((member) => (
-                  <View key={member.id} style={styles.memberRow}>
-                    <Image
-                      source={
-                        member.profile_pic
-                          ? { uri: member.profile_pic }
-                          : DEFAULT_AVATAR
-                      }
-                      style={styles.memberAvatar}
-                    />
-                    <View style={styles.memberInfo}>
-                      <Text style={styles.memberName}>
-                        {member.username ?? "Unknown"}
-                      </Text>
-                      <View
-                        style={[
-                          styles.roleBadge,
-                          { backgroundColor: RoleColors[member.role] },
-                        ]}
-                      >
-                        <Text style={styles.roleText}>
-                          {RoleLabels[member.role]}
-                        </Text>
-                      </View>
-                    </View>
-                  </View>
+                  <GroupMemberRow
+                    key={member.id}
+                    member={member}
+                    onLongPress={
+                      member.user_id !== currentUserId
+                        ? handleMemberPress
+                        : undefined
+                    }
+                  />
                 ))}
               </View>
             </View>
@@ -306,6 +388,158 @@ export default function ChatInfoScreen() {
           {/* Tab Content */}
           <View style={styles.tabContent}>{renderTabContent()}</View>
         </ScrollView>
+
+        {/* Member Action Modal */}
+        <Modal
+          visible={memberActionVisible}
+          transparent
+          animationType="fade"
+          onRequestClose={() => {
+            setMemberActionVisible(false);
+            setSelectedMember(null);
+          }}
+        >
+          <TouchableOpacity
+            style={styles.modalOverlay}
+            activeOpacity={1}
+            onPress={() => {
+              setMemberActionVisible(false);
+              setSelectedMember(null);
+            }}
+          >
+            <View style={styles.actionSheetCard}>
+              <Text style={styles.actionSheetTitle}>
+                {selectedMember?.username ?? "Member"}
+              </Text>
+
+              {selectedMember?.role === GroupRole.MEMBER && canManageRoles && (
+                <TouchableOpacity
+                  style={styles.actionSheetButton}
+                  onPress={handlePromote}
+                  disabled={isPromoting}
+                >
+                  <Ionicons name="arrow-up-circle-outline" size={20} color="#6c5ce7" />
+                  <Text style={[styles.actionSheetButtonText, { color: "#6c5ce7" }]}>
+                    {isPromoting ? "Promoting..." : "Promote to Admin"}
+                  </Text>
+                </TouchableOpacity>
+              )}
+
+              {selectedMember?.role === GroupRole.ADMIN && canManageRoles && (
+                <TouchableOpacity
+                  style={styles.actionSheetButton}
+                  onPress={handleDemote}
+                  disabled={isDemoting}
+                >
+                  <Ionicons name="arrow-down-circle-outline" size={20} color="#888" />
+                  <Text style={[styles.actionSheetButtonText, { color: "#888" }]}>
+                    {isDemoting ? "Demoting..." : "Demote to Member"}
+                  </Text>
+                </TouchableOpacity>
+              )}
+
+              {isCurrentUserAdmin && selectedMember?.user_id !== currentUserId && (
+                <TouchableOpacity
+                  style={styles.actionSheetButton}
+                  onPress={handleRemoveMember}
+                  disabled={isRemoving}
+                >
+                  <Ionicons name="remove-circle-outline" size={20} color="#d32f2f" />
+                  <Text style={[styles.actionSheetButtonText, { color: "#d32f2f" }]}>
+                    {isRemoving ? "Removing..." : "Remove from Group"}
+                  </Text>
+                </TouchableOpacity>
+              )}
+
+              <TouchableOpacity
+                style={[styles.actionSheetButton, styles.actionSheetCancel]}
+                onPress={() => {
+                  setMemberActionVisible(false);
+                  setSelectedMember(null);
+                }}
+              >
+                <Text style={styles.actionSheetCancelText}>Cancel</Text>
+              </TouchableOpacity>
+            </View>
+          </TouchableOpacity>
+        </Modal>
+
+        {/* Add Member Modal */}
+        <Modal
+          visible={addMemberVisible}
+          transparent
+          animationType="fade"
+          onRequestClose={() => {
+            setAddMemberVisible(false);
+            setAddMemberSelected([]);
+          }}
+        >
+          <TouchableOpacity
+            style={styles.modalOverlay}
+            activeOpacity={1}
+            onPress={() => {
+              setAddMemberVisible(false);
+              setAddMemberSelected([]);
+            }}
+          >
+            <TouchableOpacity
+              style={styles.actionSheetCard}
+              activeOpacity={1}
+            >
+              <Text style={styles.actionSheetTitle}>Add Members</Text>
+              {availableUsers.length === 0 ? (
+                <Text style={[styles.actionSheetCancelText, { paddingVertical: 12 }]}>
+                  No more users to add
+                </Text>
+              ) : (
+                availableUsers.map((user) => {
+                  const isSelected = addMemberSelected.includes(user.id);
+                  return (
+                    <TouchableOpacity
+                      key={user.id}
+                      style={[styles.actionSheetButton, { borderTopWidth: 1, borderTopColor: "rgba(0,0,0,0.08)" }]}
+                      onPress={() => handleAddMemberToggle(user.id)}
+                    >
+                      <Image
+                        source={user.profile_pic ? { uri: user.profile_pic } : DEFAULT_AVATAR}
+                        style={{ width: 32, height: 32, borderRadius: 16 }}
+                      />
+                      <Text style={[styles.actionSheetButtonText, { flex: 1 }]}>
+                        {user.username}
+                      </Text>
+                      <Ionicons
+                        name={isSelected ? "checkbox" : "square-outline"}
+                        size={22}
+                        color={isSelected ? "#033563" : "#999"}
+                      />
+                    </TouchableOpacity>
+                  );
+                })
+              )}
+              {addMemberSelected.length > 0 && (
+                <TouchableOpacity
+                  style={[styles.actionSheetButton, { borderTopWidth: 1, borderTopColor: "rgba(0,0,0,0.08)" }]}
+                  onPress={handleAddMemberConfirm}
+                  disabled={isAdding}
+                >
+                  <Ionicons name="checkmark-circle-outline" size={20} color="#033563" />
+                  <Text style={[styles.actionSheetButtonText, { color: "#033563" }]}>
+                    {isAdding ? "Adding..." : `Add ${addMemberSelected.length} member(s)`}
+                  </Text>
+                </TouchableOpacity>
+              )}
+              <TouchableOpacity
+                style={[styles.actionSheetButton, styles.actionSheetCancel]}
+                onPress={() => {
+                  setAddMemberVisible(false);
+                  setAddMemberSelected([]);
+                }}
+              >
+                <Text style={styles.actionSheetCancelText}>Cancel</Text>
+              </TouchableOpacity>
+            </TouchableOpacity>
+          </TouchableOpacity>
+        </Modal>
 
         {/* PFP Modal */}
         <Modal
@@ -501,41 +735,48 @@ const styles = StyleSheet.create({
     marginBottom: 12,
     marginLeft: 16,
   },
-  memberRow: {
+  // --- Action Sheet ---
+  actionSheetCard: {
+    backgroundColor: "#fff",
+    borderRadius: 16,
+    paddingVertical: 16,
+    paddingHorizontal: 20,
+    minWidth: 260,
+    elevation: 8,
+    shadowColor: "#000",
+    shadowOffset: { width: 0, height: 4 },
+    shadowOpacity: 0.2,
+    shadowRadius: 8,
+  },
+  actionSheetTitle: {
+    fontSize: 17,
+    fontWeight: "700",
+    color: "#1a1a1a",
+    marginBottom: 16,
+    textAlign: "center",
+  },
+  actionSheetButton: {
     flexDirection: "row",
     alignItems: "center",
     paddingVertical: 12,
-    paddingHorizontal: 12,
-    borderBottomWidth: 1,
-    borderBottomColor: "rgba(255,255,255,0.12)",
+    borderTopWidth: 1,
+    borderTopColor: "rgba(0,0,0,0.08)",
   },
-  memberAvatar: {
-    width: 44,
-    height: 44,
-    borderRadius: 22,
-    backgroundColor: "#ccc",
-  },
-  memberInfo: {
-    flex: 1,
-    flexDirection: "row",
-    justifyContent: "space-between",
-    alignItems: "center",
-    marginLeft: 12,
-  },
-  memberName: {
+  actionSheetButtonText: {
     fontSize: 15,
+    marginLeft: 12,
+    fontWeight: "500",
+  },
+  actionSheetCancel: {
+    justifyContent: "center",
+    borderTopColor: "transparent",
+  },
+  actionSheetCancelText: {
+    fontSize: 15,
+    color: "#888",
     fontWeight: "600",
-    color: "#1a1a1a",
-  },
-  roleBadge: {
-    paddingHorizontal: 10,
-    paddingVertical: 4,
-    borderRadius: 12,
-  },
-  roleText: {
-    fontSize: 11,
-    fontWeight: "700",
-    color: "#fff",
+    textAlign: "center",
+    flex: 1,
   },
   // --- Modal ---
   modalOverlay: {

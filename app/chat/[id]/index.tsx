@@ -6,6 +6,7 @@ import {
   StatusBar,
   ImageBackground,
   ActivityIndicator,
+  Alert,
   Keyboard,
 } from "react-native";
 import { Ionicons } from "@expo/vector-icons";
@@ -18,6 +19,7 @@ import {
 import { useSharedValue } from "react-native-reanimated";
 import { useQueryClient } from "@tanstack/react-query";
 import { useConversation } from "@/src/hooks/chat/useConversation";
+import { useGroupMembers } from "@/src/hooks/chat/use-group-members";
 import { useChatStore } from "@/src/store/chat.store";
 import { useUserStore } from "@/src/store/user.store";
 import type { Attachment, Message } from "@/src/types/chat.types";
@@ -57,6 +59,7 @@ export default function ChatDirectScreen() {
   const [replyingTo, setReplyingTo] = useState<Message | null>(null);
   const { scrollViewRef, showButton, scrollToBottom, handleScroll } =
     useScrollToBottom();
+  const { leaveGroup } = useGroupMembers(id);
 
   const [searchVisible, setSearchVisible] = useState(false);
   const [searchQuery, setSearchQuery] = useState("");
@@ -126,6 +129,15 @@ export default function ChatDirectScreen() {
 
   const composerHeight = useSharedValue(INPUT_CONTAINER_BASE_HEIGHT);
 
+  const senderMap = useMemo(() => {
+    if (!conversation?.members) return new Map<string, { name: string; avatar: string | null }>();
+    const map = new Map<string, { name: string; avatar: string | null }>();
+    for (const m of conversation.members) {
+      map.set(m.user_id, { name: m.username ?? "Unknown", avatar: m.profile_pic ?? null });
+    }
+    return map;
+  }, [conversation?.members]);
+
   const contact = conversation?.members?.[0];
   const isGroupChat = conversation?.is_group ?? false;
   const displayName = conversation?.name ?? contact?.username ?? "Unknown";
@@ -193,6 +205,16 @@ export default function ChatDirectScreen() {
     setReplyingTo(null);
   }, []);
 
+  const handleLeaveGroup = useCallback(async () => {
+    if (!id) return;
+    try {
+      await leaveGroup();
+      router.back();
+    } catch {
+      Alert.alert("Error", "Failed to leave group.");
+    }
+  }, [id, leaveGroup, router]);
+
   if (isLoading) {
     return (
       <ImageBackground source={BG} style={styles.background}>
@@ -245,6 +267,8 @@ export default function ChatDirectScreen() {
             onMenuPress={() => setMenuVisible(true)}
             onSearchPress={searchVisible ? closeSearch : openSearch}
             insetsTop={insets.top}
+            isGroup={isGroupChat}
+            memberCount={conversation?.member_count}
           />
 
           <ChatSearchBar
@@ -292,6 +316,9 @@ export default function ChatDirectScreen() {
                   onLongPress={handleLongPress}
                   onSwipeToReply={handleSwipeToReply}
                   highlightText={searchVisible ? searchQuery : null}
+                  isGroup={isGroupChat}
+                  senderName={senderMap.get(msg.sent_by)?.name ?? msg.sender_username}
+                  senderAvatar={senderMap.get(msg.sent_by)?.avatar ?? msg.sender_profile_pic}
                 />
               </View>
             ))}
@@ -315,6 +342,8 @@ export default function ChatDirectScreen() {
         <ChatOverflowMenu
           visible={menuVisible}
           onClose={() => setMenuVisible(false)}
+          isGroup={isGroupChat}
+          onLeaveGroup={handleLeaveGroup}
         />
 
         <MessageActionSheet
