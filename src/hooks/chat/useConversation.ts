@@ -21,21 +21,27 @@ export function useConversation(conversationId: string) {
     mutationFn: ({
       text,
       attachments,
+      replyToId,
     }: {
       text: string | null;
       attachments?: Attachment[] | null;
-    }) => apiSendMessage(conversationId, text, attachments, currentUserId),
+      replyToId?: string | null;
+    }) => apiSendMessage(conversationId, text, attachments, currentUserId, replyToId),
 
-    onMutate: async ({ text, attachments }) => {
+    onMutate: async ({ text, attachments, replyToId }) => {
       await queryClient.cancelQueries({ queryKey });
       const previousConversation =
         queryClient.getQueryData<Conversation>(queryKey);
+
+      const repliedMessage = replyToId
+        ? previousConversation?.messages?.find((m) => m.id === replyToId) ?? null
+        : null;
 
       const optimisticMessage: Message = {
         id: `temp-${Date.now()}`,
         sent_by: currentUserId,
         conversation: conversationId,
-        reply_to: null,
+        reply_to: replyToId ?? null,
         type: previousConversation?.is_group
           ? MessageType.GROUP_MESSAGE
           : MessageType.DIRECT_MESSAGE,
@@ -44,6 +50,7 @@ export function useConversation(conversationId: string) {
         sent_at: new Date().toISOString(),
         sender_username: "You",
         sender_profile_pic: null,
+        reply_to_message: repliedMessage,
       };
 
       if (previousConversation) {
@@ -70,8 +77,8 @@ export function useConversation(conversationId: string) {
   return {
     ...conversationQuery,
     messages: conversationQuery.data?.messages ?? [],
-    sendMessage: (text: string | null, attachments?: Attachment[] | null) =>
-      sendMessageMutation.mutateAsync({ text, attachments }),
+    sendMessage: (text: string | null, attachments?: Attachment[] | null, replyToId?: string | null) =>
+      sendMessageMutation.mutateAsync({ text, attachments, replyToId }),
     isSending: sendMessageMutation.isPending,
   };
 }

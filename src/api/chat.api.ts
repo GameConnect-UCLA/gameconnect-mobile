@@ -32,6 +32,7 @@ export const sendMessage = async (
   messageText: string | null,
   attachments: Attachment[] | null = null,
   senderId?: string,
+  replyToId?: string | null,
 ): Promise<Message> => {
   await simulateLatency();
 
@@ -49,11 +50,16 @@ export const sendMessage = async (
 
   const actualSenderId = senderId ?? getCurrentUserId();
 
+  let replyToMessage: Message | null = null;
+  if (replyToId) {
+    replyToMessage = conversation.messages?.find((m) => m.id === replyToId) ?? null;
+  }
+
   const newMessage: Message = {
     id: `msg-${Date.now()}-${mockIdCounter++}`,
     sent_by: actualSenderId,
     conversation: conversationId,
-    reply_to: null,
+    reply_to: replyToId ?? null,
     type: conversation.is_group
       ? MessageType.GROUP_MESSAGE
       : MessageType.DIRECT_MESSAGE,
@@ -62,6 +68,7 @@ export const sendMessage = async (
     sent_at: new Date().toISOString(),
     sender_username: "You",
     sender_profile_pic: null,
+    reply_to_message: replyToMessage,
   };
 
   conversation.messages = [...(conversation.messages || []), newMessage];
