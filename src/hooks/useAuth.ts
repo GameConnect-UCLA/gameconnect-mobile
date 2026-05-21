@@ -1,8 +1,9 @@
 import { authApi, ApiError } from '@/src/api/auth.api'
 import { secureStore } from '@/src/lib/secure-store'
 import { useAuthStore } from '@/src/store/auth.store'
+import { useUserStore } from '@/src/store/user.store'
 import { type AuthError, type LoginCredentials } from '@/src/types/auth.types'
-import { User } from '../types/user.types'
+import type { User } from '@/src/types/user.types'
 import { useQuery,useMutation, useQueryClient } from '@tanstack/react-query'
 
 const mapToAuthError = (e: unknown): AuthError => {
@@ -21,13 +22,15 @@ export const ERROR_MESSAGES: Record<string, string> = {
 
 export const useLogin = () => {
     const { setAuthenticated } = useAuthStore()
+    const { setUser } = useUserStore()
     const mutation = useMutation({
         mutationFn: async (credentials: LoginCredentials) => {
             try {
-                const { accessToken, refreshToken } = await authApi.login(credentials);
+                const { accessToken, refreshToken, user } = await authApi.login(credentials);
                 await secureStore.save(secureStore.KEYS.ACCESS_TOKEN, accessToken);
                 await secureStore.save(secureStore.KEYS.REFRESH_TOKEN, refreshToken);
                 setAuthenticated(accessToken)
+                setUser(user)
 
             } catch (error) {
                 throw Error(ERROR_MESSAGES[mapToAuthError(error)])
@@ -44,13 +47,15 @@ export const useLogin = () => {
 
 export const useRegister = () => {
     const { setAuthenticated } = useAuthStore()
+    const { setUser } = useUserStore()
     const mutation = useMutation({
-        mutationFn: async (user: Partial<User>) => {
+        mutationFn: async (userData: Partial<User>) => {
             try {
-                const { accessToken, refreshToken } = await authApi.register(user)
+                const { accessToken, refreshToken, user } = await authApi.register(userData)
                 await secureStore.save(secureStore.KEYS.ACCESS_TOKEN, accessToken)
                 await secureStore.save(secureStore.KEYS.REFRESH_TOKEN, refreshToken)
                 setAuthenticated(accessToken)
+                setUser(user)
 
             } catch (error) {
                 throw Error(ERROR_MESSAGES[mapToAuthError(error)])
@@ -69,9 +74,11 @@ export const useRegister = () => {
 export const useLogout = () => {
     const queryClient = useQueryClient(); 
     const { reset } = useAuthStore(); 
+    const { clearUser } = useUserStore(); 
     const logout = async () => {
         await secureStore.clearAll(); 
         reset(); 
+        clearUser(); 
         queryClient.clear(); 
     }
 
