@@ -17,7 +17,7 @@ import { useSharedValue } from "react-native-reanimated";
 import { useConversation } from "@/src/hooks/chat/useConversation";
 import type { Attachment } from "@/src/types/chat.types";
 import ChatHeader from "@/src/components/chat/chat-header";
-import ChatMessageBubble from "@/src/components/chat/chat-message-bubble";
+import ChatMessageBubble from "@/src/components/chat/bubble/chat-message-bubble";
 import ChatInput from "@/src/components/chat/chat-input";
 import ChatOverflowMenu from "@/src/components/chat/ChatOverflowMenu";
 import ScrollToBottomButton from "@/src/components/chat/scroll-to-bottom-button";
