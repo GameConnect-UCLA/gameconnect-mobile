@@ -163,7 +163,7 @@ No additional schema structures are introduced except for an in-memory client-si
 | 1     | Foundations: empty states, blocking, group creation, deletion/clear mock APIs |
 | 2     | Reply (swipe + popover), delete for everyone |
 | 3     | Message search with jump + highlight       |
-| 4     | Group layout (avatars, usernames, roles)   |
+| 4     | Group layout (avatars, usernames, roles) ✅ |
 | 5     | Media modal caption integration, aspect ratio fixes |
 | 6     | Optional: link previews, @ mentions        |
 
@@ -190,6 +190,15 @@ After completing a logically closed set of changes, create a commit following th
 3. **UI / screen layer** → one commit per feature group (empty states, blocking, group creation)
 
 Run `npm run lint && npm run typecheck` before every commit. Never commit broken state.
+
+### Suggested commits for Phase 4
+| # | Commit Message |
+|---|----------------|
+| 1 | `feat(chat): add group management API (promote, demote, remove, leave, transfer)` |
+| 2 | `feat(chat): add TanStack Query hooks for group member operations` |
+| 3 | `feat(chat): add GroupRoleBadge and GroupMemberRow components` |
+| 4 | `feat(chat): wire interactive role management in info screen (promote/demote/remove)` |
+| 5 | `feat(chat): group-aware chat header and overflow menu (member count, leave group)` |
 
 ### Suggested commits for Phase 1
 | # | Commit Message |
