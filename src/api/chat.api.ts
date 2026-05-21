@@ -14,6 +14,11 @@ const getCurrentUserId = (): string => {
   return user?.id ?? "current_user";
 };
 
+export const getConversations = async (): Promise<Conversation[]> => {
+  await simulateLatency();
+  return [...mockChat.CONVERSATIONS];
+};
+
 export const getConversation = async (
   conversationId: string,
 ): Promise<Conversation> => {
@@ -180,4 +185,118 @@ export const createGroup = async (
   mockChat.CONVERSATIONS.push(newConversation);
 
   return newConversation;
+};
+
+export const promoteMember = async (
+  conversationId: string,
+  memberId: string,
+): Promise<void> => {
+  await simulateLatency();
+
+  const conversation = mockChat.CONVERSATIONS.find((c) => c.id === conversationId);
+  if (!conversation) throw new ApiError(404, "Conversation not found");
+
+  const member = conversation.members?.find((m) => m.id === memberId);
+  if (!member) throw new ApiError(404, "Member not found");
+  if (member.role === GroupRole.OWNER) throw new ApiError(400, "Cannot promote owner");
+
+  member.role = GroupRole.ADMIN;
+};
+
+export const demoteMember = async (
+  conversationId: string,
+  memberId: string,
+): Promise<void> => {
+  await simulateLatency();
+
+  const conversation = mockChat.CONVERSATIONS.find((c) => c.id === conversationId);
+  if (!conversation) throw new ApiError(404, "Conversation not found");
+
+  const member = conversation.members?.find((m) => m.id === memberId);
+  if (!member) throw new ApiError(404, "Member not found");
+  if (member.role === GroupRole.OWNER) throw new ApiError(400, "Cannot demote owner");
+
+  member.role = GroupRole.MEMBER;
+};
+
+export const removeMember = async (
+  conversationId: string,
+  memberId: string,
+): Promise<void> => {
+  await simulateLatency();
+
+  const conversation = mockChat.CONVERSATIONS.find((c) => c.id === conversationId);
+  if (!conversation) throw new ApiError(404, "Conversation not found");
+
+  const member = conversation.members?.find((m) => m.id === memberId);
+  if (!member) throw new ApiError(404, "Member not found");
+  if (member.role === GroupRole.OWNER) throw new ApiError(400, "Cannot remove owner");
+
+  conversation.members = conversation.members?.filter((m) => m.id !== memberId) ?? [];
+  if (conversation.member_count) {
+    conversation.member_count = Math.max(1, conversation.member_count - 1);
+  }
+};
+
+export const leaveGroup = async (conversationId: string): Promise<void> => {
+  await simulateLatency();
+
+  const conversation = mockChat.CONVERSATIONS.find((c) => c.id === conversationId);
+  if (!conversation) throw new ApiError(404, "Conversation not found");
+
+  const currentUserId = getCurrentUserId();
+  conversation.members = conversation.members?.filter((m) => m.user_id !== currentUserId) ?? [];
+  if (conversation.member_count) {
+    conversation.member_count = Math.max(1, conversation.member_count - 1);
+  }
+};
+
+export const addMemberToGroup = async (
+  conversationId: string,
+  userId: string,
+): Promise<void> => {
+  await simulateLatency();
+
+  const conversation = mockChat.CONVERSATIONS.find((c) => c.id === conversationId);
+  if (!conversation) throw new ApiError(404, "Conversation not found");
+
+  const existing = conversation.members?.find((m) => m.user_id === userId);
+  if (existing) throw new ApiError(400, "User already in group");
+
+  const activeUser = mockChat.ACTIVE_USERS.find((u) => u.id === userId);
+  const newMember: GroupMember = {
+    id: `gm-${Date.now()}`,
+    user_id: userId,
+    conversation: "",
+    role: GroupRole.MEMBER,
+    joined_at: new Date().toISOString(),
+    left_at: null,
+    username: activeUser?.username ?? `User ${userId}`,
+    profile_pic: activeUser?.profile_pic ?? null,
+  };
+
+  conversation.members = [...(conversation.members || []), newMember];
+  if (conversation.member_count !== undefined) {
+    conversation.member_count = conversation.member_count + 1;
+  }
+};
+
+export const transferOwnership = async (
+  conversationId: string,
+  memberId: string,
+): Promise<void> => {
+  await simulateLatency();
+
+  const conversation = mockChat.CONVERSATIONS.find((c) => c.id === conversationId);
+  if (!conversation) throw new ApiError(404, "Conversation not found");
+
+  const currentUserId = getCurrentUserId();
+  const currentOwner = conversation.members?.find((m) => m.user_id === currentUserId && m.role === GroupRole.OWNER);
+  if (!currentOwner) throw new ApiError(403, "Only owner can transfer ownership");
+
+  const newOwner = conversation.members?.find((m) => m.id === memberId);
+  if (!newOwner) throw new ApiError(404, "Member not found");
+
+  currentOwner.role = GroupRole.ADMIN;
+  newOwner.role = GroupRole.OWNER;
 };

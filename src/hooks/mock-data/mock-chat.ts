@@ -49,8 +49,15 @@ const createMockMember = (
   joined_at: new Date().toISOString(),
   left_at: null,
   username,
-  profile_pic: profilePic ?? CHAT_IMAGES.luna,
+  profile_pic: profilePic ?? GROUP_MEMBER_PICS[userId] ?? null,
 });
+
+const GROUP_MEMBER_PICS: Record<string, string> = {
+  user1: CHAT_IMAGES.luna,
+  user3: "https://picsum.photos/seed/carlos/200/200",
+  user4: "https://picsum.photos/seed/maria/200/200",
+  user5: "https://picsum.photos/seed/pedro/200/200",
+};
 
 const createMockMessage = (
   id: string,
@@ -61,6 +68,7 @@ const createMockMessage = (
   replyTo: string | null = null,
   attachedMedia: string[] | null = null,
   type: MessageType = MessageType.DIRECT_MESSAGE,
+  profilePic?: string | null,
 ): Message => ({
   id,
   sent_by: sentBy,
@@ -74,7 +82,7 @@ const createMockMessage = (
   })) ?? null,
   sent_at: sentAt,
   sender_username: username,
-  sender_profile_pic: CHAT_IMAGES.luna,
+  sender_profile_pic: profilePic ?? GROUP_MEMBER_PICS[sentBy] ?? null,
   reply_to_message: null,
 });
 
@@ -86,7 +94,7 @@ const getTimestamp = (minutesAgo: number): string => {
 
 const generateLunaMessages = (): Message[] => {
   const me = "current_user";
-  const luna = "luna_user";
+  const luna = "user1";
   const name = "Luna _Streams";
 
   return [
@@ -380,6 +388,7 @@ export const CONVERSATIONS: Conversation[] = [
     member_count: 4,
     is_group: true,
     members: [
+      createMockMember("m0", "current_user", "You", GroupRole.OWNER),
       createMockMember("m3", "user1", "Luna", GroupRole.ADMIN),
       createMockMember("m4", "user3", "Carlos"),
       createMockMember("m5", "user4", "Maria"),
