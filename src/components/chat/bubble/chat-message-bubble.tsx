@@ -29,7 +29,7 @@ const SWIPE_THRESHOLD = 80;
 interface ChatMessageBubbleProps {
   message: Message;
   isOwnMessage: boolean;
-  onLongPress?: (message: Message) => void;
+  onLongPress?: (message: Message, pageY: number) => void;
   onSwipeToReply?: (message: Message) => void;
 }
 
@@ -91,8 +91,7 @@ export default function ChatMessageBubble({
     (a) => a.type === AttachmentType.DOCUMENT,
   );
 
-  const mediaOnly =
-    attachments.length > 0 && !hasText && !hasReply;
+  const mediaOnly = attachments.length > 0 && !hasText && !hasReply;
 
   const bubbleContent = (
     <>
@@ -175,7 +174,7 @@ export default function ChatMessageBubble({
         <Animated.View style={[styles.wrapperContainer, animatedStyle]}>
           <TouchableOpacity
             activeOpacity={0.95}
-            onLongPress={() => onLongPress?.(message)}
+            onLongPress={(e) => onLongPress?.(message, e.nativeEvent.pageY)}
             delayLongPress={350}
             style={[
               styles.wrapper,
@@ -211,12 +210,13 @@ const styles = StyleSheet.create({
   },
   wrapper: {
     paddingHorizontal: 12,
+    flexDirection: "row",
   },
   wrapperRight: {
-    alignItems: "flex-end",
+    justifyContent: "flex-end",
   },
   wrapperLeft: {
-    alignItems: "flex-start",
+    justifyContent: "flex-start",
   },
   bubble: {
     borderRadius: 18,

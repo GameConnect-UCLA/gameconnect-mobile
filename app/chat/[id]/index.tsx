@@ -6,6 +6,7 @@ import {
   StatusBar,
   ImageBackground,
   ActivityIndicator,
+  Keyboard,
 } from "react-native";
 import { Ionicons } from "@expo/vector-icons";
 import { useLocalSearchParams, useRouter } from "expo-router";
@@ -51,6 +52,7 @@ export default function ChatDirectScreen() {
   const [menuVisible, setMenuVisible] = useState(false);
   const [menuMessage, setMenuMessage] = useState<Message | null>(null);
   const [actionSheetVisible, setActionSheetVisible] = useState(false);
+  const [actionSheetPageY, setActionSheetPageY] = useState(0);
   const [replyingTo, setReplyingTo] = useState<Message | null>(null);
   const { scrollViewRef, showButton, scrollToBottom, handleScroll } =
     useScrollToBottom();
@@ -98,8 +100,10 @@ export default function ChatDirectScreen() {
     [id, sendMessage, scrollToBottom, replyingTo],
   );
 
-  const handleLongPress = useCallback((msg: Message) => {
+  const handleLongPress = useCallback((msg: Message, pageY: number) => {
+    Keyboard.dismiss();
     setMenuMessage(msg);
+    setActionSheetPageY(pageY);
     setActionSheetVisible(true);
   }, []);
 
@@ -235,6 +239,7 @@ export default function ChatDirectScreen() {
           }}
           onDelete={handleDeleteMessage}
           isOwnMessage={menuMessage?.sent_by === currentUserId}
+          pageY={actionSheetPageY}
         />
       </View>
     </ImageBackground>

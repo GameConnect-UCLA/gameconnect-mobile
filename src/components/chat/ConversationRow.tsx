@@ -76,7 +76,7 @@ const styles = StyleSheet.create({
   convoRow: {
     flexDirection: "row",
     alignItems: "center",
-    paddingHorizontal: 20,
+    paddingHorizontal: 8,
     paddingVertical: 14,
     backgroundColor: "transparent",
   },

@@ -13,8 +13,7 @@ export default function ReplyPreview({
   message,
   isOwnMessage,
 }: ReplyPreviewProps) {
-  const hasMedia =
-    message.attached_media && message.attached_media.length > 0;
+  const hasMedia = message.attached_media && message.attached_media.length > 0;
   const firstMedia = hasMedia ? message.attached_media![0] : null;
 
   return (
@@ -27,7 +26,9 @@ export default function ReplyPreview({
       <View
         style={[
           styles.replyBar,
-          { backgroundColor: isOwnMessage ? "rgba(255,255,255,0.6)" : "#033563" },
+          {
+            backgroundColor: isOwnMessage ? "rgba(255,255,255,0.6)" : "#033563",
+          },
         ]}
       />
       <View style={styles.replyContent}>
@@ -99,6 +100,7 @@ const styles = StyleSheet.create({
     marginBottom: 6,
     overflow: "hidden",
     minHeight: 44,
+    alignSelf: "stretch",
   },
   replyOwn: {
     backgroundColor: "rgba(255,255,255,0.15)",
@@ -112,7 +114,7 @@ const styles = StyleSheet.create({
     marginRight: 8,
   },
   replyContent: {
-    flex: 1,
+    flexShrink: 1,
     paddingVertical: 6,
     paddingRight: 6,
     justifyContent: "center",
