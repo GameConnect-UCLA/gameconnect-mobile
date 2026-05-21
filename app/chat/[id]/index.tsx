@@ -7,6 +7,7 @@ import {
   ImageBackground,
   ActivityIndicator,
 } from "react-native";
+import { Ionicons } from "@expo/vector-icons";
 import { useLocalSearchParams, useRouter } from "expo-router";
 import { useSafeAreaInsets } from "react-native-safe-area-context";
 import {
@@ -15,6 +16,8 @@ import {
 } from "react-native-keyboard-controller";
 import { useSharedValue } from "react-native-reanimated";
 import { useConversation } from "@/src/hooks/chat/useConversation";
+import { useChatStore } from "@/src/store/chat.store";
+import { useUserStore } from "@/src/store/user.store";
 import type { Attachment } from "@/src/types/chat.types";
 import ChatHeader from "@/src/components/chat/chat-header";
 import ChatMessageBubble from "@/src/components/chat/bubble/chat-message-bubble";
@@ -53,7 +56,11 @@ export default function ChatDirectScreen() {
     ? (conversation?.group_picture ? { uri: conversation.group_picture } : DEFAULT_AVATAR)
     : (contact?.profile_pic ? { uri: contact.profile_pic } : DEFAULT_AVATAR);
 
-  const currentUserId = "current_user";
+  const currentUserId = useUserStore((s) => s.user?.id ?? "current_user");
+  const blockedUserIds = useChatStore((s) => s.blockedUserIds);
+  const isBlocked = !isGroupChat && contact?.user_id
+    ? blockedUserIds.includes(contact.user_id)
+    : false;
 
   const navigateToInfo = () => {
     router.push(`/chat/${id}/info`);
@@ -134,23 +141,32 @@ export default function ChatDirectScreen() {
           insetsTop={insets.top}
         />
 
-        <KeyboardChatScrollView
-          ref={scrollViewRef}
-          onScroll={handleScroll}
-          scrollEventThrottle={16}
-          contentContainerStyle={[
-            styles.messagesArea,
-            { paddingBottom: insets.bottom },
-          ]}
-        >
-          {messages.map((msg) => (
-            <ChatMessageBubble
-              key={msg.id}
-              message={msg}
-              isOwnMessage={msg.sent_by === currentUserId}
-            />
-          ))}
-        </KeyboardChatScrollView>
+        {messages.length === 0 ? (
+          <View style={styles.emptyRoom}>
+            <Ionicons name="chatbubble-ellipses-outline" size={48} color="#999" />
+            <Text style={styles.emptyRoomText}>
+              Send a message to start your conversation with {displayName}
+            </Text>
+          </View>
+        ) : (
+          <KeyboardChatScrollView
+            ref={scrollViewRef}
+            onScroll={handleScroll}
+            scrollEventThrottle={16}
+            contentContainerStyle={[
+              styles.messagesArea,
+              { paddingBottom: insets.bottom },
+            ]}
+          >
+            {messages.map((msg) => (
+              <ChatMessageBubble
+                key={msg.id}
+                message={msg}
+                isOwnMessage={msg.sent_by === currentUserId}
+              />
+            ))}
+          </KeyboardChatScrollView>
+        )}
 
         <KeyboardStickyView
           offset={{ closed: -insets.bottom, opened: -insets.bottom / 3 }}
@@ -160,7 +176,7 @@ export default function ChatDirectScreen() {
             onPress={scrollToBottom}
             bottomOffset={80}
           />
-          <ChatInput onSend={handleSend} onHeightChange={handleHeightChange} recipientName={displayName} />
+          <ChatInput onSend={handleSend} onHeightChange={handleHeightChange} recipientName={displayName} blocked={isBlocked} />
         </KeyboardStickyView>
 
         <ChatOverflowMenu
@@ -197,5 +213,18 @@ const styles = StyleSheet.create({
   messagesArea: {
     paddingHorizontal: 12,
     paddingVertical: 16,
+  },
+  emptyRoom: {
+    flex: 1,
+    justifyContent: "center",
+    alignItems: "center",
+    paddingHorizontal: 40,
+    gap: 12,
+  },
+  emptyRoomText: {
+    fontSize: 16,
+    color: "#666",
+    textAlign: "center",
+    lineHeight: 22,
   },
 });

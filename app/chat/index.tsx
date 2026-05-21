@@ -1,4 +1,4 @@
-import React, { useRef } from "react";
+import React from "react";
 import {
   View,
   Text,
@@ -92,10 +92,22 @@ export default function MessagesScreen() {
             </View>
           ) : (
              isFiltering && !isSearching && remoteResults.length === 0 && (
-              <Text>
-                No se encontraron conversaciones con "{query}"
-              </Text>
+              <View style={styles.noResultsContainer}>
+                <Text style={styles.noResultsText}>
+                  No se encontraron conversaciones con &ldquo;{query}&rdquo;
+                </Text>
+              </View>
             )
+          )}
+
+          {!isFiltering && localResults.length === 0 && (
+            <View style={styles.emptyContainer}>
+              <Ionicons name="chatbubbles-outline" size={64} color="#999" />
+              <Text style={styles.emptyTitle}>No chats yet</Text>
+              <Text style={styles.emptySubtitle}>
+                Search above or start a new conversation with a gamer!
+              </Text>
+            </View>
           )}
 
           {/* Remote Search Results */}
@@ -204,4 +216,36 @@ const styles = StyleSheet.create({
     paddingTop: 4,
   },
 
+  // Empty state
+  emptyContainer: {
+    flex: 1,
+    justifyContent: "center",
+    alignItems: "center",
+    paddingHorizontal: 40,
+    paddingTop: 80,
+    gap: 12,
+  },
+  emptyTitle: {
+    fontSize: 20,
+    fontWeight: "700",
+    color: TEXT_PRIMARY,
+    textAlign: "center",
+  },
+  emptySubtitle: {
+    fontSize: 15,
+    color: "#666",
+    textAlign: "center",
+    lineHeight: 22,
+  },
+
+  // No results
+  noResultsContainer: {
+    padding: 40,
+    alignItems: "center",
+  },
+  noResultsText: {
+    fontSize: 15,
+    color: "#666",
+    textAlign: "center",
+  },
 });

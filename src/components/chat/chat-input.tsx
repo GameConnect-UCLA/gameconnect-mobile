@@ -1,6 +1,7 @@
 import React, { useState, useCallback, useEffect } from "react";
 import {
   View,
+  Text,
   TextInput,
   TouchableOpacity,
   StyleSheet,
@@ -23,12 +24,14 @@ interface ChatInputProps {
   onSend: (text: string | null, attachments?: Attachment[] | null) => void;
   onHeightChange?: (height: number) => void;
   recipientName?: string;
+  blocked?: boolean;
 }
 
 export default function ChatInput({
   onSend,
   onHeightChange,
   recipientName,
+  blocked = false,
 }: ChatInputProps) {
   const [message, setMessage] = useState("");
   const [inputHeight, setInputHeight] = useState(BASE_LINE_HEIGHT);
@@ -214,11 +217,20 @@ export default function ChatInput({
 
   const inputContent = (
     <View>
-      {attachments.length > 0 && !mediaPreview && (
+      {blocked && (
+        <View style={styles.blockedBanner}>
+          <Ionicons name="remove-circle-outline" size={16} color="#d32f2f" />
+          <Text style={styles.blockedBannerText}>
+            You have blocked this contact. Unblock to send messages.
+          </Text>
+        </View>
+      )}
+
+      {!blocked && attachments.length > 0 && !mediaPreview && (
         <MediaPreview attachments={attachments} onRemove={removeAttachment} />
       )}
 
-      {showAttachmentMenu && (
+      {!blocked && showAttachmentMenu && (
         <View style={styles.attachmentMenu}>
           <TouchableOpacity style={styles.attachmentOption} onPress={pickImage}>
             <Ionicons name="image" size={24} color="#033563" />
@@ -236,23 +248,29 @@ export default function ChatInput({
       )}
 
       <View style={styles.inputContainer}>
-        <TouchableOpacity
-          style={styles.emojiButton}
-          onPress={() => setShowAttachmentMenu(!showAttachmentMenu)}
-        >
-          {!mediaPreview && (
-            <Ionicons
-              name={showAttachmentMenu ? "close" : "add-circle-outline"}
-              size={26}
-              color="#888"
-            />
-          )}
-        </TouchableOpacity>
+        {!blocked && (
+          <TouchableOpacity
+            style={styles.emojiButton}
+            onPress={() => setShowAttachmentMenu(!showAttachmentMenu)}
+          >
+            {!mediaPreview && (
+              <Ionicons
+                name={showAttachmentMenu ? "close" : "add-circle-outline"}
+                size={26}
+                color="#888"
+              />
+            )}
+          </TouchableOpacity>
+        )}
 
         <TextInput
           style={[styles.textInput, { height: inputHeight }]}
           placeholder={
-            hasBlockingAttachments ? "Audio/Document only" : "Message"
+            blocked
+              ? "You have blocked this contact"
+              : hasBlockingAttachments
+                ? "Audio/Document only"
+                : "Message"
           }
           placeholderTextColor="#aaa"
           value={message}
@@ -261,7 +279,7 @@ export default function ChatInput({
           textAlignVertical="top"
           onContentSizeChange={handleContentSizeChange}
           maxLength={2000}
-          editable={!hasBlockingAttachments}
+          editable={!hasBlockingAttachments && !blocked}
         />
 
         <TouchableOpacity
@@ -302,6 +320,22 @@ export default function ChatInput({
 }
 
 const styles = StyleSheet.create({
+  blockedBanner: {
+    flexDirection: "row",
+    alignItems: "center",
+    backgroundColor: "rgba(211, 47, 47, 0.1)",
+    marginHorizontal: 12,
+    marginBottom: 8,
+    paddingVertical: 8,
+    paddingHorizontal: 12,
+    borderRadius: 10,
+    gap: 8,
+  },
+  blockedBannerText: {
+    fontSize: 13,
+    color: "#d32f2f",
+    flex: 1,
+  },
   inputContainer: {
     flexDirection: "row",
     alignItems: "flex-end",

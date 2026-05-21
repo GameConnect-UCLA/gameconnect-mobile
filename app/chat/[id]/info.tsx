@@ -17,6 +17,8 @@ import { useLocalSearchParams, useRouter } from "expo-router";
 import { useSafeAreaInsets } from "react-native-safe-area-context";
 import { useConversation } from "@/src/hooks/chat/useConversation";
 import { useChatInfo } from "@/src/hooks/chat/use-chat-info";
+import { useChatStore } from "@/src/store/chat.store";
+import { blockUser, unblockUser } from "@/src/api/chat.api";
 import ChatMediaGrid from "@/src/components/chat/chat-media-grid";
 import ChatFileList from "@/src/components/chat/chat-file-list";
 import ChatLinkList from "@/src/components/chat/chat-link-list";
@@ -45,7 +47,7 @@ export default function ChatInfoScreen() {
   const router = useRouter();
   const insets = useSafeAreaInsets();
   const { data: conversation, isLoading, error } = useConversation(id);
-  const { sharedMedia, sharedFiles, sharedLinks, contactInfo } =
+  const { sharedMedia, sharedFiles, sharedLinks, contactInfo, contactUserId } =
     useChatInfo(conversation);
   const [modalVisible, setModalVisible] = useState(false);
   const [activeTab, setActiveTab] = useState<Tab>("Media");
@@ -55,8 +57,52 @@ export default function ChatInfoScreen() {
   const avatarSource = conversation?.group_picture
     ? { uri: conversation.group_picture }
     : DEFAULT_AVATAR;
-  const handleDeadAction = (action: string) => {
-    Alert.alert(action, "Esta función estará disponible próximamente.");
+
+  const blockedUserIds = useChatStore((s) => s.blockedUserIds);
+  const isContactBlocked = contactUserId ? blockedUserIds.includes(contactUserId) : false;
+
+  const handleBlockToggle = () => {
+    if (!contactUserId) return;
+
+    if (isContactBlocked) {
+      Alert.alert(
+        "Unblock",
+        "Are you sure you want to unblock this contact?",
+        [
+          { text: "Cancel", style: "cancel" },
+          {
+            text: "Unblock",
+            style: "default",
+            onPress: async () => {
+              try {
+                await unblockUser(contactUserId);
+              } catch {
+                Alert.alert("Error", "Failed to unblock user.");
+              }
+            },
+          },
+        ],
+      );
+    } else {
+      Alert.alert(
+        "Block",
+        "Are you sure you want to block this contact?",
+        [
+          { text: "Cancel", style: "cancel" },
+          {
+            text: "Block",
+            style: "destructive",
+            onPress: async () => {
+              try {
+                await blockUser(contactUserId);
+              } catch {
+                Alert.alert("Error", "Failed to block user.");
+              }
+            },
+          },
+        ],
+      );
+    }
   };
 
   const renderTabContent = () => {
@@ -154,25 +200,29 @@ export default function ChatInfoScreen() {
             </TouchableOpacity>
             <TouchableOpacity
               style={styles.actionButton}
-              onPress={() => handleDeadAction("Mute")}
+              onPress={() => Alert.alert("Mute", "Esta función estará disponible próximamente.")}
             >
               <Ionicons name="volume-mute-outline" size={22} color="#1a1a1a" />
               <Text style={styles.actionButtonText}>Mute</Text>
             </TouchableOpacity>
+            {!isGroup && (
+              <TouchableOpacity
+                style={styles.actionButton}
+                onPress={handleBlockToggle}
+              >
+                <Ionicons
+                  name={isContactBlocked ? "remove-circle" : "remove-circle-outline"}
+                  size={22}
+                  color={isContactBlocked ? "#d32f2f" : "#1a1a1a"}
+                />
+                <Text style={styles.actionButtonText}>
+                  {isContactBlocked ? "Unblock" : "Block"}
+                </Text>
+              </TouchableOpacity>
+            )}
             <TouchableOpacity
               style={styles.actionButton}
-              onPress={() => handleDeadAction("Block")}
-            >
-              <Ionicons
-                name="remove-circle-outline"
-                size={22}
-                color="#1a1a1a"
-              />
-              <Text style={styles.actionButtonText}>Block</Text>
-            </TouchableOpacity>
-            <TouchableOpacity
-              style={styles.actionButton}
-              onPress={() => handleDeadAction("Report")}
+              onPress={() => Alert.alert("Report", "Esta función estará disponible próximamente.")}
             >
               <Ionicons name="flag-outline" size={22} color="#1a1a1a" />
               <Text style={styles.actionButtonText}>Report</Text>
