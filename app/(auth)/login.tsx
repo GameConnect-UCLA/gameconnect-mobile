@@ -60,7 +60,7 @@ export default function LoginScreen() {
         <Text style={styles.link}>Go to Tabs (bypass auth)</Text>
       </Link>
       <Link href="/register">
-        <Text style={styles.link}>Don't have an account? Register</Text>
+        <Text style={styles.link}>Don{"'"}t have an account? Register</Text>
       </Link>
     </View>
   );
