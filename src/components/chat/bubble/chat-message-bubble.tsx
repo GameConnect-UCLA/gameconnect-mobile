@@ -1,5 +1,18 @@
 import React, { useState, useCallback } from "react";
-import { View, Text, TouchableOpacity, StyleSheet, useWindowDimensions } from "react-native";
+import {
+  View,
+  Text,
+  TouchableOpacity,
+  StyleSheet,
+  useWindowDimensions,
+} from "react-native";
+import { Gesture, GestureDetector } from "react-native-gesture-handler";
+import Animated, {
+  useSharedValue,
+  useAnimatedStyle,
+  withSpring,
+  runOnJS,
+} from "react-native-reanimated";
 import type { Attachment, Message } from "@/src/types/chat.types";
 import { AttachmentType } from "@/src/types/chat.types";
 import { BUBBLE_MAX_WIDTH_RATIO } from "./constants";
@@ -11,16 +24,20 @@ import AudioAttachment from "./audio-attachment";
 import DocumentAttachment from "./document-attachment";
 import FullScreenViewer from "./full-screen-viewer";
 
+const SWIPE_THRESHOLD = 80;
+
 interface ChatMessageBubbleProps {
   message: Message;
   isOwnMessage: boolean;
   onLongPress?: (message: Message) => void;
+  onSwipeToReply?: (message: Message) => void;
 }
 
 export default function ChatMessageBubble({
   message,
   isOwnMessage,
   onLongPress,
+  onSwipeToReply,
 }: ChatMessageBubbleProps) {
   const { width: screenWidth } = useWindowDimensions();
   const maxBubbleWidth = screenWidth * BUBBLE_MAX_WIDTH_RATIO;
@@ -32,6 +49,30 @@ export default function ChatMessageBubble({
   const openFullScreen = useCallback((a: Attachment) => {
     setFullScreenAttachment(a);
   }, []);
+
+  const translateX = useSharedValue(0);
+
+  const handleSwipeEnd = useCallback(() => {
+    onSwipeToReply?.(message);
+  }, [onSwipeToReply, message]);
+
+  const panGesture = Gesture.Pan()
+    .minDistance(10)
+    .activeOffsetX(10)
+    .failOffsetY([-10, 10] as const)
+    .onUpdate((e) => {
+      translateX.value = Math.max(0, e.translationX);
+    })
+    .onEnd((e) => {
+      if (e.translationX >= SWIPE_THRESHOLD) {
+        runOnJS(handleSwipeEnd)();
+      }
+      translateX.value = withSpring(0, { stiffness: 200, damping: 20 });
+    });
+
+  const animatedStyle = useAnimatedStyle(() => ({
+    transform: [{ translateX: translateX.value }],
+  }));
 
   const attachments = message.attached_media ?? [];
   const hasText = !!message.message_text?.length;
@@ -53,97 +94,107 @@ export default function ChatMessageBubble({
   const mediaOnly =
     attachments.length > 0 && !hasText && !hasReply;
 
-  return (
+  const bubbleContent = (
     <>
-      <TouchableOpacity
-        activeOpacity={0.95}
-        onLongPress={() => onLongPress?.(message)}
-        delayLongPress={350}
-        style={[
-          styles.wrapper,
-          isOwnMessage ? styles.wrapperRight : styles.wrapperLeft,
-        ]}
-      >
+      {hasReply && (
+        <ReplyPreview
+          message={message.reply_to_message!}
+          isOwnMessage={isOwnMessage}
+        />
+      )}
+
+      {imageAttachments.map((a, i) => (
         <View
+          key={`img-${i}`}
+          style={
+            hasText || hasReply || i > 0 ? styles.mediaAboveText : undefined
+          }
+        >
+          <ImageAttachment
+            attachment={a}
+            maxWidth={maxMediaWidth}
+            onPress={() => openFullScreen(a)}
+          />
+        </View>
+      ))}
+
+      {videoAttachments.map((a, i) => (
+        <View
+          key={`vid-${i}`}
           style={[
-            styles.bubble,
-            isOwnMessage ? styles.bubbleOwn : styles.bubbleOther,
-            mediaOnly && styles.bubbleMediaOnly,
-            { maxWidth: maxBubbleWidth },
+            i > 0 || imageAttachments.length > 0 ? { marginTop: 4 } : undefined,
+            hasText || hasReply ? styles.mediaAboveText : undefined,
           ]}
         >
-          {hasReply && (
-            <ReplyPreview
-              message={message.reply_to_message!}
-              isOwnMessage={isOwnMessage}
-            />
-          )}
+          <VideoAttachment attachment={a} maxWidth={maxMediaWidth} />
+        </View>
+      ))}
 
-          {imageAttachments.map((a, i) => (
-            <View
-              key={`img-${i}`}
-              style={
-                hasText || hasReply || i > 0 ? styles.mediaAboveText : undefined
-              }
-            >
-              <ImageAttachment
-                attachment={a}
-                maxWidth={maxMediaWidth}
-                onPress={() => openFullScreen(a)}
-              />
-            </View>
-          ))}
+      {audioAttachments.map((a, i) => (
+        <AudioAttachment
+          key={`aud-${i}`}
+          attachment={a}
+          isOwnMessage={isOwnMessage}
+        />
+      ))}
 
-          {videoAttachments.map((a, i) => (
-            <View
-              key={`vid-${i}`}
-              style={[
-                i > 0 || imageAttachments.length > 0 ? { marginTop: 4 } : undefined,
-                hasText || hasReply ? styles.mediaAboveText : undefined,
-              ]}
-            >
-              <VideoAttachment attachment={a} maxWidth={maxMediaWidth} />
-            </View>
-          ))}
+      {documentAttachments.map((a, i) => (
+        <DocumentAttachment
+          key={`doc-${i}`}
+          attachment={a}
+          isOwnMessage={isOwnMessage}
+        />
+      ))}
 
-          {audioAttachments.map((a, i) => (
-            <AudioAttachment
-              key={`aud-${i}`}
-              attachment={a}
-              isOwnMessage={isOwnMessage}
-            />
-          ))}
+      {hasText && (
+        <Text
+          style={[
+            styles.messageText,
+            isOwnMessage ? styles.textOwn : styles.textOther,
+            attachments.length > 0 && styles.textWithMedia,
+          ]}
+        >
+          {message.message_text}
+        </Text>
+      )}
 
-          {documentAttachments.map((a, i) => (
-            <DocumentAttachment
-              key={`doc-${i}`}
-              attachment={a}
-              isOwnMessage={isOwnMessage}
-            />
-          ))}
+      <Text
+        style={[
+          styles.timestamp,
+          isOwnMessage ? styles.timestampOwn : styles.timestampOther,
+        ]}
+      >
+        {formatMessageTime(message.sent_at)}
+      </Text>
+    </>
+  );
 
-          {hasText && (
-            <Text
-              style={[
-                styles.messageText,
-                isOwnMessage ? styles.textOwn : styles.textOther,
-                attachments.length > 0 && styles.textWithMedia,
-              ]}
-            >
-              {message.message_text}
-            </Text>
-          )}
-
-          <Text
+  return (
+    <>
+      <GestureDetector gesture={panGesture}>
+        <Animated.View style={[styles.wrapperContainer, animatedStyle]}>
+          <TouchableOpacity
+            activeOpacity={0.95}
+            onLongPress={() => onLongPress?.(message)}
+            delayLongPress={350}
             style={[
-              styles.timestamp,
-              isOwnMessage ? styles.timestampOwn : styles.timestampOther,
+              styles.wrapper,
+              isOwnMessage ? styles.wrapperRight : styles.wrapperLeft,
             ]}
           >
-            {formatMessageTime(message.sent_at)}
-          </Text>
-        </View>
-      </TouchableOpacity>
+            <View
+              style={[
+                styles.bubble,
+                isOwnMessage ? styles.bubbleOwn : styles.bubbleOther,
+                mediaOnly && styles.bubbleMediaOnly,
+                { maxWidth: maxBubbleWidth },
+              ]}
+            >
+              {bubbleContent}
+            </View>
+          </TouchableOpacity>
+        </Animated.View>
+      </GestureDetector>
 
       <FullScreenViewer
         attachment={fullScreenAttachment}
@@ -155,8 +206,10 @@ export default function ChatMessageBubble({
 }
 
 const styles = StyleSheet.create({
-  wrapper: {
+  wrapperContainer: {
     marginBottom: 6,
+  },
+  wrapper: {
     paddingHorizontal: 12,
   },
   wrapperRight: {

@@ -15,14 +15,18 @@ import {
   KeyboardChatScrollView,
 } from "react-native-keyboard-controller";
 import { useSharedValue } from "react-native-reanimated";
+import { useQueryClient } from "@tanstack/react-query";
 import { useConversation } from "@/src/hooks/chat/useConversation";
 import { useChatStore } from "@/src/store/chat.store";
 import { useUserStore } from "@/src/store/user.store";
-import type { Attachment } from "@/src/types/chat.types";
+import type { Attachment, Message } from "@/src/types/chat.types";
+import { deleteMessage } from "@/src/api/chat.api";
 import ChatHeader from "@/src/components/chat/chat-header";
 import ChatMessageBubble from "@/src/components/chat/bubble/chat-message-bubble";
 import ChatInput from "@/src/components/chat/chat-input";
 import ChatOverflowMenu from "@/src/components/chat/ChatOverflowMenu";
+import MessageActionSheet from "@/src/components/chat/message-action-sheet";
+import ReplyBar from "@/src/components/chat/reply-bar";
 import ScrollToBottomButton from "@/src/components/chat/scroll-to-bottom-button";
 import { useScrollToBottom } from "@/src/hooks/chat/use-scroll-to-bottom";
 
@@ -36,6 +40,7 @@ export default function ChatDirectScreen() {
   const { id } = useLocalSearchParams<{ id: string }>();
   const router = useRouter();
   const insets = useSafeAreaInsets();
+  const queryClient = useQueryClient();
   const {
     data: conversation,
     messages,
@@ -44,6 +49,9 @@ export default function ChatDirectScreen() {
     sendMessage,
   } = useConversation(id);
   const [menuVisible, setMenuVisible] = useState(false);
+  const [menuMessage, setMenuMessage] = useState<Message | null>(null);
+  const [actionSheetVisible, setActionSheetVisible] = useState(false);
+  const [replyingTo, setReplyingTo] = useState<Message | null>(null);
   const { scrollViewRef, showButton, scrollToBottom, handleScroll } =
     useScrollToBottom();
 
@@ -81,13 +89,38 @@ export default function ChatDirectScreen() {
       scrollToBottom();
       if (!id) return;
       try {
-        await sendMessage(text, attachments);
+        await sendMessage(text, attachments, replyingTo?.id ?? null);
+        setReplyingTo(null);
       } catch (err) {
         console.error("Error en flujo de envío:", err);
       }
     },
-    [id, sendMessage, scrollToBottom],
+    [id, sendMessage, scrollToBottom, replyingTo],
   );
+
+  const handleLongPress = useCallback((msg: Message) => {
+    setMenuMessage(msg);
+    setActionSheetVisible(true);
+  }, []);
+
+  const handleSwipeToReply = useCallback((msg: Message) => {
+    setReplyingTo(msg);
+  }, []);
+
+  const handleDeleteMessage = useCallback(async () => {
+    if (!menuMessage || !id) return;
+    try {
+      await deleteMessage(id, menuMessage.id);
+      queryClient.invalidateQueries({ queryKey: ["conversation", id] });
+    } catch (err) {
+      console.error("Error deleting message:", err);
+    }
+    setMenuMessage(null);
+  }, [menuMessage, id, queryClient]);
+
+  const handleCancelReply = useCallback(() => {
+    setReplyingTo(null);
+  }, []);
 
   if (isLoading) {
     return (
@@ -163,6 +196,8 @@ export default function ChatDirectScreen() {
                 key={msg.id}
                 message={msg}
                 isOwnMessage={msg.sent_by === currentUserId}
+                onLongPress={handleLongPress}
+                onSwipeToReply={handleSwipeToReply}
               />
             ))}
           </KeyboardChatScrollView>
@@ -176,12 +211,30 @@ export default function ChatDirectScreen() {
             onPress={scrollToBottom}
             bottomOffset={80}
           />
+          {replyingTo && (
+            <ReplyBar message={replyingTo} onCancel={handleCancelReply} />
+          )}
           <ChatInput onSend={handleSend} onHeightChange={handleHeightChange} recipientName={displayName} blocked={isBlocked} />
         </KeyboardStickyView>
 
         <ChatOverflowMenu
           visible={menuVisible}
           onClose={() => setMenuVisible(false)}
+        />
+
+        <MessageActionSheet
+          visible={actionSheetVisible}
+          onClose={() => {
+            setActionSheetVisible(false);
+            setMenuMessage(null);
+          }}
+          onReply={() => {
+            if (menuMessage) {
+              setReplyingTo(menuMessage);
+            }
+          }}
+          onDelete={handleDeleteMessage}
+          isOwnMessage={menuMessage?.sent_by === currentUserId}
         />
       </View>
     </ImageBackground>
