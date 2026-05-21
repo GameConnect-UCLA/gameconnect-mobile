@@ -178,3 +178,22 @@ See `phase_1.md` for detailed execution of Phase 1.
 - **Types**: Strict TypeScript, no `any`. Types must match dbschema.
 - **State**: TanStack Query for server data, Zustand for client-only state (blocked users, UI toggles).
 - **Components**: UI components receive data via props only. No direct API calls.
+
+---
+
+## 6. Commit Strategy
+
+After completing a logically closed set of changes, create a commit following this pattern:
+
+1. **Stores & foundational layers** → one commit (stores, types, API layer)
+2. **Hook layer** → one commit (if separate from above)
+3. **UI / screen layer** → one commit per feature group (empty states, blocking, group creation)
+
+Run `npm run lint && npm run typecheck` before every commit. Never commit broken state.
+
+### Suggested commits for Phase 1
+| # | Commit Message |
+|---|----------------|
+| 1 | `feat(auth): persist current user in Zustand store after login/register` |
+| 2 | `feat(chat): add mock APIs and blocked-users store for Phase 1 foundations` |
+| 3 | `feat(chat): implement empty states, blocked UI, group creation, block/unblock in info` |
