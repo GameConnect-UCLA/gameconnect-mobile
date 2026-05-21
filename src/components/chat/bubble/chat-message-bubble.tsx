@@ -3,6 +3,7 @@ import {
   View,
   Text,
   TouchableOpacity,
+  Image,
   StyleSheet,
   useWindowDimensions,
 } from "react-native";
@@ -25,6 +26,8 @@ import DocumentAttachment from "./document-attachment";
 import FullScreenViewer from "./full-screen-viewer";
 
 const SWIPE_THRESHOLD = 80;
+const GROUP_AVATAR_SIZE = 28;
+const DEFAULT_AVATAR = require("@/assets/images/default-avatar.jpg");
 
 interface ChatMessageBubbleProps {
   message: Message;
@@ -32,6 +35,9 @@ interface ChatMessageBubbleProps {
   onLongPress?: (message: Message, pageY: number) => void;
   onSwipeToReply?: (message: Message) => void;
   highlightText?: string | null;
+  isGroup?: boolean;
+  senderName?: string | null;
+  senderAvatar?: string | null;
 }
 
 export default function ChatMessageBubble({
@@ -40,6 +46,9 @@ export default function ChatMessageBubble({
   onLongPress,
   onSwipeToReply,
   highlightText,
+  isGroup,
+  senderName,
+  senderAvatar,
 }: ChatMessageBubbleProps) {
   const { width: screenWidth } = useWindowDimensions();
   const maxBubbleWidth = screenWidth * BUBBLE_MAX_WIDTH_RATIO;
@@ -102,6 +111,8 @@ export default function ChatMessageBubble({
     return result;
   }, [message.message_text, highlightText]);
 
+  const isGroupOther = isGroup && !isOwnMessage;
+
   const attachments = message.attached_media ?? [];
   const hasText = !!message.message_text?.length;
   const hasReply = !!message.reply_to_message;
@@ -120,6 +131,10 @@ export default function ChatMessageBubble({
   );
 
   const mediaOnly = attachments.length > 0 && !hasText && !hasReply;
+
+  const avatarUri = isGroupOther
+    ? senderAvatar ?? message.sender_profile_pic ?? null
+    : null;
 
   const bubbleContent = (
     <>
@@ -225,17 +240,31 @@ export default function ChatMessageBubble({
             style={[
               styles.wrapper,
               isOwnMessage ? styles.wrapperRight : styles.wrapperLeft,
+              isGroupOther && styles.wrapperGroupOther,
             ]}
           >
-            <View
-              style={[
-                styles.bubble,
-                isOwnMessage ? styles.bubbleOwn : styles.bubbleOther,
-                mediaOnly && styles.bubbleMediaOnly,
-                { maxWidth: maxBubbleWidth },
-              ]}
-            >
-              {bubbleContent}
+            {isGroupOther && (
+              <View style={styles.avatarColumn}>
+                <Image
+                  source={avatarUri ? { uri: avatarUri } : DEFAULT_AVATAR}
+                  style={styles.groupAvatar}
+                />
+              </View>
+            )}
+            <View style={isGroupOther ? styles.bubbleColumn : undefined}>
+              {isGroupOther && senderName && (
+                <Text style={styles.senderName}>{senderName}</Text>
+              )}
+              <View
+                style={[
+                  styles.bubble,
+                  isOwnMessage ? styles.bubbleOwn : styles.bubbleOther,
+                  mediaOnly && styles.bubbleMediaOnly,
+                  { maxWidth: isGroupOther ? maxBubbleWidth - GROUP_AVATAR_SIZE - 8 : maxBubbleWidth },
+                ]}
+              >
+                {bubbleContent}
+              </View>
             </View>
           </TouchableOpacity>
         </Animated.View>
@@ -312,6 +341,30 @@ const styles = StyleSheet.create({
   timestampOther: {
     color: "#aaa",
     textAlign: "right",
+  },
+  wrapperGroupOther: {
+    alignItems: "flex-start",
+  },
+  avatarColumn: {
+    width: GROUP_AVATAR_SIZE,
+    marginRight: 8,
+    marginTop: 4,
+  },
+  groupAvatar: {
+    width: GROUP_AVATAR_SIZE,
+    height: GROUP_AVATAR_SIZE,
+    borderRadius: GROUP_AVATAR_SIZE / 2,
+    backgroundColor: "#ccc",
+  },
+  bubbleColumn: {
+    flex: 1,
+  },
+  senderName: {
+    fontSize: 12,
+    fontWeight: "600",
+    color: "#888",
+    marginBottom: 2,
+    marginLeft: 2,
   },
   highlight: {
     backgroundColor: "#FFD700",

@@ -19,23 +19,47 @@ interface MenuItem {
 interface ChatOverflowMenuProps {
   visible: boolean;
   onClose: () => void;
+  isGroup?: boolean;
+  onLeaveGroup?: () => void;
 }
-
-const MENU_ITEMS: MenuItem[] = [
-  { icon: "notifications-off-outline", label: "Mute Notifications" },
-  { icon: "search-outline", label: "Search Chat" },
-  { icon: "trash-outline", label: "Clear Chat History" },
-  { icon: "ban-outline", label: "Block User", danger: true },
-  { icon: "flag-outline", label: "Report", danger: true },
-];
 
 export default function ChatOverflowMenu({
   visible,
   onClose,
+  isGroup,
+  onLeaveGroup,
 }: ChatOverflowMenuProps) {
+  const MENU_ITEMS: MenuItem[] = [
+    { icon: "notifications-off-outline", label: "Mute Notifications" },
+    { icon: "search-outline", label: "Search Chat" },
+    { icon: "trash-outline", label: "Clear Chat History" },
+    ...(isGroup
+      ? [{ icon: "exit-outline" as const, label: "Leave Group", danger: true }]
+      : [{ icon: "ban-outline" as const, label: "Block User", danger: true }]
+    ),
+    { icon: "flag-outline", label: "Report", danger: true },
+  ];
   const insets = useSafeAreaInsets();
 
   const handlePress = (label: string) => {
+    if (label === "Leave Group") {
+      Alert.alert(
+        "Leave Group",
+        "Are you sure you want to leave this group?",
+        [
+          { text: "Cancel", style: "cancel" },
+          {
+            text: "Leave",
+            style: "destructive",
+            onPress: () => {
+              onLeaveGroup?.();
+              onClose();
+            },
+          },
+        ],
+      );
+      return;
+    }
     Alert.alert(label, "This feature is coming soon.");
     onClose();
   };

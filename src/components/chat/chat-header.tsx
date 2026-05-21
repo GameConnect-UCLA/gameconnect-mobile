@@ -17,6 +17,8 @@ interface ChatHeaderProps {
   onMenuPress: () => void;
   onSearchPress?: () => void;
   insetsTop: number;
+  isGroup?: boolean;
+  memberCount?: number;
 }
 
 export default function ChatHeader({
@@ -27,6 +29,8 @@ export default function ChatHeader({
   onMenuPress,
   onSearchPress,
   insetsTop,
+  isGroup,
+  memberCount,
 }: ChatHeaderProps) {
   return (
     <View style={styles.header}>
@@ -39,7 +43,11 @@ export default function ChatHeader({
           <Image source={avatarSource} style={styles.avatar} />
           <View style={styles.userTextInfo}>
             <Text style={styles.userName}>{displayName}</Text>
-            <Text style={styles.userStatus}>last seen recently</Text>
+            <Text style={styles.userStatus}>
+              {isGroup
+                ? `${memberCount ?? 1} members`
+                : "last seen recently"}
+            </Text>
           </View>
         </TouchableOpacity>
 
