@@ -15,6 +15,7 @@ interface ChatHeaderProps {
   onBack: () => void;
   onInfoPress: () => void;
   onMenuPress: () => void;
+  onSearchPress?: () => void;
   insetsTop: number;
 }
 
@@ -24,6 +25,7 @@ export default function ChatHeader({
   onBack,
   onInfoPress,
   onMenuPress,
+  onSearchPress,
   insetsTop,
 }: ChatHeaderProps) {
   return (
@@ -41,6 +43,11 @@ export default function ChatHeader({
           </View>
         </TouchableOpacity>
 
+        {onSearchPress && (
+          <TouchableOpacity style={styles.menuButton} onPress={onSearchPress}>
+            <Ionicons name="search" size={24} color="#1a1a1a" />
+          </TouchableOpacity>
+        )}
         <TouchableOpacity style={styles.menuButton} onPress={onMenuPress}>
           <Ionicons name="ellipsis-vertical" size={24} color="#1a1a1a" />
         </TouchableOpacity>
