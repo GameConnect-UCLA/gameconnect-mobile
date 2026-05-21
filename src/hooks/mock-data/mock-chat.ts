@@ -8,7 +8,7 @@ import type {
   SharedLinkItem,
   SharedMediaItem,
 } from "@/src/types/chat.types";
-import { GroupRole, Message, MessageType } from "@/src/types/chat.types";
+import { AttachmentType, GroupRole, Message, MessageType } from "@/src/types/chat.types";
 
 const lunaAsset = require("@/assets/images/chat/person-1.png");
 const gameAsset = require("@/assets/images/chat/person-2.png");
@@ -68,7 +68,10 @@ const createMockMessage = (
   reply_to: replyTo,
   type,
   message_text: text,
-  attached_media: attachedMedia,
+  attached_media: attachedMedia?.map((url) => ({
+    url,
+    type: AttachmentType.IMAGE,
+  })) ?? null,
   sent_at: sentAt,
   sender_username: username,
   sender_profile_pic: CHAT_IMAGES.luna,

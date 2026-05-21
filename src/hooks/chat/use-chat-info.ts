@@ -40,6 +40,7 @@ export function useChatInfo(conversation: Conversation | undefined) {
     sharedFiles,
     sharedLinks,
     contactInfo,
+    contactUserId: !isGroup ? contactUserId : null,
     mediaCount,
     fileCount,
     linkCount,
