@@ -1,4 +1,4 @@
-import React, { useState, useCallback } from "react";
+import React, { useState, useCallback, useMemo } from "react";
 import {
   View,
   Text,
@@ -31,6 +31,7 @@ interface ChatMessageBubbleProps {
   isOwnMessage: boolean;
   onLongPress?: (message: Message, pageY: number) => void;
   onSwipeToReply?: (message: Message) => void;
+  highlightText?: string | null;
 }
 
 export default function ChatMessageBubble({
@@ -38,6 +39,7 @@ export default function ChatMessageBubble({
   isOwnMessage,
   onLongPress,
   onSwipeToReply,
+  highlightText,
 }: ChatMessageBubbleProps) {
   const { width: screenWidth } = useWindowDimensions();
   const maxBubbleWidth = screenWidth * BUBBLE_MAX_WIDTH_RATIO;
@@ -73,6 +75,32 @@ export default function ChatMessageBubble({
   const animatedStyle = useAnimatedStyle(() => ({
     transform: [{ translateX: translateX.value }],
   }));
+
+  const highlightParts = useMemo(() => {
+    if (!highlightText || !message.message_text) return null;
+    const escaped = highlightText.replace(/[.*+?^${}()|[\]\\]/g, "\\$&");
+    const regex = new RegExp(`(${escaped})`, "gi");
+    const result: { text: string; highlighted: boolean }[] = [];
+    let lastIndex = 0;
+    let match: RegExpExecArray | null;
+    while ((match = regex.exec(message.message_text)) !== null) {
+      if (match.index > lastIndex) {
+        result.push({
+          text: message.message_text.slice(lastIndex, match.index),
+          highlighted: false,
+        });
+      }
+      result.push({ text: match[0], highlighted: true });
+      lastIndex = regex.lastIndex;
+    }
+    if (lastIndex < message.message_text.length) {
+      result.push({
+        text: message.message_text.slice(lastIndex),
+        highlighted: false,
+      });
+    }
+    return result;
+  }, [message.message_text, highlightText]);
 
   const attachments = message.attached_media ?? [];
   const hasText = !!message.message_text?.length;
@@ -153,7 +181,25 @@ export default function ChatMessageBubble({
             attachments.length > 0 && styles.textWithMedia,
           ]}
         >
-          {message.message_text}
+          {highlightParts
+            ? highlightParts.map((part, i) =>
+                part.highlighted ? (
+                  <Text
+                    key={i}
+                    style={[
+                      styles.highlight,
+                      isOwnMessage
+                        ? styles.highlightOwn
+                        : styles.highlightOther,
+                    ]}
+                  >
+                    {part.text}
+                  </Text>
+                ) : (
+                  <Text key={i}>{part.text}</Text>
+                ),
+              )
+            : message.message_text}
         </Text>
       )}
 
@@ -266,5 +312,15 @@ const styles = StyleSheet.create({
   timestampOther: {
     color: "#aaa",
     textAlign: "right",
+  },
+  highlight: {
+    backgroundColor: "#FFD700",
+    borderRadius: 3,
+  },
+  highlightOwn: {
+    backgroundColor: "#FFD700",
+  },
+  highlightOther: {
+    backgroundColor: "#FFD700",
   },
 });

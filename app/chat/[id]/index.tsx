@@ -1,4 +1,4 @@
-import React, { useState, useCallback } from "react";
+import React, { useState, useCallback, useMemo, useRef } from "react";
 import {
   View,
   Text,
@@ -23,6 +23,7 @@ import { useUserStore } from "@/src/store/user.store";
 import type { Attachment, Message } from "@/src/types/chat.types";
 import { deleteMessage } from "@/src/api/chat.api";
 import ChatHeader from "@/src/components/chat/chat-header";
+import ChatSearchBar from "@/src/components/chat/chat-search-bar";
 import ChatMessageBubble from "@/src/components/chat/bubble/chat-message-bubble";
 import ChatInput from "@/src/components/chat/chat-input";
 import ChatOverflowMenu from "@/src/components/chat/ChatOverflowMenu";
@@ -56,6 +57,72 @@ export default function ChatDirectScreen() {
   const [replyingTo, setReplyingTo] = useState<Message | null>(null);
   const { scrollViewRef, showButton, scrollToBottom, handleScroll } =
     useScrollToBottom();
+
+  const [searchVisible, setSearchVisible] = useState(false);
+  const [searchQuery, setSearchQuery] = useState("");
+  const [activeSearchIndex, setActiveSearchIndex] = useState(0);
+
+  const messageLayouts = useRef<Map<string, number>>(new Map());
+
+  const searchResults = useMemo(() => {
+    if (!searchQuery.trim()) return [];
+    const lower = searchQuery.toLowerCase();
+    const indices: number[] = [];
+    messages.forEach((msg, i) => {
+      if (msg.message_text?.toLowerCase().includes(lower)) {
+        indices.push(i);
+      }
+    });
+    return indices;
+  }, [messages, searchQuery]);
+
+  const scrollToMessage = useCallback(
+    (messageIndex: number) => {
+      const msg = messages[messageIndex];
+      if (!msg) return;
+      const y = messageLayouts.current.get(msg.id);
+      if (y !== undefined) {
+        scrollViewRef.current?.scrollTo({ y, animated: true });
+      }
+    },
+    [messages, scrollViewRef],
+  );
+
+  const openSearch = useCallback(() => {
+    setSearchVisible(true);
+    setSearchQuery("");
+    setActiveSearchIndex(0);
+  }, []);
+
+  const closeSearch = useCallback(() => {
+    setSearchVisible(false);
+    setSearchQuery("");
+    setActiveSearchIndex(0);
+    Keyboard.dismiss();
+  }, []);
+
+  const handleSearchNext = useCallback(() => {
+    setActiveSearchIndex((prev) => {
+      const next = Math.min(prev + 1, searchResults.length - 1);
+      scrollToMessage(searchResults[next]);
+      return next;
+    });
+  }, [searchResults, scrollToMessage]);
+
+  const handleSearchPrev = useCallback(() => {
+    setActiveSearchIndex((prev) => {
+      const next = Math.max(prev - 1, 0);
+      scrollToMessage(searchResults[next]);
+      return next;
+    });
+  }, [searchResults, scrollToMessage]);
+
+  const handleMessageLayout = useCallback(
+    (messageId: string, y: number) => {
+      messageLayouts.current.set(messageId, y);
+    },
+    [],
+  );
 
   const composerHeight = useSharedValue(INPUT_CONTAINER_BASE_HEIGHT);
 
@@ -169,14 +236,31 @@ export default function ChatDirectScreen() {
           translucent
         />
 
-        <ChatHeader
-          displayName={displayName}
-          avatarSource={avatarSource}
-          onBack={() => router.back()}
-          onInfoPress={navigateToInfo}
-          onMenuPress={() => setMenuVisible(true)}
-          insetsTop={insets.top}
-        />
+        <View>
+          <ChatHeader
+            displayName={displayName}
+            avatarSource={avatarSource}
+            onBack={() => router.back()}
+            onInfoPress={navigateToInfo}
+            onMenuPress={() => setMenuVisible(true)}
+            onSearchPress={searchVisible ? closeSearch : openSearch}
+            insetsTop={insets.top}
+          />
+
+          <ChatSearchBar
+            visible={searchVisible}
+            query={searchQuery}
+            onChangeQuery={setSearchQuery}
+            onClose={closeSearch}
+            onNext={handleSearchNext}
+            onPrev={handleSearchPrev}
+            totalResults={searchResults.length}
+            currentIndex={
+              searchResults.length > 0 ? activeSearchIndex : 0
+            }
+            insetsTop={insets.top}
+          />
+        </View>
 
         {messages.length === 0 ? (
           <View style={styles.emptyRoom}>
@@ -196,13 +280,20 @@ export default function ChatDirectScreen() {
             ]}
           >
             {messages.map((msg) => (
-              <ChatMessageBubble
+              <View
                 key={msg.id}
-                message={msg}
-                isOwnMessage={msg.sent_by === currentUserId}
-                onLongPress={handleLongPress}
-                onSwipeToReply={handleSwipeToReply}
-              />
+                onLayout={(e) =>
+                  handleMessageLayout(msg.id, e.nativeEvent.layout.y)
+                }
+              >
+                <ChatMessageBubble
+                  message={msg}
+                  isOwnMessage={msg.sent_by === currentUserId}
+                  onLongPress={handleLongPress}
+                  onSwipeToReply={handleSwipeToReply}
+                  highlightText={searchVisible ? searchQuery : null}
+                />
+              </View>
             ))}
           </KeyboardChatScrollView>
         )}
