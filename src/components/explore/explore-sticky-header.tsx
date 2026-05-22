@@ -29,7 +29,7 @@ export default function ExploreStickyHeader({
 }: Props) {
   return (
     <ImageBackground
-      source={require('../../../assets/images/bgbody.png')}
+      source={require('../../../assets/images/bgheader.png')}
       style={[
         styles.stickyHeader,
         { paddingTop: 8 }
