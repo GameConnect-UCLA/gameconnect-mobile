@@ -1,4 +1,4 @@
-import React, { useState, useCallback, useMemo, useRef } from "react";
+import React, { useState, useCallback, useEffect, useMemo, useRef } from "react";
 import {
   View,
   Text,
@@ -57,8 +57,19 @@ export default function ChatDirectScreen() {
   const [actionSheetVisible, setActionSheetVisible] = useState(false);
   const [actionSheetPageY, setActionSheetPageY] = useState(0);
   const [replyingTo, setReplyingTo] = useState<Message | null>(null);
-  const { scrollViewRef, showButton, scrollToBottom, handleScroll } =
-    useScrollToBottom();
+  const {
+    scrollViewRef,
+    showButton,
+    scrollToBottom,
+    handleScroll,
+    handleContentSizeChange,
+  } = useScrollToBottom();
+
+  useEffect(() => {
+    if (!isLoading && messages.length > 0) {
+      scrollToBottom();
+    }
+  }, [isLoading, messages.length, scrollToBottom]);
   const { leaveGroup } = useGroupMembers(id);
 
   const [searchVisible, setSearchVisible] = useState(false);
@@ -298,6 +309,7 @@ export default function ChatDirectScreen() {
             ref={scrollViewRef}
             onScroll={handleScroll}
             scrollEventThrottle={16}
+            onContentSizeChange={handleContentSizeChange}
             contentContainerStyle={[
               styles.messagesArea,
               { paddingBottom: insets.bottom },

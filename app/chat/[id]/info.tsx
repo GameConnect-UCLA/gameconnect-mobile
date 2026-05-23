@@ -54,7 +54,9 @@ export default function ChatInfoScreen() {
     useChatInfo(conversation);
   const [modalVisible, setModalVisible] = useState(false);
   const [activeTab, setActiveTab] = useState<Tab>("Media");
-  const [selectedMember, setSelectedMember] = useState<GroupMember | null>(null);
+  const [selectedMember, setSelectedMember] = useState<GroupMember | null>(
+    null,
+  );
   const [memberActionVisible, setMemberActionVisible] = useState(false);
   const [addMemberVisible, setAddMemberVisible] = useState(false);
   const [addMemberSelected, setAddMemberSelected] = useState<string[]>([]);
@@ -66,13 +68,16 @@ export default function ChatInfoScreen() {
     : DEFAULT_AVATAR;
 
   const blockedUserIds = useChatStore((s) => s.blockedUserIds);
-  const isContactBlocked = contactUserId ? blockedUserIds.includes(contactUserId) : false;
+  const isContactBlocked = contactUserId
+    ? blockedUserIds.includes(contactUserId)
+    : false;
   const currentUserId = useUserStore((s) => s.user?.id ?? "current_user");
   const currentMember = conversation?.members?.find(
     (m) => m.user_id === currentUserId,
   );
   const isCurrentUserOwner = currentMember?.role === GroupRole.OWNER;
-  const isCurrentUserAdmin = currentMember?.role === GroupRole.ADMIN || isCurrentUserOwner;
+  const isCurrentUserAdmin =
+    currentMember?.role === GroupRole.ADMIN || isCurrentUserOwner;
   const canManageRoles = isCurrentUserOwner;
 
   const handleMemberPress = useCallback((member: GroupMember) => {
@@ -128,7 +133,9 @@ export default function ChatInfoScreen() {
 
   const handleAddMemberToggle = useCallback((userId: string) => {
     setAddMemberSelected((prev) =>
-      prev.includes(userId) ? prev.filter((id) => id !== userId) : [...prev, userId],
+      prev.includes(userId)
+        ? prev.filter((id) => id !== userId)
+        : [...prev, userId],
     );
   }, []);
 
@@ -145,49 +152,43 @@ export default function ChatInfoScreen() {
   }, [addMemberSelected, addMember]);
 
   const existingMemberIds = conversation?.members?.map((m) => m.user_id) ?? [];
-  const availableUsers = ACTIVE_USERS.filter((u) => !existingMemberIds.includes(u.id));
+  const availableUsers = ACTIVE_USERS.filter(
+    (u) => !existingMemberIds.includes(u.id),
+  );
 
   const handleBlockToggle = () => {
     if (!contactUserId) return;
 
     if (isContactBlocked) {
-      Alert.alert(
-        "Unblock",
-        "Are you sure you want to unblock this contact?",
-        [
-          { text: "Cancel", style: "cancel" },
-          {
-            text: "Unblock",
-            style: "default",
-            onPress: async () => {
-              try {
-                await unblockUser(contactUserId);
-              } catch {
-                Alert.alert("Error", "Failed to unblock user.");
-              }
-            },
+      Alert.alert("Unblock", "Are you sure you want to unblock this contact?", [
+        { text: "Cancel", style: "cancel" },
+        {
+          text: "Unblock",
+          style: "default",
+          onPress: async () => {
+            try {
+              await unblockUser(contactUserId);
+            } catch {
+              Alert.alert("Error", "Failed to unblock user.");
+            }
           },
-        ],
-      );
+        },
+      ]);
     } else {
-      Alert.alert(
-        "Block",
-        "Are you sure you want to block this contact?",
-        [
-          { text: "Cancel", style: "cancel" },
-          {
-            text: "Block",
-            style: "destructive",
-            onPress: async () => {
-              try {
-                await blockUser(contactUserId);
-              } catch {
-                Alert.alert("Error", "Failed to block user.");
-              }
-            },
+      Alert.alert("Block", "Are you sure you want to block this contact?", [
+        { text: "Cancel", style: "cancel" },
+        {
+          text: "Block",
+          style: "destructive",
+          onPress: async () => {
+            try {
+              await blockUser(contactUserId);
+            } catch {
+              Alert.alert("Error", "Failed to block user.");
+            }
           },
-        ],
-      );
+        },
+      ]);
     }
   };
 
@@ -286,7 +287,12 @@ export default function ChatInfoScreen() {
             </TouchableOpacity>
             <TouchableOpacity
               style={styles.actionButton}
-              onPress={() => Alert.alert("Mute", "Esta función estará disponible próximamente.")}
+              onPress={() =>
+                Alert.alert(
+                  "Mute",
+                  "Esta función estará disponible próximamente.",
+                )
+              }
             >
               <Ionicons name="volume-mute-outline" size={22} color="#1a1a1a" />
               <Text style={styles.actionButtonText}>Mute</Text>
@@ -309,7 +315,9 @@ export default function ChatInfoScreen() {
                 onPress={handleBlockToggle}
               >
                 <Ionicons
-                  name={isContactBlocked ? "remove-circle" : "remove-circle-outline"}
+                  name={
+                    isContactBlocked ? "remove-circle" : "remove-circle-outline"
+                  }
                   size={22}
                   color={isContactBlocked ? "#d32f2f" : "#1a1a1a"}
                 />
@@ -320,7 +328,12 @@ export default function ChatInfoScreen() {
             )}
             <TouchableOpacity
               style={styles.actionButton}
-              onPress={() => Alert.alert("Report", "Esta función estará disponible próximamente.")}
+              onPress={() =>
+                Alert.alert(
+                  "Report",
+                  "Esta función estará disponible próximamente.",
+                )
+              }
             >
               <Ionicons name="flag-outline" size={22} color="#1a1a1a" />
               <Text style={styles.actionButtonText}>Report</Text>
@@ -418,8 +431,14 @@ export default function ChatInfoScreen() {
                   onPress={handlePromote}
                   disabled={isPromoting}
                 >
-                  <Ionicons name="arrow-up-circle-outline" size={20} color="#6c5ce7" />
-                  <Text style={[styles.actionSheetButtonText, { color: "#6c5ce7" }]}>
+                  <Ionicons
+                    name="arrow-up-circle-outline"
+                    size={20}
+                    color="#6c5ce7"
+                  />
+                  <Text
+                    style={[styles.actionSheetButtonText, { color: "#6c5ce7" }]}
+                  >
                     {isPromoting ? "Promoting..." : "Promote to Admin"}
                   </Text>
                 </TouchableOpacity>
@@ -431,25 +450,41 @@ export default function ChatInfoScreen() {
                   onPress={handleDemote}
                   disabled={isDemoting}
                 >
-                  <Ionicons name="arrow-down-circle-outline" size={20} color="#888" />
-                  <Text style={[styles.actionSheetButtonText, { color: "#888" }]}>
+                  <Ionicons
+                    name="arrow-down-circle-outline"
+                    size={20}
+                    color="#888"
+                  />
+                  <Text
+                    style={[styles.actionSheetButtonText, { color: "#888" }]}
+                  >
                     {isDemoting ? "Demoting..." : "Demote to Member"}
                   </Text>
                 </TouchableOpacity>
               )}
 
-              {isCurrentUserAdmin && selectedMember?.user_id !== currentUserId && (
-                <TouchableOpacity
-                  style={styles.actionSheetButton}
-                  onPress={handleRemoveMember}
-                  disabled={isRemoving}
-                >
-                  <Ionicons name="remove-circle-outline" size={20} color="#d32f2f" />
-                  <Text style={[styles.actionSheetButtonText, { color: "#d32f2f" }]}>
-                    {isRemoving ? "Removing..." : "Remove from Group"}
-                  </Text>
-                </TouchableOpacity>
-              )}
+              {isCurrentUserAdmin &&
+                selectedMember?.user_id !== currentUserId && (
+                  <TouchableOpacity
+                    style={styles.actionSheetButton}
+                    onPress={handleRemoveMember}
+                    disabled={isRemoving}
+                  >
+                    <Ionicons
+                      name="remove-circle-outline"
+                      size={20}
+                      color="#d32f2f"
+                    />
+                    <Text
+                      style={[
+                        styles.actionSheetButtonText,
+                        { color: "#d32f2f" },
+                      ]}
+                    >
+                      {isRemoving ? "Removing..." : "Remove from Group"}
+                    </Text>
+                  </TouchableOpacity>
+                )}
 
               <TouchableOpacity
                 style={[styles.actionSheetButton, styles.actionSheetCancel]}
@@ -482,49 +517,79 @@ export default function ChatInfoScreen() {
               setAddMemberSelected([]);
             }}
           >
-            <TouchableOpacity
-              style={styles.actionSheetCard}
-              activeOpacity={1}
-            >
+            <TouchableOpacity style={styles.actionSheetCard} activeOpacity={1}>
               <Text style={styles.actionSheetTitle}>Add Members</Text>
               {availableUsers.length === 0 ? (
-                <Text style={[styles.actionSheetCancelText, { paddingVertical: 12 }]}>
+                <Text
+                  style={[
+                    styles.actionSheetCancelText,
+                    { paddingVertical: 12 },
+                  ]}
+                >
                   No more users to add
                 </Text>
               ) : (
-                availableUsers.map((user) => {
-                  const isSelected = addMemberSelected.includes(user.id);
-                  return (
-                    <TouchableOpacity
-                      key={user.id}
-                      style={[styles.actionSheetButton, { borderTopWidth: 1, borderTopColor: "rgba(0,0,0,0.08)" }]}
-                      onPress={() => handleAddMemberToggle(user.id)}
-                    >
-                      <Image
-                        source={user.profile_pic ? { uri: user.profile_pic } : DEFAULT_AVATAR}
-                        style={{ width: 32, height: 32, borderRadius: 16 }}
-                      />
-                      <Text style={[styles.actionSheetButtonText, { flex: 1 }]}>
-                        {user.username}
-                      </Text>
-                      <Ionicons
-                        name={isSelected ? "checkbox" : "square-outline"}
-                        size={22}
-                        color={isSelected ? "#033563" : "#999"}
-                      />
-                    </TouchableOpacity>
-                  );
-                })
+                <ScrollView
+                  style={styles.addMemberScrollView}
+                  nestedScrollEnabled
+                >
+                  {availableUsers.map((user) => {
+                    const isSelected = addMemberSelected.includes(user.id);
+                    return (
+                      <TouchableOpacity
+                        key={user.id}
+                        style={[
+                          styles.actionSheetButton,
+                          {
+                            borderTopWidth: 1,
+                            borderTopColor: "rgba(0,0,0,0.08)",
+                          },
+                        ]}
+                        onPress={() => handleAddMemberToggle(user.id)}
+                      >
+                        <Image
+                          source={
+                            user.profile_pic
+                              ? { uri: user.profile_pic }
+                              : DEFAULT_AVATAR
+                          }
+                          style={{ width: 32, height: 32, borderRadius: 16 }}
+                        />
+                        <Text
+                          style={[styles.actionSheetButtonText, { flex: 1 }]}
+                        >
+                          {user.username}
+                        </Text>
+                        <Ionicons
+                          name={isSelected ? "checkbox" : "square-outline"}
+                          size={22}
+                          color={isSelected ? "#033563" : "#999"}
+                        />
+                      </TouchableOpacity>
+                    );
+                  })}
+                </ScrollView>
               )}
               {addMemberSelected.length > 0 && (
                 <TouchableOpacity
-                  style={[styles.actionSheetButton, { borderTopWidth: 1, borderTopColor: "rgba(0,0,0,0.08)" }]}
+                  style={[
+                    styles.actionSheetButton,
+                    { borderTopWidth: 1, borderTopColor: "rgba(0,0,0,0.08)" },
+                  ]}
                   onPress={handleAddMemberConfirm}
                   disabled={isAdding}
                 >
-                  <Ionicons name="checkmark-circle-outline" size={20} color="#033563" />
-                  <Text style={[styles.actionSheetButtonText, { color: "#033563" }]}>
-                    {isAdding ? "Adding..." : `Add ${addMemberSelected.length} member(s)`}
+                  <Ionicons
+                    name="checkmark-circle-outline"
+                    size={20}
+                    color="#033563"
+                  />
+                  <Text
+                    style={[styles.actionSheetButtonText, { color: "#033563" }]}
+                  >
+                    {isAdding
+                      ? "Adding..."
+                      : `Add ${addMemberSelected.length} member(s)`}
                   </Text>
                 </TouchableOpacity>
               )}
@@ -741,7 +806,8 @@ const styles = StyleSheet.create({
     borderRadius: 16,
     paddingVertical: 16,
     paddingHorizontal: 20,
-    minWidth: 260,
+    minWidth: "80%",
+    maxHeight: "80%",
     elevation: 8,
     shadowColor: "#000",
     shadowOffset: { width: 0, height: 4 },
@@ -777,6 +843,9 @@ const styles = StyleSheet.create({
     fontWeight: "600",
     textAlign: "center",
     flex: 1,
+  },
+  addMemberScrollView: {
+    maxHeight: 300,
   },
   // --- Modal ---
   modalOverlay: {

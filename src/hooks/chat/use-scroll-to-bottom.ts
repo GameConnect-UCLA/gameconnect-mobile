@@ -8,9 +8,10 @@ export function useScrollToBottom(options: UseScrollToBottomOptions = {}) {
   const { threshold = 150 } = options;
   const scrollViewRef = useRef<any>(null);
   const [showButton, setShowButton] = useState(false);
+  const isAtBottomRef = useRef(true);
 
   const scrollToBottom = useCallback(() => {
-    scrollViewRef.current?.scrollTo({ y: 999999, animated: true });
+    scrollViewRef.current?.scrollToEnd({ animated: true });
   }, []);
 
   const handleScroll = useCallback(
@@ -25,15 +26,24 @@ export function useScrollToBottom(options: UseScrollToBottomOptions = {}) {
         event.nativeEvent;
       const distanceFromBottom =
         contentSize.height - layoutMeasurement.height - contentOffset.y;
-      setShowButton(distanceFromBottom > threshold);
+      const nearBottom = distanceFromBottom <= threshold;
+      setShowButton(!nearBottom);
+      isAtBottomRef.current = nearBottom;
     },
     [threshold],
   );
+
+  const handleContentSizeChange = useCallback(() => {
+    if (isAtBottomRef.current) {
+      scrollToBottom();
+    }
+  }, [scrollToBottom]);
 
   return {
     scrollViewRef,
     showButton,
     scrollToBottom,
     handleScroll,
+    handleContentSizeChange,
   };
 }
