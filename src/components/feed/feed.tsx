@@ -101,16 +101,14 @@ export default function Feed() {
             ]}
             onLayout={(event) => setHeaderHeight(event.nativeEvent.layout.height)}
           >
-            <View style={styles.reloadRow}>
-              {showReloadHint || refreshing ? (
+            {showReloadHint || refreshing ? (
+              <View style={styles.reloadOverlay}>
                 <TouchableOpacity onPress={handleRefresh} style={styles.reloadButton}>
                   <Ionicons name={refreshing ? 'refresh' : 'reload'} size={18} color="#0B4B82" />
                   <Text style={styles.reloadText}>{refreshing ? 'Recargando...' : 'Recargar'}</Text>
                 </TouchableOpacity>
-              ) : (
-                <View style={styles.reloadPlaceholder} />
-              )}
-            </View>
+              </View>
+            ) : null}
             <Header onSearchPress={() => router.push('/explore')} onChatPress={() => {}} />
           </Animated.View>
         </View>
@@ -137,10 +135,13 @@ const styles = StyleSheet.create({
   listContent: {
     paddingBottom: 24,
   },
-  reloadRow: {
-    height: 44,
+  reloadOverlay: {
+    position: 'absolute',
+    top: 6,
+    left: 0,
+    right: 0,
     alignItems: 'center',
-    justifyContent: 'center',
+    zIndex: 11,
   },
   reloadButton: {
     flexDirection: 'row',
@@ -150,9 +151,6 @@ const styles = StyleSheet.create({
     paddingVertical: 6,
     borderRadius: 20,
     alignSelf: 'center',
-  },
-  reloadPlaceholder: {
-    height: 1,
   },
   reloadText: {
     color: '#0B4B82',
