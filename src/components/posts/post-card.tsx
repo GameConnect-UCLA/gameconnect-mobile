@@ -1,4 +1,5 @@
 import { Ionicons } from '@expo/vector-icons';
+import { useRouter } from 'expo-router';
 import React, { useRef, useState } from 'react';
 import {
   Image,
@@ -13,22 +14,29 @@ import { Post } from '../../types/post.types';
 interface Props {
   post: Post;
   separatorColor?: string;
+  onImagePress?: (url: string) => void;
 }
 
 function formatDate(timestamp: string) {
-  return new Date(timestamp).toLocaleDateString('es-ES', {
-    year: 'numeric',
-    month: '2-digit',
-    day: '2-digit',
-  });
+  try {
+    return new Date(timestamp).toLocaleDateString('es-ES', {
+      year: 'numeric',
+      month: '2-digit',
+      day: '2-digit',
+    });
+  } catch (e) {
+    return timestamp;
+  }
 }
 
-export default function PostCard({ post, separatorColor = 'transparent' }: Props) {
+export default function PostCard({ post, separatorColor = 'transparent', onImagePress }: Props) {
+  const router = useRouter();
   const [isLiked, setIsLiked] = useState(false);
   const [isSaved, setIsSaved] = useState(false);
   const [cardWidth, setCardWidth] = useState(0);
   const [activeImageIndex, setActiveImageIndex] = useState(0);
   const galleryRef = useRef<ScrollView>(null);
+
   const displayedTitle = post.is_review ? post.reviewed_game : post.post_title;
   const contentPreview = post.content.slice(0, 160);
   const displayLikes = isLiked ? post.likes_counter + 1 : post.likes_counter;
@@ -36,11 +44,14 @@ export default function PostCard({ post, separatorColor = 'transparent' }: Props
   const mediaWidth = cardWidth > 0 ? cardWidth : undefined;
   const hasMultipleImages = post.media.images.length > 1;
 
+  const handleGoToDetail = () => {
+    router.push(`/post/${post.id}` as any);
+  };
+
   const handleScrollToImage = (index: number) => {
     if (!hasMultipleImages || !mediaWidth || index < 0 || index >= post.media.images.length) {
       return;
     }
-
     setActiveImageIndex(index);
     galleryRef.current?.scrollTo({ x: index * mediaWidth, animated: true });
   };
@@ -50,6 +61,7 @@ export default function PostCard({ post, separatorColor = 'transparent' }: Props
       style={styles.card}
       onLayout={(event) => setCardWidth(event.nativeEvent.layout.width)}
     >
+      {/* --- HEADER --- */}
       <View style={styles.authorRow}>
         <Image source={{ uri: post.author_profile_pic }} style={styles.avatar} />
         <View style={styles.authorTextContainer}>
@@ -58,7 +70,7 @@ export default function PostCard({ post, separatorColor = 'transparent' }: Props
             <Text style={styles.date}>{formatDate(post.created_at)}</Text>
           </View>
           <Text style={styles.handle}>{`@${post.author_username}`}</Text>
-          {post.is_review ? (
+          {post.is_review && (
             <View style={styles.reviewMetaRow}>
               <View style={styles.starsRow}>
                 {Array.from({ length: 5 }).map((_, index) => (
@@ -72,8 +84,6 @@ export default function PostCard({ post, separatorColor = 'transparent' }: Props
                 ))}
               </View>
             </View>
-          ) : (
-            null
           )}
         </View>
       </View>
@@ -81,124 +91,111 @@ export default function PostCard({ post, separatorColor = 'transparent' }: Props
       <Text style={[styles.title, post.is_review && styles.reviewTitle]}>
         {displayedTitle}
       </Text>
-      <Text style={styles.content}>{contentPreview}{post.content.length > 160 ? '...' : ''}</Text>
+      <Text style={styles.content}>
+        {contentPreview}{post.content.length > 160 ? '...' : ''}
+      </Text>
 
       {post.media.images.length > 0 ? (
-        post.media.images.length > 1 ? (
-          <View style={styles.galleryWrapper}>
-            <ScrollView
-              ref={galleryRef}
-              horizontal
-              pagingEnabled
-              nestedScrollEnabled
-              decelerationRate="fast"
-              showsHorizontalScrollIndicator={false}
-              style={styles.gallery}
-              contentContainerStyle={styles.galleryContent}
-              onMomentumScrollEnd={(event) => {
-                if (!mediaWidth) {
-                  return;
-                }
+        <View style={styles.galleryWrapper}>
+          {hasMultipleImages ? (
+            <>
+              <ScrollView
+                ref={galleryRef}
+                horizontal
+                pagingEnabled
+                nestedScrollEnabled
+                decelerationRate="fast"
+                showsHorizontalScrollIndicator={false}
+                style={styles.gallery}
+                onMomentumScrollEnd={(event) => {
+                  if (!mediaWidth) return;
+                  const nextIndex = Math.round(event.nativeEvent.contentOffset.x / mediaWidth);
+                  setActiveImageIndex(nextIndex);
+                }}
+              >
+                {post.media.images.map((image, index) => (
+                  <TouchableOpacity 
+                    key={index} 
+                    activeOpacity={0.9} 
+                    onPress={() => onImagePress?.(image)}
+                    disabled={!onImagePress}
+                  >
+                    <View style={[styles.mediaFrame, { width: mediaWidth }]}>
+                      <Image source={{ uri: image }} style={styles.mediaImage} />
+                    </View>
+                  </TouchableOpacity>
+                ))}
+              </ScrollView>
 
-                const nextIndex = Math.round(event.nativeEvent.contentOffset.x / mediaWidth);
-                setActiveImageIndex(nextIndex);
-              }}
+              {/* Flechas de navegación */}
+              <TouchableOpacity
+                onPress={() => handleScrollToImage(activeImageIndex - 1)}
+                disabled={activeImageIndex === 0}
+                style={[styles.arrowButton, styles.leftArrow, activeImageIndex === 0 && styles.arrowDisabled]}
+              >
+                <Ionicons name="chevron-back" size={22} color="#FFFFFF" />
+              </TouchableOpacity>
+              <TouchableOpacity
+                onPress={() => handleScrollToImage(activeImageIndex + 1)}
+                disabled={activeImageIndex === post.media.images.length - 1}
+                style={[styles.arrowButton, styles.rightArrow, activeImageIndex === post.media.images.length - 1 && styles.arrowDisabled]}
+              >
+                <Ionicons name="chevron-forward" size={22} color="#FFFFFF" />
+              </TouchableOpacity>
+            </>
+          ) : (
+            <TouchableOpacity 
+              activeOpacity={0.9} 
+              onPress={() => onImagePress?.(post.media.images[0])}
+              disabled={!onImagePress}
             >
-              {post.media.images.map((image, index) => (
-                <View
-                  key={`${post.id}-${index}`}
-                  style={[styles.mediaFrame, mediaWidth ? { width: mediaWidth } : styles.mediaPlaceholder]}
-                >
-                  <Image source={{ uri: image }} style={styles.mediaImage} />
-                </View>
-              ))}
-            </ScrollView>
-
-            <TouchableOpacity
-              onPress={() => handleScrollToImage(activeImageIndex - 1)}
-              disabled={activeImageIndex === 0}
-              style={[styles.arrowButton, styles.leftArrow, activeImageIndex === 0 && styles.arrowDisabled]}
-            >
-              <Ionicons name="chevron-back" size={22} color="#FFFFFF" />
+              <View style={[styles.mediaFrame, styles.singleMediaFrame, { width: mediaWidth }]}>
+                <Image source={{ uri: post.media.images[0] }} style={styles.mediaImage} />
+              </View>
             </TouchableOpacity>
-            <TouchableOpacity
-              onPress={() => handleScrollToImage(activeImageIndex + 1)}
-              disabled={activeImageIndex === post.media.images.length - 1}
-              style={[
-                styles.arrowButton,
-                styles.rightArrow,
-                activeImageIndex === post.media.images.length - 1 && styles.arrowDisabled,
-              ]}
-            >
-              <Ionicons name="chevron-forward" size={22} color="#FFFFFF" />
-            </TouchableOpacity>
-          </View>
-        ) : (
-          <View
-            style={[
-              styles.mediaFrame,
-              styles.singleMediaFrame,
-              mediaWidth ? { width: mediaWidth } : styles.mediaPlaceholder,
-            ]}
-          >
-            <Image source={{ uri: post.media.images[0] }} style={styles.mediaImage} />
-          </View>
-        )
+          )}
+        </View>
       ) : null}
 
-      {post.media.hashtags.length > 0 ? (
+      {/* HASHTAGS */}
+      {post.media.hashtags.length > 0 && (
         <View style={styles.hashtagRow}>
           {post.media.hashtags.map((tag) => (
-            <View key={`${post.id}-${tag}`} style={styles.hashtagPill}>
+            <View key={tag} style={styles.hashtagPill}>
               <Text style={styles.hashtagText}>{`#${tag}`}</Text>
             </View>
           ))}
         </View>
-      ) : null}
+      )}
 
+      {/* ACCIONES CON CONTADORES */}
       <View style={styles.actionsRow}>
         <View style={styles.actionsLeft}>
-          {post.is_review ? (
-            <View style={styles.counterBlock}>
-              <TouchableOpacity onPress={() => setIsLiked((current) => !current)}>
-                <Ionicons
-                  name={isLiked ? 'heart' : 'heart-outline'}
-                  size={24}
-                  color={isLiked ? '#D11D3B' : '#111111'}
-                />
-              </TouchableOpacity>
-              <Text style={styles.counterText}>{displayLikes}</Text>
-            </View>
-          ) : (
-            <TouchableOpacity onPress={() => setIsLiked((current) => !current)}>
+          <View style={styles.counterBlock}>
+            <TouchableOpacity onPress={() => setIsLiked(!isLiked)}>
               <Ionicons
                 name={isLiked ? 'heart' : 'heart-outline'}
                 size={28}
                 color={isLiked ? '#D11D3B' : '#111111'}
               />
             </TouchableOpacity>
-          )}
+            <Text style={styles.counterText}>{displayLikes}</Text>
+          </View>
 
-          {post.is_review ? (
-            <View style={styles.counterBlock}>
-              <Ionicons name="chatbubble-outline" size={24} color="#111111" />
-              <Text style={styles.counterText}>{post.commets_counter}</Text>
-            </View>
-          ) : (
-            <TouchableOpacity>
-              <Ionicons name="chatbubble-outline" size={28} color="#111111" />
-            </TouchableOpacity>
-          )}
+          <TouchableOpacity style={styles.counterBlock} onPress={handleGoToDetail}>
+            <Ionicons name="chatbubble-outline" size={26} color="#111111" />
+            <Text style={styles.counterText}>{post.commets_counter}</Text>
+          </TouchableOpacity>
 
           <TouchableOpacity>
-            <Ionicons name="share-social-outline" size={post.is_review ? 24 : 28} color="#111111" />
+            <Ionicons name="share-social-outline" size={26} color="#111111" />
           </TouchableOpacity>
         </View>
 
-        <TouchableOpacity onPress={() => setIsSaved((current) => !current)}>
+        <TouchableOpacity onPress={() => setIsSaved(!isSaved)}>
           <Ionicons
             name={isSaved ? 'bookmark' : 'bookmark-outline'}
-            size={post.is_review ? 26 : 30}
+            size={28}
             color="#111111"
           />
         </TouchableOpacity>
@@ -212,8 +209,8 @@ export default function PostCard({ post, separatorColor = 'transparent' }: Props
 const styles = StyleSheet.create({
   card: {
     marginHorizontal: 16,
-    paddingTop: 8,
-    paddingBottom: 18,
+    paddingTop: 0,
+    paddingBottom: 25,
     backgroundColor: 'transparent',
   },
   authorRow: {
@@ -230,7 +227,7 @@ const styles = StyleSheet.create({
   },
   authorTextContainer: {
     flex: 1,
-    paddingTop: 2,
+    paddingTop: 10,
   },
   authorMetaRow: {
     flexDirection: 'row',
@@ -247,7 +244,7 @@ const styles = StyleSheet.create({
   handle: {
     fontSize: 13,
     color: '#535353',
-    marginTop: 2,
+    marginTop: 5,
   },
   reviewMetaRow: {
     flexDirection: 'row',
@@ -268,7 +265,7 @@ const styles = StyleSheet.create({
     lineHeight: 20,
   },
   title: {
-    marginTop: 14,
+    marginTop: 10,
     fontSize: 18,
     fontWeight: '800',
     color: '#0F0F0F',
@@ -279,7 +276,7 @@ const styles = StyleSheet.create({
     fontSize: 20,
   },
   content: {
-    marginTop: 6,
+    marginTop: 5,
     fontSize: 14,
     lineHeight: 20,
     color: '#2A2A2A',
@@ -291,7 +288,7 @@ const styles = StyleSheet.create({
     paddingRight: 10,
   },
   galleryWrapper: {
-    marginTop: 12,
+    marginTop: 10,
     position: 'relative',
   },
   mediaFrame: {
@@ -350,7 +347,7 @@ const styles = StyleSheet.create({
     fontWeight: '600',
   },
   actionsRow: {
-    marginTop: 12,
+    marginTop: 10,
     flexDirection: 'row',
     justifyContent: 'space-between',
     alignItems: 'center',
@@ -373,6 +370,6 @@ const styles = StyleSheet.create({
   separator: {
     height: 1,
     marginTop: 18,
-    marginBottom: 8,
+    marginBottom: -5,
   },
 });

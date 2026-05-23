@@ -1,8 +1,10 @@
 import { useMockGameProfile } from '@/src/hooks/mock-data/useMockGameProfile';
 import { Ionicons } from '@expo/vector-icons';
+import { useRouter } from 'expo-router'; // 1. Importamos el router
 import React from 'react';
 import {
-  Image, ImageBackground,
+  Image,
+  ImageBackground,
   SafeAreaView,
   ScrollView,
   StyleSheet,
@@ -19,6 +21,7 @@ interface FavoriteGamesViewProps {
 
 const FavoriteGamesView: React.FC<FavoriteGamesViewProps> = ({ onBack }) => {
   const games = useMockGameProfile();
+  const router = useRouter();
 
   return (
     <ImageBackground source={BG_IMAGE} style={styles.backgroundImage}>
@@ -26,7 +29,7 @@ const FavoriteGamesView: React.FC<FavoriteGamesViewProps> = ({ onBack }) => {
         <ScrollView showsVerticalScrollIndicator={false} contentContainerStyle={styles.scrollContent}>
           
           <View style={styles.bigCard}>
-            {/* Header: Icono + Título + Icono Menos */}
+            {/* Header */}
             <View style={styles.headerRow}>
               <View style={styles.titleWithIcon}>
                 <Ionicons name="game-controller" size={24} color="#033563" />
@@ -40,11 +43,20 @@ const FavoriteGamesView: React.FC<FavoriteGamesViewProps> = ({ onBack }) => {
             {/* Grid de 2 columnas */}
             <View style={styles.gridContainer}>
               {games.map((game) => (
-                <View key={game.id} style={styles.gameItem}>
+                <TouchableOpacity 
+                  key={game.id} 
+                  style={styles.gameItem}
+                  activeOpacity={0.7}
+                  onPress={() => {
+                    router.push(`/game/${game.id}`);
+                  }}
+                >
                   <Image source={{ uri: game.image_url }} style={styles.gameImage} />
-                  <Text style={styles.gameTitle}>{game.name}</Text>
-                  <Text style={styles.gameDescription}>{game.description}</Text>
-                </View>
+                  <Text style={styles.gameTitle} numberOfLines={1}>{game.name}</Text>
+                  <Text style={styles.gameDescription} numberOfLines={4}>
+                    {game.description}
+                  </Text>
+                </TouchableOpacity>
               ))}
             </View>
           </View>
@@ -56,12 +68,18 @@ const FavoriteGamesView: React.FC<FavoriteGamesViewProps> = ({ onBack }) => {
 };
 
 const styles = StyleSheet.create({
-  backgroundImage: { flex: 1 },
-  container: { flex: 1 },
-  scrollContent: { paddingVertical: 30, paddingHorizontal: 15 },
-  
+  backgroundImage: { 
+    flex: 1 
+  },
+  container: { 
+    flex: 1 
+  },
+  scrollContent: { 
+    paddingVertical: 30, 
+    paddingHorizontal: 15 
+  },
   bigCard: {
-    backgroundColor: 'rgba(217, 217, 217, 0.85)', // #D9D9D9 al 85%
+    backgroundColor: 'rgba(217, 217, 217, 0.85)', 
     borderRadius: 30,
     padding: 16,
     minHeight: '100%',
@@ -84,14 +102,13 @@ const styles = StyleSheet.create({
     fontSize: 18, 
     color: '#000000' 
   },
-
   gridContainer: {
     flexDirection: 'row',
     flexWrap: 'wrap',
     justifyContent: 'space-between',
   },
   gameItem: {
-    width: '48%', // Dos columnas
+    width: '48%', 
     marginBottom: 25,
   },
   gameImage: {
@@ -114,7 +131,7 @@ const styles = StyleSheet.create({
     fontSize: 11,
     color: '#000000',
     marginTop: 6,
-    textAlign: 'justify', // Como en la imagen
+    textAlign: 'justify',
     lineHeight: 15,
   },
 });

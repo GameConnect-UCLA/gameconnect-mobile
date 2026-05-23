@@ -1,8 +1,46 @@
 import { Post } from '../../types/post.types';
 
+const FOTO_JORGE = 'https://m.media-amazon.com/images/S/aplus-media-library-service-media/94865395-9e45-4e4b-9f4f-fac723fbf713.__CR0,0,362,453_PT0_SX362_V1___.jpg';
+
 export const mockPosts: Post[] = [
   {
-    id: '2f8ef0d2-b6bb-4e92-8e8b-3f8e1f6b0001',
+    id: 'p1',
+    autor: 'jorge-id',
+    author_display_name: 'JORGE SILVA',
+    author_username: 'jorgesilva',
+    author_profile_pic: FOTO_JORGE,
+    post_title: 'DEAD SPACE',
+    content: 'La tensión y el ambiente opresivo del USG Ishimura te mantendrán al borde del asiento. Cada disparo cuenta, cada sombra es una amenaza.',
+    media: {
+      images: ['https://cdn.wccftech.com/wp-content/uploads/2022/12/WCCFdeadspaceremake8.jpg'],
+      hashtags: ['FPS', 'Horror'],
+    },
+    is_review: false,
+    review_score: null,
+    reviewed_game: 'Dead Space',
+    likes_counter: 100,
+    commets_counter: 50,
+    created_at: '2024-05-19T10:00:00.000Z',
+    last_modified_at: '2024-05-19T10:00:00.000Z',
+    deleted_at: null,
+    comments: [
+      { 
+        id: 'c1', 
+        author_display_name: 'Mariangel Perez', 
+        author_profile_pic: 'https://i.pravatar.cc/150?img=32', 
+        content: '¡Este juego es increíble!', 
+        created_at: 'Hace 5 min'
+      },
+      { 
+        id: 'c2', 
+        author_display_name: 'Carlos Mendoza', 
+        author_profile_pic: 'https://i.pravatar.cc/150?img=12', 
+        content: '¿Es el remake o el original?', 
+        created_at: 'Hace 2 min' }
+    ]
+  },
+  {
+    id: 'p2',
     autor: '550e8400-e29b-41d4-a716-446655440000',
     author_display_name: 'Mariangel Perez',
     author_username: 'maripferres',
@@ -22,9 +60,62 @@ export const mockPosts: Post[] = [
     created_at: '2024-12-23T18:45:00.000Z',
     last_modified_at: '2024-12-23T18:45:00.000Z',
     deleted_at: null,
+    comments: [
+      {
+        id: 'c1',
+        author_display_name: 'Carlos Mendoza',
+        author_profile_pic: 'https://i.pravatar.cc/150?img=12',
+        content: '¡Cierto! Lo probé ayer y los glitches ya no existen.',
+        created_at: '2024-12-23T19:20:00.000Z'
+      },
+      {
+        id: 'c2',
+        author_display_name: 'MAXY3120',
+        author_profile_pic: 'https://i.pravatar.cc/150?img=56',
+        content: 'Totalmente de acuerdo, la inmersión ahora es de otro nivel.',
+        created_at: '2024-12-23T20:10:00.000Z'
+      }
+    ]
   },
   {
-    id: '2f8ef0d2-b6bb-4e92-8e8b-3f8e1f6b0002',
+    id: 'p3',
+    autor: 'jorge-id',
+    author_display_name: 'JORGE SILVA',
+    author_username: 'jorgesilva',
+    author_profile_pic: FOTO_JORGE,
+    post_title: 'RESIDENT EVIL 4',
+    content: 'Leon S. Kennedy se enfrenta a una pesadilla en la España rural. El equilibrio perfecto entre terror y acción.',
+    media: {
+      images: ['https://images7.alphacoders.com/130/thumb-1920-1306926.jpeg'],
+      hashtags: ['Terror', 'Accion'],
+    },
+    is_review: false,
+    review_score: null,
+    reviewed_game: 'Resident Evil 4',
+    likes_counter: 120,
+    commets_counter: 30,
+    created_at: '2024-05-19T11:00:00.000Z',
+    last_modified_at: '2024-05-19T11:00:00.000Z',
+    deleted_at: null,
+    comments: [
+      {
+        id: 'c1',
+        author_display_name: 'Carlos Mendoza',
+        author_profile_pic: 'https://i.pravatar.cc/150?img=12',
+        content: '¡Cierto! Lo probé ayer y los glitches ya no existen.',
+        created_at: '2024-12-23T19:20:00.000Z'
+      },
+      {
+        id: 'c2',
+        author_display_name: 'MAXY3120',
+        author_profile_pic: 'https://i.pravatar.cc/150?img=56',
+        content: 'Totalmente de acuerdo, la inmersión ahora es de otro nivel.',
+        created_at: '2024-12-23T20:10:00.000Z'
+      }
+    ]
+  },
+  {
+    id: 'p4',
     autor: '550e8400-e29b-41d4-a716-446655440000',
     author_display_name: 'Carlos Mendoza',
     author_username: 'carlosgamer',
@@ -48,9 +139,55 @@ export const mockPosts: Post[] = [
     created_at: '2025-05-08T13:12:00.000Z',
     last_modified_at: '2025-05-08T13:12:00.000Z',
     deleted_at: null,
+    comments: [
+      {
+        id: 'c3',
+        author_display_name: 'Sofia Vega',
+        author_profile_pic: 'https://i.pravatar.cc/150?img=47',
+        content: '¿Cuánto tiempo te tomó vencer al primer Boss?',
+        created_at: '2025-05-08T14:00:00.000Z'
+      }
+    ]
   },
   {
-    id: '2f8ef0d2-b6bb-4e92-8e8b-3f8e1f6b0003',
+    id: 'p5',
+    autor: 'jorge-id',
+    author_display_name: 'JORGE SILVA',
+    author_username: 'jorgesilva',
+    author_profile_pic: FOTO_JORGE,
+    post_title: 'GEARS OF WAR 3',
+    content: 'Acción frenética, coberturas y un modo horda que engancha. La historia de Marcus Fenix y su equipo llega a su mejor momento.',
+    media: {
+      images: ['http://images.gamersyde.com/image_gears_of_war_3-14855-2017_0001.jpg'],
+      hashtags: ['Xbox', 'Shooter'],
+    },
+    is_review: false,
+    review_score: null,
+    reviewed_game: 'Gears of War 3',
+    likes_counter: 95,
+    commets_counter: 15,
+    created_at: '2024-05-19T12:00:00.000Z',
+    last_modified_at: '2024-05-19T12:00:00.000Z',
+    deleted_at: null,
+    comments: [
+      {
+        id: 'c1',
+        author_display_name: 'Carlos Mendoza',
+        author_profile_pic: 'https://i.pravatar.cc/150?img=12',
+        content: '¡Cierto! Lo probé ayer y los glitches ya no existen.',
+        created_at: '2024-12-23T19:20:00.000Z'
+      },
+      {
+        id: 'c2',
+        author_display_name: 'MAXY3120',
+        author_profile_pic: 'https://i.pravatar.cc/150?img=56',
+        content: 'Totalmente de acuerdo, la inmersión ahora es de otro nivel.',
+        created_at: '2024-12-23T20:10:00.000Z'
+      }
+    ]
+  },
+  {
+    id: 'p6',
     autor: '550e8400-e29b-41d4-a716-446655440000',
     author_display_name: 'Douriann',
     author_username: 'douriann',
@@ -70,9 +207,40 @@ export const mockPosts: Post[] = [
     created_at: '2025-03-12T09:30:00.000Z',
     last_modified_at: '2025-03-12T09:30:00.000Z',
     deleted_at: null,
+    comments: [
+      {
+        id: 'c4',
+        author_display_name: 'Ana Torres',
+        author_profile_pic: 'https://i.pravatar.cc/150?img=21',
+        content: 'La jugabilidad es una joya, Capcom se lució.',
+        created_at: '2025-03-12T10:30:00.000Z'
+      }
+    ]
   },
   {
-    id: '2f8ef0d2-b6bb-4e92-8e8b-3f8e1f6b0004',
+    id: 'p7',
+    autor: 'jorge-id',
+    author_display_name: 'JORGE SILVA',
+    author_username: 'jorgesilva',
+    author_profile_pic: FOTO_JORGE,
+    post_title: 'ELDEN RING',
+    content: 'Explorando las Tierras Intermedias. La dificultad es elevada pero la recompensa visual y de descubrimiento no tiene comparación.',
+    media: {
+      images: ['https://cdn.mos.cms.futurecdn.net/vVYdoxvuFkZMMBweq2iMUD-970-80.jpg'],
+      hashtags: ['GOTY', 'Souls'],
+    },
+    is_review: false,
+    review_score: null,
+    reviewed_game: 'Elden Ring',
+    likes_counter: 250,
+    commets_counter: 80,
+    created_at: '2024-05-19T13:00:00.000Z',
+    last_modified_at: '2024-05-19T13:00:00.000Z',
+    deleted_at: null,
+    comments: []
+  },
+  {
+    id: 'p8',
     autor: '550e8400-e29b-41d4-a716-446655440000',
     author_display_name: 'MAXY3120',
     author_username: 'maxy3120',
@@ -95,9 +263,10 @@ export const mockPosts: Post[] = [
     created_at: '2025-05-08T19:10:00.000Z',
     last_modified_at: '2025-05-08T19:10:00.000Z',
     deleted_at: null,
+    comments: []
   },
   {
-    id: '2f8ef0d2-b6bb-4e92-8e8b-3f8e1f6b0005',
+    id: 'p9',
     autor: '550e8400-e29b-41d4-a716-446655440000',
     author_display_name: 'Sofia Vega',
     author_username: 'sofiaves',
@@ -117,9 +286,18 @@ export const mockPosts: Post[] = [
     created_at: '2025-02-14T21:00:00.000Z',
     last_modified_at: '2025-02-14T21:00:00.000Z',
     deleted_at: null,
+    comments: [
+      {
+        id: 'c5',
+        author_display_name: 'Mariangel Perez',
+        author_profile_pic: 'https://i.pravatar.cc/150?img=32',
+        content: 'Christopher Larkin hizo un trabajo fenomenal en la música.',
+        created_at: '2025-02-14T22:15:00.000Z'
+      }
+    ]
   },
   {
-    id: '2f8ef0d2-b6bb-4e92-8e8b-3f8e1f6b0006',
+    id: 'p10',
     autor: '550e8400-e29b-41d4-a716-446655440000',
     author_display_name: 'Ana Torres',
     author_username: 'anatgamer',
@@ -139,9 +317,10 @@ export const mockPosts: Post[] = [
     created_at: '2025-05-10T16:20:00.000Z',
     last_modified_at: '2025-05-10T16:20:00.000Z',
     deleted_at: null,
+    comments: []
   },
   {
-    id: '2f8ef0d2-b6bb-4e92-8e8b-3f8e1f6b0007',
+    id: 'p11',
     autor: '550e8400-e29b-41d4-a716-446655440000',
     author_display_name: 'Javier Rojas',
     author_username: 'jvrojas',
@@ -164,5 +343,6 @@ export const mockPosts: Post[] = [
     created_at: '2025-05-11T10:05:00.000Z',
     last_modified_at: '2025-05-11T10:05:00.000Z',
     deleted_at: null,
+    comments: []
   },
 ];
