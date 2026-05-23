@@ -4,17 +4,17 @@ import * as ImagePicker from 'expo-image-picker';
 import { useRouter } from 'expo-router';
 import React, { useCallback, useMemo, useRef, useState } from 'react';
 import {
-    Image,
-    ImageBackground,
-    KeyboardAvoidingView,
-    Platform,
-    ScrollView,
-    StatusBar,
-    StyleSheet,
-    Text,
-    TextInput,
-    TouchableOpacity,
-    View,
+  Image,
+  ImageBackground,
+  KeyboardAvoidingView,
+  Platform,
+  ScrollView,
+  StatusBar,
+  StyleSheet,
+  Text,
+  TextInput,
+  TouchableOpacity,
+  View,
 } from 'react-native';
 import { SafeAreaView } from 'react-native-safe-area-context';
 
@@ -253,7 +253,7 @@ export default function CreatePostScreen() {
 
     setErrors(nextErrors);
 
-    const firstInvalidField = (Object.entries(nextErrors) as Array<[FieldKey, boolean]>).find(
+    const firstInvalidField = (Object.entries(nextErrors) as [FieldKey, boolean][]).find(
       ([, hasError]) => hasError,
     )?.[0];
 
@@ -290,6 +290,7 @@ export default function CreatePostScreen() {
       reviewed_game: finalGameTitle,
       likes_counter: 0,
       commets_counter: 0,
+      comments: [],
       created_at: now,
       last_modified_at: now,
       deleted_at: null,

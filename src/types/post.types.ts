@@ -3,6 +3,14 @@ export interface PostMedia {
   hashtags: string[];
 }
 
+export interface Comment {
+  id: string;
+  author_display_name: string;
+  author_profile_pic: string;
+  content: string;
+  created_at: string;
+}
+
 export interface Post {
   id: string;
   autor: string;
@@ -17,6 +25,7 @@ export interface Post {
   reviewed_game: string;
   likes_counter: number;
   commets_counter: number;
+  comments: Comment[];
   created_at: string;
   last_modified_at: string;
   deleted_at: string | null;

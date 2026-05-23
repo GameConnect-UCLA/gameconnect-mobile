@@ -1,5 +1,7 @@
 import { useMockUser } from '@/src/hooks/mock-data/useMockUser';
+import { usePostStore } from '@/src/store/post.store';
 import { Ionicons } from '@expo/vector-icons';
+import { useRouter } from 'expo-router';
 import React from 'react';
 import {
   Image,
@@ -11,6 +13,7 @@ import {
   TouchableOpacity,
   View,
 } from 'react-native';
+import { PostItem } from './post-item';
 
 const BG_IMAGE = require('@/assets/images/bgbody.png');
 
@@ -19,6 +22,8 @@ interface ProfileViewProps {
   onAddPeoplePress?: () => void;
   onAddGamePress?: () => void;
   onViewAllGamesPress?: () => void;
+  onBackPress?: () => void;      
+  onSettingsPress?: () => void;
 }
 
 const ProfileView: React.FC<ProfileViewProps> = ({
@@ -26,8 +31,15 @@ const ProfileView: React.FC<ProfileViewProps> = ({
   onAddPeoplePress,
   onAddGamePress,
   onViewAllGamesPress,
+  onBackPress,
+  onSettingsPress,
 }) => {
   const user = useMockUser();
+  const router = useRouter();
+  
+  const allPosts = usePostStore((state) => state.posts);
+  const jorgePosts = allPosts.filter(post => post.author_username === 'jorgesilva');
+
   const displayName = user.display_name.toUpperCase();
   const bioLine = user.bio?.split('\n').filter(Boolean).join(' | ') || '';
 
@@ -54,24 +66,35 @@ const ProfileView: React.FC<ProfileViewProps> = ({
           showsVerticalScrollIndicator={false}
           contentContainerStyle={styles.scrollContent}
         >
-          {/* Header: Portada y Avatar */}
+          {/* Header */}
           <View style={styles.coverContainer}>
             <ImageBackground
               source={{ uri: user.cover_pic }}
               style={styles.coverImage}
               resizeMode="cover"
             >
+              {/* Botones de navegación superiores */}
+              <View style={styles.topButtonsRow}>
+                <TouchableOpacity onPress={onBackPress} style={styles.topIconBtn}>
+                  <Ionicons name="chevron-back" size={32} color="white" />
+                </TouchableOpacity>
+
+                <TouchableOpacity onPress={onSettingsPress} style={styles.topIconBtn}>
+                  <View style={styles.settingsIconWrapper}>
+                    <Ionicons name="settings-sharp" size={28} color="#2533C8" /> 
+                  </View>
+                </TouchableOpacity>
+              </View>
+
               <View style={styles.avatarWrapper}>
                 <Image source={{ uri: user.profile_pic }} style={styles.avatar} />
               </View>
             </ImageBackground>
           </View>
 
-          {/* TARJETA GRANDE (Diseño Flotante) */}
           <View style={styles.bigCard}>
             <View style={styles.profileCard}>
               
-              {/* Fila de Nombre y Acciones */}
               <View style={styles.nameRow}>
                 <Text style={styles.userName}>{displayName}</Text>
                 <View style={styles.actionButtons}>
@@ -94,10 +117,9 @@ const ProfileView: React.FC<ProfileViewProps> = ({
                 <Text style={styles.joinDate}> Se unió en {user.created_at}</Text>
               </View>
 
-              {/* Estadísticas */}
               <View style={styles.statsContainer}>
                 <View style={styles.statItem}>
-                  <Text style={styles.statNumber}>{user.stats.posts}</Text>
+                  <Text style={styles.statNumber}>{jorgePosts.length}</Text>
                   <Text style={styles.statLabel}>Posts</Text>
                 </View>
                 <View style={styles.statItem}>
@@ -112,7 +134,7 @@ const ProfileView: React.FC<ProfileViewProps> = ({
 
               <View style={styles.separatorLine} />
 
-              {/* SECCIÓN ACTUALIZADA: JUEGOS FAVORITOS CON IMÁGENES */}
+              {/* JUEGOS FAVORITOS */}
               <View style={styles.favoritesSection}>
                 <View style={styles.sectionHeaderRow}>
                   <View style={styles.titleWithIcon}>
@@ -140,19 +162,23 @@ const ProfileView: React.FC<ProfileViewProps> = ({
 
               <View style={styles.separatorLine} />
 
-              {/* Post Destacado */}
-              {user.featured_post && (
-                <View style={styles.featuredSection}>
-                  <View style={styles.featuredUser}>
-                    <Text style={styles.featuredUserName}>{user.display_name}</Text>
-                    <Text style={styles.featuredUserTag}>{user.featured_post.tag}</Text>
-                  </View>
-                  <Text style={styles.featuredTitle}>{user.featured_post.title}</Text>
-                  <Text style={styles.featuredDescription}>
-                    {user.featured_post.description}
-                  </Text>
-                </View>
-              )}
+              {/* POSTS */}
+              <View style={styles.feedContainer}>
+                {jorgePosts.map((post) => (
+                  <PostItem 
+                    key={post.id} 
+                    id={post.id}
+                    userName={post.author_display_name}
+                    userTag="FPS" 
+                    userAvatar={post.author_profile_pic}
+                    title={post.post_title}
+                    content={post.content}
+                    imageUrl={post.media.images[0]} 
+                    likes={post.likes_counter}
+                    comments={post.commets_counter}
+                  />
+                ))}
+              </View>
               
             </View>
           </View>
@@ -166,7 +192,7 @@ const styles = StyleSheet.create({
   backgroundImage: { flex: 1 },
   container: { flex: 1, backgroundColor: 'transparent' },
   scrollContent: {
-    paddingBottom: 40, // Espacio al final para que no pegue al navbar
+    paddingBottom: 5, 
   },
   coverContainer: { marginTop: 0 },
   coverImage: {
@@ -174,6 +200,30 @@ const styles = StyleSheet.create({
     height: 240,
     justifyContent: 'flex-end',
     alignItems: 'flex-start',
+  },
+  topButtonsRow: {
+    position: 'absolute',
+    top: 45,
+    left: 0,
+    right: 0,
+    flexDirection: 'row',
+    justifyContent: 'space-between',
+    paddingHorizontal: 15,
+    zIndex: 100,
+  },
+  topIconBtn: {
+    width: 40,
+    height: 40,
+    justifyContent: 'center',
+    alignItems: 'center',
+    backgroundColor: 'rgba(0,0,0,0.4)',
+    borderRadius: 20,
+    marginTop: 10,
+  },
+  settingsIconWrapper: {
+    backgroundColor: 'rgba(255, 255, 255, 0.8)', 
+    borderRadius: 20,
+    padding: 2,
   },
   avatarWrapper: {
     position: 'absolute',
@@ -186,24 +236,21 @@ const styles = StyleSheet.create({
     zIndex: 10,
   },
   avatar: { width: 100, height: 100, borderRadius: 50 },
-  
-  // DISEÑO FLOTANTE CORREGIDO
   bigCard: {
     backgroundColor: 'rgba(204, 204, 204, 0.85)',
-    borderRadius: 24,            // Bordes redondeados en las 4 esquinas
-    marginHorizontal: 0,       // Separación lateral de los bordes
+    borderRadius: 24,            
+    marginHorizontal: 0,       
     marginTop: -70,
     paddingTop: 60,
     paddingHorizontal: 16,
-    paddingBottom: 30,
-    marginBottom: 20,           // Espacio con el Navbar
+    paddingBottom: 20,
+    marginBottom: 10,
     shadowColor: '#000',
     shadowOffset: { width: 0, height: 2 },
     shadowOpacity: 0.2,
     shadowRadius: 10,
     elevation: 5,
   },
-
   profileCard: {
     backgroundColor: 'transparent',
   },
@@ -219,6 +266,7 @@ const styles = StyleSheet.create({
     gap: 8,
   },
   userName: {
+    fontFamily: 'Inter',
     fontSize: 25,
     fontWeight: 'bold',
     color: '#033563',
@@ -244,7 +292,7 @@ const styles = StyleSheet.create({
   bioContainer: {
     flexDirection: 'row',
     alignItems: 'center',
-    marginTop: 10,
+    marginTop: 5,
   },
   userBio: {
     fontSize: 16,
@@ -256,28 +304,40 @@ const styles = StyleSheet.create({
   joinDateContainer: {
     flexDirection: 'row',
     alignItems: 'center',
-    marginTop: 8,
+    marginTop: 4,
   },
-  joinDate: { fontSize: 14, color: '#666', marginLeft: 4 },
+  joinDate: { 
+    fontSize: 14, 
+    color: '#666', 
+    marginLeft: 4
+  },
   statsContainer: {
     flexDirection: 'row',
     justifyContent: 'space-between',
     width: '100%',
-    marginTop: 20,
-    marginBottom: 10,
+    marginTop: 5,
+    marginBottom: 2,
   },
-  statItem: { alignItems: 'center' },
-  statNumber: { fontSize: 20, fontWeight: 'bold', color: '#000000' },
-  statLabel: { fontSize: 14, color: '#000000', marginTop: 2 },
+  statItem: { 
+    alignItems: 'center'
+  },
+  statNumber: { 
+    fontSize: 20, 
+    fontWeight: 'bold', 
+    color: '#000000'
+  },
+  statLabel: { 
+    fontSize: 14, 
+    color: '#000000', 
+    marginTop: 2
+  },
   separatorLine: {
     height: 1,
     backgroundColor: '#000000',
     width: '100%',
-    marginVertical: 15,
+    marginVertical: 5,
     opacity: 0.2
   },
-  
-  // ESTILOS DE JUEGOS FAVORITOS
   favoritesSection: { width: '100%' },
   sectionHeaderRow: {
     flexDirection: 'row',
@@ -320,13 +380,10 @@ const styles = StyleSheet.create({
     textAlign: 'center',
     width: '100%'
   },
-
-  featuredSection: { marginTop: 5 },
-  featuredUser: { flexDirection: 'row', alignItems: 'center', marginBottom: 10 },
-  featuredUserName: { fontSize: 18, fontWeight: 'bold', color: '#222', marginRight: 8 },
-  featuredUserTag: { fontSize: 14, color: '#007AFF', fontWeight: '600' },
-  featuredTitle: { fontSize: 18, fontWeight: 'bold', color: '#222', marginBottom: 5 },
-  featuredDescription: { fontSize: 14, color: '#444', lineHeight: 20 },
+  feedContainer: {
+    width: '100%',
+    marginTop: -20,
+  }
 });
 
 export default ProfileView;

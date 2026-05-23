@@ -7,7 +7,7 @@ export default function GamePage() {
   const { id } = useLocalSearchParams<{ id?: string | string[] }>();
   const gameId = Array.isArray(id) ? id[0] : id;
 
-  const game = mockGameProfiles.find((g) => g.id === gameId);
+  const game = mockGameProfiles.find((g) => String(g.id) === String(gameId));
 
   if (!game) {
     return (
