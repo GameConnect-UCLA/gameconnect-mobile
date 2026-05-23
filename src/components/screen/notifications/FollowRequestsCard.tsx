@@ -73,7 +73,7 @@ export const FollowRequestsCard: React.FC<FollowRequestsCardProps> = ({
 
 const styles = StyleSheet.create({
   cardContainer: {
-    backgroundColor: '#1A1A1A',
+    backgroundColor: '#d9d9d9',
     borderRadius: 12,
     marginHorizontal: 16,
     marginVertical: 8,
@@ -129,7 +129,7 @@ const styles = StyleSheet.create({
     right: -5, // Further offset if there's a second avatar
   },
   badgeText: {
-    color: '#FFFFFF',
+    color: '#ffffff',
     fontSize: 10,
     fontWeight: 'bold',
   },
@@ -138,12 +138,13 @@ const styles = StyleSheet.create({
     justifyContent: 'center',
   },
   title: {
-    color: '#FFFFFF',
+    color: '#000000',
     fontSize: 16,
-    fontWeight: '600',
+    fontWeight: 'bold',
   },
   subtitle: {
-    color: '#8E8E93',
+    color: '#000000',
+    opacity: 0.72,
     fontSize: 14,
     marginTop: 2,
   },
@@ -153,10 +154,10 @@ const styles = StyleSheet.create({
     borderTopColor: '#3A3A3C',
     borderTopWidth: 1,
     paddingVertical: 12,
-    backgroundColor: '#1A1A1A',
+    backgroundColor: '#d9d9d9',
   },
   acceptButton: {
-    backgroundColor: '#007AFF', // Blue for accept
+    backgroundColor: '#033563', // Blue for accept
     paddingVertical: 8,
     paddingHorizontal: 20,
     borderRadius: 20,
@@ -169,7 +170,8 @@ const styles = StyleSheet.create({
     fontSize: 14,
   },
   rejectButton: {
-    backgroundColor: '#2C2C2E', // Grey for reject
+    backgroundColor: '#6c6a6c',
+    opacity: 0.75, // Grey for reject
     paddingVertical: 8,
     paddingHorizontal: 20,
     borderRadius: 20,
@@ -177,7 +179,7 @@ const styles = StyleSheet.create({
     alignItems: 'center',
   },
   rejectButtonText: {
-    color: '#8E8E93',
+    color: '#FFFFFF',
     fontWeight: 'bold',
     fontSize: 14,
   },

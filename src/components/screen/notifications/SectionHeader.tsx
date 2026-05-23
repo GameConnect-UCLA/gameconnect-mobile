@@ -18,11 +18,11 @@ const styles = StyleSheet.create({
     paddingHorizontal: 16,
     paddingTop: 24,
     paddingBottom: 8,
-    backgroundColor: '#0A0A0A', // Dark background
+    backgroundColor: 'transparent', // Transparent to show background image
   },
   title: {
     fontSize: 16,
-    fontWeight: '600',
-    color: '#FFFFFF', // White color for section titles
+    fontWeight: 'bold',
+    color: '#000000', // Black color for section titles
   },
 });

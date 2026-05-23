@@ -1,5 +1,5 @@
 import React from 'react';
-import { View, Text, StyleSheet, FlatList, ActivityIndicator, RefreshControl, TouchableOpacity } from 'react-native';
+import { View, Text, StyleSheet, FlatList, ActivityIndicator, RefreshControl, TouchableOpacity, ImageBackground } from 'react-native';
 import { SafeAreaView } from 'react-native-safe-area-context';
 import { useNotifications } from '../../src/hooks/useNotifications';
 import { SectionHeader } from '../../src/components/screen/notifications/SectionHeader';
@@ -9,10 +9,12 @@ import { NotificationType, FollowRequestNotification } from '../../src/hooks/moc
 import { Ionicons } from '@expo/vector-icons';
 import { router } from 'expo-router';
 
+const BG_IMAGE = require('../../assets/images/bgbody.png');
+
 const CustomHeader: React.FC = () => (
   <View style={headerStyles.headerContainer}>
     <TouchableOpacity onPress={() => router.back()} style={headerStyles.backButton}>
-      <Ionicons name="chevron-back" size={24} color="#FFFFFF" />
+      <Ionicons name="chevron-back" size={20} color="#000000" />
     </TouchableOpacity>
     <Text style={headerStyles.headerTitle}>Notificaciones</Text>
   </View>
@@ -61,69 +63,66 @@ const NotificationsScreen: React.FC = () => {
   }
 
   return (
-    <SafeAreaView style={styles.container}>
-      <FlatList
-        data={generalNotifications}
-        keyExtractor={(item) => item.id}
-        renderItem={({ item }) => (
-          <NotificationItem
-            notification={item}
-            onMarkAsRead={markAsRead}
-            onAcceptFollowRequest={handleAcceptFollowRequest}
-            onRejectFollowRequest={handleRejectFollowRequest}
-            onAcceptInvitation={handleAcceptInvitation}
-            onRejectInvitation={handleRejectInvitation}
-          />
-        )}
-        ListHeaderComponent={
-          <>
-            <CustomHeader />
-            {followRequests.length > 0 && (
-              <>
-                <SectionHeader title="Solicitudes de seguimiento" />
+    <ImageBackground source={BG_IMAGE} style={styles.backgroundImage}>
+      <SafeAreaView style={styles.container}>
+        <FlatList
+          data={generalNotifications}
+          keyExtractor={(item) => item.id}
+          renderItem={({ item }) => (
+            <NotificationItem
+              notification={item}
+              onMarkAsRead={markAsRead}
+              onAcceptFollowRequest={handleAcceptFollowRequest}
+              onRejectFollowRequest={handleRejectFollowRequest}
+              onAcceptInvitation={handleAcceptInvitation}
+              onRejectInvitation={handleRejectInvitation}
+            />
+          )}
+          ListHeaderComponent={
+            <>
+              <CustomHeader />
+              {followRequests.length > 0 && (
                 <FollowRequestsCard
                   requests={followRequests}
                   onAccept={handleAcceptFollowRequest}
                   onReject={handleRejectFollowRequest}
                 />
-              </>
-            )}
-            {generalNotifications.length > 0 && (
-              <SectionHeader title="Lo más destacado" />
-            )}
-            {/* Additional Section Header for 'Últimos 7 días' if needed, conditional rendering */}
-            {/* Example: Assuming older notifications could go here, for now it's just one section */}
-            {generalNotifications.length > 0 && (
+              )}
+              {generalNotifications.length > 0 && (
+                <SectionHeader title="Lo más destacado" />
+              )}
+              {generalNotifications.length > 0 && (
                 <SectionHeader title="Últimos 7 días" />
-            )}
-          </>
-        }
-        ListEmptyComponent={
-          (!isLoading && !isRefreshing) ? (
-            <View style={styles.emptyContainer}>
-              <Text style={styles.emptyText}>No tienes notificaciones.</Text>
-            </View>
-          ) : null
-        }
-        refreshControl={
-          <RefreshControl
-            refreshing={isRefreshing}
-            onRefresh={refreshNotifications}
-            tintColor="#FF00FF"
-            colors={['#FF00FF', '#007AFF']}
-            progressBackgroundColor="#0A0A0A"
-          />
-        }
-        style={styles.list}
-        contentContainerStyle={styles.listContentContainer}
-      />
-    </SafeAreaView>
+              )}
+            </>
+          }
+          ListEmptyComponent={
+            (!isLoading && !isRefreshing) ? (
+              <View style={styles.emptyContainer}>
+                <Text style={styles.emptyText}>No tienes notificaciones.</Text>
+              </View>
+            ) : null
+          }
+          refreshControl={
+            <RefreshControl
+              refreshing={isRefreshing}
+              onRefresh={refreshNotifications}
+              tintColor="#9b1999"
+              colors={['#9b1999', '#033563']}
+              progressBackgroundColor="#ffffff"
+            />
+          }
+          style={styles.list}
+          contentContainerStyle={styles.listContentContainer}
+        />
+      </SafeAreaView>
+    </ImageBackground>
   );
 };
 
 const headerStyles = StyleSheet.create({
   headerContainer: {
-    backgroundColor: '#0A0A0A',
+    backgroundColor: 'transparent',
     paddingTop: 16,
     paddingHorizontal: 16,
     paddingBottom: 12,
@@ -135,22 +134,27 @@ const headerStyles = StyleSheet.create({
     // Adjust as needed for alignment with title
   },
   headerTitle: {
-    color: '#FFFFFF',
-    fontSize: 28,
-    fontWeight: '700',
+    color: '#000000',
+    fontSize: 20,
+    fontWeight: 'bold',
   },
 });
 
 const styles = StyleSheet.create({
+  backgroundImage: {
+    flex: 1,
+    width: '100%',
+    height: '100%',
+  },
   container: {
     flex: 1,
-    backgroundColor: '#0A0A0A',
+    backgroundColor: 'transparent',
   },
   loadingContainer: {
     flex: 1,
     justifyContent: 'center',
     alignItems: 'center',
-    backgroundColor: '#0A0A0A',
+    backgroundColor: 'transparent',
   },
   loadingText: {
     marginTop: 10,
@@ -161,7 +165,7 @@ const styles = StyleSheet.create({
     flex: 1,
     justifyContent: 'center',
     alignItems: 'center',
-    backgroundColor: '#0A0A0A',
+    backgroundColor: 'transparent',
     padding: 20,
   },
   errorText: {
@@ -195,7 +199,8 @@ const styles = StyleSheet.create({
     paddingHorizontal: 20,
   },
   emptyText: {
-    color: '#888',
+    color: '#000000',
+    opacity: 0.72,
     fontSize: 16,
     textAlign: 'center',
   },

@@ -64,7 +64,7 @@ export const NotificationItem: React.FC<NotificationItemProps> = ({
         const lkn = notification as LikeNotification;
         return (
           <Text style={styles.notificationText}>
-            <Text style={styles.usernameText}>{lkn.sender.username}</Text> Le dio me gusta a tu publicación
+            <Text style={styles.usernameText}>{lkn.sender.username}</Text> Le dió me gusta a tu publicación
           </Text>
         );
 
@@ -72,7 +72,7 @@ export const NotificationItem: React.FC<NotificationItemProps> = ({
         const cmn = notification as CommentNotification;
         return (
           <Text style={styles.notificationText}>
-            <Text style={styles.usernameText}>{cmn.sender.username}</Text> comentó: "{cmn.commentPreview}"
+            <Text style={styles.usernameText}>{cmn.sender.username}</Text> {cmn.commentPreview}
           </Text>
         );
 
@@ -184,14 +184,14 @@ export const NotificationItem: React.FC<NotificationItemProps> = ({
   const renderAvatarOverlayIcon = () => {
     switch (notification.type) {
       case NotificationType.LIKE:
-        return <View style={[styles.overlayIconContainer, { backgroundColor: '#FF3B30' }]}><Text style={styles.overlayIconText}>❤️</Text></View>;
+        return <View style={[styles.overlayIconContainer, { backgroundColor: '#d9d9d9' }]}><Text style={styles.overlayIconText}>❤️</Text></View>;
       case NotificationType.COMMENT:
       case NotificationType.MENTION:
-        return <View style={[styles.overlayIconContainer, { backgroundColor: '#007AFF' }]}><Text style={styles.overlayIconText}>💬</Text></View>;
+        return <View style={[styles.overlayIconContainer, { backgroundColor: '#d9d9d9' }]}><Text style={styles.overlayIconText}>💬</Text></View>;
       case NotificationType.INVITATION_GAME:
-        return <View style={[styles.overlayIconContainer, { backgroundColor: '#FF00FF' }]}><Text style={styles.overlayIconText}>🎮</Text></View>;
+        return <View style={[styles.overlayIconContainer, { backgroundColor: '#d9d9d9' }]}><Text style={styles.overlayIconText}>🎮</Text></View>;
       case NotificationType.INVITATION_TEAM:
-        return <View style={[styles.overlayIconContainer, { backgroundColor: '#8E8E93' }]}><Text style={styles.overlayIconText}>👥</Text></View>;
+        return <View style={[styles.overlayIconContainer, { backgroundColor: '#d9d9d9' }]}><Text style={styles.overlayIconText}>👥</Text></View>;
       default:
         return null;
     }
@@ -224,13 +224,13 @@ const styles = StyleSheet.create({
     flexDirection: 'row',
     alignItems: 'center',
     paddingHorizontal: 16,
-    paddingVertical: 12,
-    backgroundColor: '#1A1A1A', // Fondo gris oscuro del diseño
+    paddingVertical: 10,
+    backgroundColor: '#d9d9d9', // Fondo gris oscuro del diseño
     borderBottomWidth: 0.5,
     borderBottomColor: '#2C2C2E',
   },
   unreadContainer: {
-    backgroundColor: '#242426', // Tono ligeramente más claro para indicar no leído
+    backgroundColor: '#d9d9d9', // Tono ligeramente más claro para indicar no leído
   },
   avatarWrapper: {
     position: 'relative',
@@ -240,7 +240,7 @@ const styles = StyleSheet.create({
     width: 48,
     height: 48,
     borderRadius: 24,
-    backgroundColor: '#333',
+    backgroundColor: '#FFFFFF',
   },
   overlayIconContainer: {
     position: 'absolute',
@@ -252,11 +252,11 @@ const styles = StyleSheet.create({
     justifyContent: 'center',
     alignItems: 'center',
     borderWidth: 1.5,
-    borderColor: '#1A1A1A',
+    borderColor: 'transparent',
   },
   overlayIconText: {
     fontSize: 9,
-    color: '#FFF',
+    color: '#FFFFFF',
   },
   content: {
     flex: 1,
@@ -264,13 +264,13 @@ const styles = StyleSheet.create({
     justifyContent: 'center',
   },
   notificationText: {
-    color: '#E5E5EA',
+    color: '#000000',
     fontSize: 14,
     lineHeight: 18,
   },
   usernameText: {
-    fontWeight: '700',
-    color: '#FFFFFF',
+    fontWeight: 'bold',
+    color: '#000000',
   },
   highlightText: {
     color: '#007AFF',
@@ -287,7 +287,7 @@ const styles = StyleSheet.create({
     marginTop: 8,
   },
   acceptButton: {
-    backgroundColor: '#FF00FF', // Magenta del mockup
+    backgroundColor: '#9b1999', // Magenta del mockup
     paddingVertical: 6,
     paddingHorizontal: 20,
     borderRadius: 14,
@@ -298,24 +298,25 @@ const styles = StyleSheet.create({
     fontWeight: '600',
   },
   rejectButton: {
-    backgroundColor: '#2C2C2E', // Gris oscuro del mockup
+    backgroundColor: '#6c6a6c',
+    opacity: 0.75, // Gris oscuro del mockup
     paddingVertical: 6,
     paddingHorizontal: 20,
     borderRadius: 14,
   },
   rejectButtonText: {
-    color: '#AEAEB2',
+    color: '#FFFFFF',
     fontSize: 12,
     fontWeight: '600',
   },
   statusText: {
-    color: '#8E8E93',
+    color: '#000000',
     fontSize: 12,
     fontStyle: 'italic',
     marginTop: 4,
   },
   followRightButton: {
-    backgroundColor: '#004CB3', // Azul oscuro premium
+    backgroundColor: '#033563', // Azul oscuro premium
     paddingVertical: 6,
     paddingHorizontal: 16,
     borderRadius: 14,

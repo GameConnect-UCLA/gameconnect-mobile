@@ -163,7 +163,7 @@ export const mockNotifications: Notification[] = [
       avatar: 'https://i.pravatar.cc/150?img=4',
     },
     postId: 'post124',
-    commentPreview: 'commented: "Awesome setup!"',
+    commentPreview: 'comentó: "Awesome setup!"',
     thumbnail: 'https://placehold.co/50x50/2C2C2E/FFFFFF?text=Post2',
   },
   {
@@ -252,7 +252,7 @@ export const mockNotifications: Notification[] = [
       avatar: 'https://i.pravatar.cc/150?img=10',
     },
     postId: 'post127',
-    commentPreview: 'commented: "Inspiring work!"',
+    commentPreview: 'comentó: "Inspiring work!"',
     thumbnail: 'https://placehold.co/50x50/2C2C2E/FFFFFF?text=Post5',
   },
 ];
