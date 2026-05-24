@@ -395,6 +395,7 @@ export default function CreatePostScreen() {
                           >
                             <Ionicons name="game-controller-outline" size={18} color="#0B4B82" />
                             <Text style={styles.suggestionText}>{game.title}</Text>
+                            {isSelected ? <Ionicons name="checkmark-circle" size={18} color="#0B4B82" /> : null}
                           </TouchableOpacity>
                         );
                       })
@@ -735,6 +736,8 @@ const styles = StyleSheet.create({
   },
   suggestionItemSelected: {
     backgroundColor: 'rgba(11,75,130,0.18)',
+    borderWidth: 1,
+    borderColor: 'rgba(11,75,130,0.35)',
   },
   suggestionText: {
     flex: 1,
