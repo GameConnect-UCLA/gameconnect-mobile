@@ -22,7 +22,7 @@ import { useConversation } from "@/src/hooks/chat/useConversation";
 import { useGroupMembers } from "@/src/hooks/chat/use-group-members";
 import { useChatStore } from "@/src/store/chat.store";
 import { useUserStore } from "@/src/store/user.store";
-import type { Attachment, Message } from "@/src/types/chat.types";
+import type { Attachment, GameInfoCard, Message } from "@/src/types/chat.types";
 import { deleteMessage } from "@/src/api/chat.api";
 import ChatHeader from "@/src/components/chat/chat-header";
 import ChatSearchBar from "@/src/components/chat/chat-search-bar";
@@ -177,17 +177,46 @@ export default function ChatDirectScreen() {
   );
 
   const handleSend = useCallback(
-    async (text: string | null, attachments?: Attachment[] | null) => {
+    async (
+      text: string | null,
+      attachments?: Attachment[] | null,
+      _replyToId?: string | null,
+      gameCard?: GameInfoCard | null,
+    ) => {
       scrollToBottom();
       if (!id) return;
       try {
-        await sendMessage(text, attachments, replyingTo?.id ?? null);
+        await sendMessage(
+          text,
+          attachments,
+          replyingTo?.id ?? null,
+          gameCard,
+        );
         setReplyingTo(null);
       } catch (err) {
         console.error("Error en flujo de envío:", err);
       }
     },
     [id, sendMessage, scrollToBottom, replyingTo],
+  );
+
+  const handleMentionPress = useCallback(
+    (username: string) => {
+      const member = conversation?.members?.find(
+        (m) => m.username === username,
+      );
+      if (member?.user_id) {
+        router.push(`/user/${member.user_id}`);
+      }
+    },
+    [conversation?.members, router],
+  );
+
+  const handleGameCardPress = useCallback(
+    (gameId: string) => {
+      router.push(`/game/${gameId}`);
+    },
+    [router],
   );
 
   const handleLongPress = useCallback((msg: Message, pageY: number) => {
@@ -220,6 +249,7 @@ export default function ChatDirectScreen() {
     if (!id) return;
     try {
       await leaveGroup();
+      useChatStore.getState().hideConversation(id);
       router.back();
     } catch {
       Alert.alert("Error", "Failed to leave group.");
@@ -331,6 +361,8 @@ export default function ChatDirectScreen() {
                   isGroup={isGroupChat}
                   senderName={senderMap.get(msg.sent_by)?.name ?? msg.sender_username}
                   senderAvatar={senderMap.get(msg.sent_by)?.avatar ?? msg.sender_profile_pic}
+                  onMentionPress={handleMentionPress}
+                  onGameCardPress={handleGameCardPress}
                 />
               </View>
             ))}
@@ -348,7 +380,7 @@ export default function ChatDirectScreen() {
           {replyingTo && (
             <ReplyBar message={replyingTo} onCancel={handleCancelReply} />
           )}
-          <ChatInput onSend={handleSend} onHeightChange={handleHeightChange} recipientName={displayName} blocked={isBlocked} />
+          <ChatInput onSend={handleSend} onHeightChange={handleHeightChange} recipientName={displayName} blocked={isBlocked} groupMembers={isGroupChat ? conversation?.members : null} />
         </KeyboardStickyView>
 
         <ChatOverflowMenu

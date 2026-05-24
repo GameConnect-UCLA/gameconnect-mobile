@@ -2,7 +2,7 @@ import { useQuery, useMutation, useQueryClient } from "@tanstack/react-query";
 import { getConversation, sendMessage as apiSendMessage } from "@/src/api/chat.api";
 import { ApiError } from "@/src/api/auth.api";
 import { useUserStore } from "@/src/store/user.store";
-import type { Attachment, Conversation, Message } from "@/src/types/chat.types";
+import type { Attachment, Conversation, GameInfoCard, Message } from "@/src/types/chat.types";
 import { MessageType } from "@/src/types/chat.types";
 
 export function useConversation(conversationId: string) {
@@ -22,13 +22,23 @@ export function useConversation(conversationId: string) {
       text,
       attachments,
       replyToId,
+      gameCard,
     }: {
       text: string | null;
       attachments?: Attachment[] | null;
       replyToId?: string | null;
-    }) => apiSendMessage(conversationId, text, attachments, currentUserId, replyToId),
+      gameCard?: GameInfoCard | null;
+    }) =>
+      apiSendMessage(
+        conversationId,
+        text,
+        attachments,
+        currentUserId,
+        replyToId,
+        gameCard,
+      ),
 
-    onMutate: async ({ text, attachments, replyToId }) => {
+    onMutate: async ({ text, attachments, replyToId, gameCard }) => {
       await queryClient.cancelQueries({ queryKey });
       const previousConversation =
         queryClient.getQueryData<Conversation>(queryKey);
@@ -51,6 +61,7 @@ export function useConversation(conversationId: string) {
         sender_username: "You",
         sender_profile_pic: null,
         reply_to_message: repliedMessage,
+        game_card: gameCard ?? null,
       };
 
       if (previousConversation) {
@@ -77,8 +88,12 @@ export function useConversation(conversationId: string) {
   return {
     ...conversationQuery,
     messages: conversationQuery.data?.messages ?? [],
-    sendMessage: (text: string | null, attachments?: Attachment[] | null, replyToId?: string | null) =>
-      sendMessageMutation.mutateAsync({ text, attachments, replyToId }),
+    sendMessage: (
+      text: string | null,
+      attachments?: Attachment[] | null,
+      replyToId?: string | null,
+      gameCard?: GameInfoCard | null,
+    ) => sendMessageMutation.mutateAsync({ text, attachments, replyToId, gameCard }),
     isSending: sendMessageMutation.isPending,
   };
 }

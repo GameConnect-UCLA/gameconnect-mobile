@@ -2,7 +2,43 @@ import { Conversation } from "@/src/types/chat.types";
 import { useRef } from "react";
 import { Animated, Image, StyleSheet, Text, TouchableOpacity, View } from "react-native";
 
-export default function ConversationRow({ item, onPress }: { item: Conversation, onPress: () => void }) {
+function formatTime(isoString?: string): string {
+  if (!isoString) return "";
+  const date = new Date(isoString);
+  if (isNaN(date.getTime())) return isoString;
+
+  const now = new Date();
+  const diff = now.getTime() - date.getTime();
+  const oneDay = 86400000;
+
+  if (diff < oneDay && now.getDate() === date.getDate()) {
+    return date.toLocaleTimeString("en-US", {
+      hour: "numeric",
+      minute: "2-digit",
+      hour12: true,
+    });
+  }
+
+  const yesterday = new Date(now);
+  yesterday.setDate(yesterday.getDate() - 1);
+  if (date.getDate() === yesterday.getDate() &&
+      date.getMonth() === yesterday.getMonth() &&
+      date.getFullYear() === yesterday.getFullYear()) {
+    return "Yesterday";
+  }
+
+  if (date.getFullYear() === now.getFullYear()) {
+    return date.toLocaleDateString("en-US", { month: "short", day: "numeric" });
+  }
+
+  return date.toLocaleDateString("en-US", {
+    month: "short",
+    day: "numeric",
+    year: "numeric",
+  });
+}
+
+export default function ConversationRow({ item, onPress, onLongPress }: { item: Conversation, onPress: () => void, onLongPress?: () => void }) {
   const scale = useRef(new Animated.Value(1)).current;
 
   const onPressIn = () =>
@@ -14,8 +50,11 @@ export default function ConversationRow({ item, onPress }: { item: Conversation,
   const onPressOut = () =>
     Animated.spring(scale, { toValue: 1, useNativeDriver: true }).start();
 
-  const preview = item.last_message_sender
-    ? `${item.last_message_sender}: ${item.last_message ?? ""}`
+  const senderName = item.last_message_sender === "current_user"
+    ? "You"
+    : item.last_message_sender;
+  const preview = item.is_group && senderName
+    ? `${senderName}: ${item.last_message ?? ""}`
     : (item.last_message ?? "");
 
   return (
@@ -24,6 +63,7 @@ export default function ConversationRow({ item, onPress }: { item: Conversation,
       onPressIn={onPressIn}
       onPressOut={onPressOut}
       onPress={onPress}
+      onLongPress={onLongPress}
     >
       <Animated.View style={[styles.convoRow, { transform: [{ scale }] }]}>
         <View style={styles.avatarContainer}>
@@ -38,7 +78,7 @@ export default function ConversationRow({ item, onPress }: { item: Conversation,
             <Text style={styles.convoName} numberOfLines={1}>
               {item.name ?? "Unnamed Chat"}
             </Text>
-            <Text style={styles.convoTime}>{item.last_message_time ?? ""}</Text>
+            <Text style={styles.convoTime}>{formatTime(item.last_message_time)}</Text>
           </View>
 
           {item.is_group && item.member_count && (

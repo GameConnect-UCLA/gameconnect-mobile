@@ -1,4 +1,4 @@
-import React from "react";
+import React, { useState } from "react";
 import {
   View,
   Text,
@@ -8,23 +8,91 @@ import {
   StatusBar,
   Platform,
   ImageBackground,
-  ActivityIndicator
+  ActivityIndicator,
+  Alert,
 } from "react-native";
 import { Ionicons } from "@expo/vector-icons";
 import { SafeAreaView } from "react-native-safe-area-context";
 import ActiveAvatar from "@/src/components/chat/ActiveAvatar";
 import ConversationRow from "@/src/components/chat/ConversationRow";
+import ConversationActionsSheet from "@/src/components/chat/ConversationActionsSheet";
+import NewConversationModal from "@/src/components/chat/new-conversation-modal";
 import SearchBar from "@/src/components/ui/SearchBar";
 import { ACTIVE_USERS } from "@/src/hooks/mock-data/mock-chat";
 import { useRouter } from "expo-router";
 import { useChatSearch } from "@/src/hooks/chat/useChatSearch";
 import { useConversations } from "@/src/hooks/chat/use-conversations";
+import { useChatStore } from "@/src/store/chat.store";
+import { leaveGroup, getCurrentUserId } from "@/src/api/chat.api";
+import { GroupRole } from "@/src/types/chat.types";
+import type { Conversation } from "@/src/types/chat.types";
 
 const BG = require("@/assets/images/bgbody.png");
 
 export default function MessagesScreen() {
-  const router = useRouter(); 
+  const router = useRouter();
   const { conversations } = useConversations();
+  const hideConversation = useChatStore((s) => s.hideConversation);
+  const hiddenConversationIds = useChatStore((s) => s.hiddenConversationIds);
+  const visibleActiveUsers = ACTIVE_USERS.filter(
+    (u) => !hiddenConversationIds.includes(u.conversationId ?? ""),
+  );
+  const [selectedConvo, setSelectedConvo] = useState<Conversation | null>(null);
+  const [showActions, setShowActions] = useState(false);
+  const [showNewConvo, setShowNewConvo] = useState(false);
+
+  const handleLongPress = (c: Conversation) => {
+    setSelectedConvo(c);
+    setShowActions(true);
+  };
+
+  const handleOpenChat = () => {
+    if (!selectedConvo) return;
+    setShowActions(false);
+    router.push(`/chat/${selectedConvo.id}`);
+  };
+
+  const handleMute = () => {
+    setShowActions(false);
+    Alert.alert("Mute Notifications", "Coming soon.");
+  };
+
+  const handleReport = () => {
+    setShowActions(false);
+    Alert.alert("Report", "Coming soon.");
+  };
+
+  const handleDelete = async () => {
+    if (!selectedConvo) return;
+    const isGroup = selectedConvo.is_group;
+    const currentUserId = getCurrentUserId();
+    const isOwner = selectedConvo.members?.some(
+      (m) => m.user_id === currentUserId && m.role === GroupRole.OWNER,
+    );
+    const label = isGroup ? (isOwner ? "Delete Group" : "Leave Group") : "Delete Chat";
+    const message = isGroup
+      ? `Are you sure you want to ${isOwner ? "delete this group" : "leave this group"}?`
+      : "Delete this conversation?";
+
+    Alert.alert(label, message, [
+      { text: "Cancel", style: "cancel" },
+      {
+        text: label,
+        style: "destructive",
+        onPress: async () => {
+          if (isGroup) {
+            try {
+              await leaveGroup(selectedConvo.id);
+            } catch {
+              // mock — ignore
+            }
+          }
+          hideConversation(selectedConvo.id);
+          setShowActions(false);
+        },
+      },
+    ]);
+  };
     const {
     query,
     setQuery,
@@ -69,7 +137,7 @@ export default function MessagesScreen() {
               showsHorizontalScrollIndicator={false}
               contentContainerStyle={styles.activeList}
             >
-              {ACTIVE_USERS.map((u) => (
+              {visibleActiveUsers.map((u) => (
                 <ActiveAvatar key={u.id} user={u} onPress={() => router.push(`/chat/${u.conversationId}`)} />
               ))}
             </ScrollView>
@@ -89,7 +157,7 @@ export default function MessagesScreen() {
                 </View>
               )}
               {localResults.map((c) => (
-                <ConversationRow key={c.id} item={c} onPress={() => router.push(`/chat/${c.id}`)}/>
+                <ConversationRow key={c.id} item={c} onPress={() => router.push(`/chat/${c.id}`)} onLongPress={() => handleLongPress(c)}/>
               ))}
             </View>
           ) : (
@@ -133,6 +201,29 @@ export default function MessagesScreen() {
           )}
 
         </ScrollView>
+
+        {/* New Conversation FAB */}
+        <TouchableOpacity
+          style={styles.fab}
+          activeOpacity={0.7}
+          onPress={() => setShowNewConvo(true)}
+        >
+          <Ionicons name="add" size={28} color="#FFFFFF" />
+        </TouchableOpacity>
+
+        <ConversationActionsSheet
+          visible={showActions}
+          conversation={selectedConvo}
+          onClose={() => setShowActions(false)}
+          onOpenChat={handleOpenChat}
+          onMute={handleMute}
+          onReport={handleReport}
+          onDelete={handleDelete}
+        />
+        <NewConversationModal
+          visible={showNewConvo}
+          onClose={() => setShowNewConvo(false)}
+        />
       </SafeAreaView>
     </ImageBackground>
   );
@@ -238,6 +329,24 @@ const styles = StyleSheet.create({
     color: "#666",
     textAlign: "center",
     lineHeight: 22,
+  },
+
+  // FAB
+  fab: {
+    position: "absolute",
+    right: 16,
+    bottom: 90,
+    width: 48,
+    height: 48,
+    borderRadius: 24,
+    backgroundColor: "#033563",
+    justifyContent: "center",
+    alignItems: "center",
+    shadowColor: "#000",
+    shadowOffset: { width: 0, height: 2 },
+    shadowOpacity: 0.25,
+    shadowRadius: 4,
+    elevation: 5,
   },
 
   // No results

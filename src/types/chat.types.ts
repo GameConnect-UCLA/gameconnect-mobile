@@ -77,6 +77,15 @@ export type Attachment = {
   muted?: boolean;
 };
 
+export type GameInfoCard = {
+  game_id: string;
+  title: string;
+  cover_url: string;
+  developer: string;
+  rating_score: string;
+  tags: string[];
+};
+
 export type Message = {
   id: string;
   sent_by: string;
@@ -90,6 +99,7 @@ export type Message = {
   sender_username?: string;
   sender_profile_pic?: string | null;
   reply_to_message?: Message | null;
+  game_card?: GameInfoCard | null;
 };
 
 // User type matching dbschema

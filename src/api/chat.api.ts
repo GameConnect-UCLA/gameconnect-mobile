@@ -1,5 +1,5 @@
 import * as mockChat from "../hooks/mock-data/mock-chat";
-import type { Attachment, Conversation, GroupMember, Message } from "../types/chat.types";
+import type { Attachment, Conversation, GroupMember, Message, GameInfoCard } from "../types/chat.types";
 import { AttachmentType, GroupRole, MessageType } from "../types/chat.types";
 import { ApiError } from "./auth.api";
 import { useUserStore } from "@/src/store/user.store";
@@ -9,7 +9,7 @@ const simulateLatency = () => new Promise((res) => setTimeout(res, 400));
 
 let mockIdCounter = 0;
 
-const getCurrentUserId = (): string => {
+export const getCurrentUserId = (): string => {
   const user = useUserStore.getState().user;
   return user?.id ?? "current_user";
 };
@@ -38,6 +38,7 @@ export const sendMessage = async (
   attachments: Attachment[] | null = null,
   senderId?: string,
   replyToId?: string | null,
+  gameCard?: GameInfoCard | null,
 ): Promise<Message> => {
   await simulateLatency();
 
@@ -74,12 +75,13 @@ export const sendMessage = async (
     sender_username: "You",
     sender_profile_pic: null,
     reply_to_message: replyToMessage,
+    game_card: gameCard ?? null,
   };
 
   conversation.messages = [...(conversation.messages || []), newMessage];
   conversation.last_message = messageText ?? (attachments?.[0]?.file_name || "[Media]");
   conversation.last_message_time = newMessage.sent_at;
-  conversation.last_message_sender = actualSenderId;
+  conversation.last_message_sender = newMessage.sender_username ?? actualSenderId;
 
   return newMessage;
 };
@@ -175,6 +177,64 @@ export const createGroup = async (
     created_at: new Date().toISOString(),
     member_count: members.length,
     is_group: true,
+    last_message: undefined,
+    last_message_time: undefined,
+    last_message_sender: undefined,
+    members,
+    messages: [],
+  };
+
+  mockChat.CONVERSATIONS.push(newConversation);
+
+  return newConversation;
+};
+
+export const startConversation = async (userId: string): Promise<Conversation> => {
+  await simulateLatency();
+
+  const currentUserId = getCurrentUserId();
+
+  const existing = mockChat.CONVERSATIONS.find(
+    (c) =>
+      !c.is_group &&
+      c.members?.some((m) => m.user_id === currentUserId) &&
+      c.members?.some((m) => m.user_id === userId),
+  );
+  if (existing) return existing;
+
+  const activeUser = mockChat.ACTIVE_USERS.find((u) => u.id === userId);
+
+  const members: GroupMember[] = [
+    {
+      id: `gm-${Date.now()}-owner`,
+      user_id: currentUserId,
+      conversation: "",
+      role: GroupRole.OWNER,
+      joined_at: new Date().toISOString(),
+      left_at: null,
+      username: "You",
+      profile_pic: null,
+    },
+    {
+      id: `gm-${Date.now()}-target`,
+      user_id: userId,
+      conversation: "",
+      role: GroupRole.MEMBER,
+      joined_at: new Date().toISOString(),
+      left_at: null,
+      username: activeUser?.username ?? `User ${userId}`,
+      profile_pic: activeUser?.profile_pic ?? null,
+    },
+  ];
+
+  const newConversation: Conversation = {
+    id: `convo-${Date.now()}`,
+    name: activeUser?.username ?? `User ${userId}`,
+    group_picture: null,
+    created_by: currentUserId,
+    created_at: new Date().toISOString(),
+    member_count: 2,
+    is_group: false,
     last_message: undefined,
     last_message_time: undefined,
     last_message_sender: undefined,

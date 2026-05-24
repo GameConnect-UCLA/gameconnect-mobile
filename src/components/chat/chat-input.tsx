@@ -1,4 +1,4 @@
-import React, { useState, useCallback, useEffect } from "react";
+import React, { useState, useCallback, useEffect, useRef } from "react";
 import {
   View,
   Text,
@@ -11,20 +11,28 @@ import { Ionicons } from "@expo/vector-icons";
 import * as ImagePicker from "expo-image-picker";
 import * as DocumentPicker from "expo-document-picker";
 import { File } from "expo-file-system";
-import type { Attachment } from "@/src/types/chat.types";
+import type { Attachment, GroupMember, GameInfoCard } from "@/src/types/chat.types";
 import { AttachmentType } from "@/src/types/chat.types";
 import MediaPreview from "./media-preview";
 import MediaPreviewModal from "./media-preview-modal";
+import MentionSuggestions from "./mention-suggestions";
+import GameSearchModal from "./game-search-modal";
 
 const MAX_INPUT_HEIGHT = 120;
 const BASE_LINE_HEIGHT = 40;
 const MAX_ATTACHMENTS = 5;
 
 interface ChatInputProps {
-  onSend: (text: string | null, attachments?: Attachment[] | null) => void;
+  onSend: (
+    text: string | null,
+    attachments?: Attachment[] | null,
+    replyToId?: string | null,
+    gameCard?: GameInfoCard | null,
+  ) => void;
   onHeightChange?: (height: number) => void;
   recipientName?: string;
   blocked?: boolean;
+  groupMembers?: GroupMember[] | null;
 }
 
 export default function ChatInput({
@@ -32,6 +40,7 @@ export default function ChatInput({
   onHeightChange,
   recipientName,
   blocked = false,
+  groupMembers,
 }: ChatInputProps) {
   const [message, setMessage] = useState("");
   const [inputHeight, setInputHeight] = useState(BASE_LINE_HEIGHT);
@@ -42,6 +51,18 @@ export default function ChatInput({
     mediaType: "image" | "video";
     fileName: string;
   } | null>(null);
+  const [selection, setSelection] = useState({ start: 0, end: 0 });
+  const messageRef = useRef(message);
+  messageRef.current = message;
+
+  // Autocomplete state
+  const [mentionQuery, setMentionQuery] = useState("");
+  const [mentionVisible, setMentionVisible] = useState(false);
+
+  // Game search modal
+  const [gameModalVisible, setGameModalVisible] = useState(false);
+
+  const isGroup = !!groupMembers;
 
   useEffect(() => {
     if (message === "" && attachments.length === 0) {
@@ -50,14 +71,88 @@ export default function ChatInput({
     }
   }, [message, attachments.length, onHeightChange]);
 
+  const detectAutocomplete = useCallback(
+    (text: string, cursorPos: number) => {
+      const beforeCursor = text.slice(0, cursorPos);
+
+      // @mention only in group
+      if (!isGroup) {
+        setMentionVisible(false);
+        return;
+      }
+
+      const atIndex = beforeCursor.lastIndexOf("@");
+      if (atIndex === -1) {
+        setMentionVisible(false);
+        return;
+      }
+
+      const beforeAt = atIndex === 0 ? " " : beforeCursor[atIndex - 1];
+      if (beforeAt !== " " && beforeAt !== "\n") {
+        setMentionVisible(false);
+        return;
+      }
+
+      const afterAt = beforeCursor.slice(atIndex + 1);
+      if (!/^[a-zA-Z0-9_]*$/.test(afterAt)) {
+        setMentionVisible(false);
+        return;
+      }
+
+      setMentionQuery(afterAt);
+      setMentionVisible(true);
+    },
+    [isGroup],
+  );
+
+  const handleChangeText = useCallback(
+    (text: string) => {
+      const prevLen = messageRef.current.length;
+      setMessage(text);
+      messageRef.current = text;
+      const cursorPos = selection.start + (text.length - prevLen);
+      detectAutocomplete(text, Math.max(0, cursorPos));
+    },
+    [detectAutocomplete, selection.start],
+  );
+
+  const handleSelectionChange = useCallback(
+    (e: { nativeEvent: { selection: { start: number; end: number } } }) => {
+      const sel = e.nativeEvent.selection;
+      setSelection(sel);
+    },
+    [],
+  );
+
+  const handleMentionSelect = useCallback(
+    (member: GroupMember) => {
+      const beforeCursor = message.slice(0, selection.start);
+      const atIndex = beforeCursor.lastIndexOf("@");
+      if (atIndex === -1) return;
+
+      const mention = `@${member.username ?? "unknown"} `;
+      const newText =
+        message.slice(0, atIndex) + mention + message.slice(selection.start);
+      const newCursor = atIndex + mention.length;
+
+      setMessage(newText);
+      setSelection({ start: newCursor, end: newCursor });
+      setMentionVisible(false);
+    },
+    [message, selection.start],
+  );
+
+  const handleGameModalSelect = useCallback((game: GameInfoCard) => {
+    onSend(null, null, undefined, game);
+    setShowAttachmentMenu(false);
+  }, [onSend]);
+
   const handleSend = () => {
     const text = message.trim() || null;
     const hasAttachments = attachments.length > 0;
 
-    // Validate: can't send empty message
     if (!text && !hasAttachments) return;
 
-    // Validate: AUDIO and DOCUMENT types block text
     const hasBlockingAttachments = attachments.some(
       (att) =>
         att.type === AttachmentType.AUDIO ||
@@ -71,7 +166,7 @@ export default function ChatInput({
       return;
     }
 
-    onSend(text, hasAttachments ? attachments : null);
+    onSend(text, hasAttachments ? attachments : null, undefined, null);
     setMessage("");
     setAttachments([]);
     setShowAttachmentMenu(false);
@@ -192,6 +287,11 @@ export default function ChatInput({
     setShowAttachmentMenu(false);
   };
 
+  const pickGame = useCallback(() => {
+    setShowAttachmentMenu(false);
+    setGameModalVisible(true);
+  }, []);
+
   const removeAttachment = (index: number) => {
     setAttachments((prev) => prev.filter((_, i) => i !== index));
   };
@@ -212,8 +312,11 @@ export default function ChatInput({
       att.type === AttachmentType.AUDIO || att.type === AttachmentType.DOCUMENT,
   );
 
-  const canSend = message.trim().length > 0 || attachments.length > 0;
+  const canSend =
+    message.trim().length > 0 || attachments.length > 0;
   const showSendIcon = canSend;
+
+  const dropdownTop = -(inputHeight + 32);
 
   const inputContent = (
     <View>
@@ -244,57 +347,80 @@ export default function ChatInput({
           >
             <Ionicons name="document-text" size={24} color="#033563" />
           </TouchableOpacity>
+          <TouchableOpacity
+            style={styles.attachmentOption}
+            onPress={pickGame}
+          >
+            <Ionicons name="game-controller" size={24} color="#033563" />
+          </TouchableOpacity>
         </View>
       )}
 
-      <View style={styles.inputContainer}>
-        {!blocked && (
-          <TouchableOpacity
-            style={styles.emojiButton}
-            onPress={() => setShowAttachmentMenu(!showAttachmentMenu)}
-          >
-            {!mediaPreview && (
-              <Ionicons
-                name={showAttachmentMenu ? "close" : "add-circle-outline"}
-                size={26}
-                color="#888"
-              />
-            )}
-          </TouchableOpacity>
-        )}
-
-        <TextInput
-          style={[styles.textInput, { height: inputHeight }]}
-          placeholder={
-            blocked
-              ? "You have blocked this contact"
-              : hasBlockingAttachments
-                ? "Audio/Document only"
-                : "Message"
-          }
-          placeholderTextColor="#aaa"
-          value={message}
-          onChangeText={setMessage}
-          multiline
-          textAlignVertical="top"
-          onContentSizeChange={handleContentSizeChange}
-          maxLength={2000}
-          editable={!hasBlockingAttachments && !blocked}
+      <View style={styles.inputWrapper}>
+        <MentionSuggestions
+          visible={mentionVisible}
+          members={groupMembers ?? []}
+          query={mentionQuery}
+          onSelect={handleMentionSelect}
+          position={{ top: dropdownTop, left: 12 }}
         />
 
-        <TouchableOpacity
-          style={styles.sendButton}
-          onPress={handleSend}
-          activeOpacity={0.7}
-          disabled={!canSend}
-        >
-          <Ionicons
-            name={showSendIcon ? "send" : "mic-outline"}
-            size={26}
-            color={showSendIcon ? "#033563" : "#888"}
+        <View style={styles.inputContainer}>
+          {!blocked && (
+            <TouchableOpacity
+              style={styles.emojiButton}
+              onPress={() => setShowAttachmentMenu(!showAttachmentMenu)}
+            >
+              {!mediaPreview && (
+                <Ionicons
+                  name={showAttachmentMenu ? "close" : "add-circle-outline"}
+                  size={26}
+                  color="#888"
+                />
+              )}
+            </TouchableOpacity>
+          )}
+
+          <TextInput
+            style={[styles.textInput, { height: inputHeight }]}
+            placeholder={
+              blocked
+                ? "You have blocked this contact"
+                : hasBlockingAttachments
+                  ? "Audio/Document only"
+                  : "Message"
+            }
+            placeholderTextColor="#aaa"
+            value={message}
+            onChangeText={handleChangeText}
+            onSelectionChange={handleSelectionChange}
+            multiline
+            textAlignVertical="top"
+            onContentSizeChange={handleContentSizeChange}
+            maxLength={2000}
+            editable={!hasBlockingAttachments && !blocked}
           />
-        </TouchableOpacity>
+
+          <TouchableOpacity
+            style={styles.sendButton}
+            onPress={handleSend}
+            activeOpacity={0.7}
+            disabled={!canSend}
+          >
+            <Ionicons
+              name={showSendIcon ? "send" : "mic-outline"}
+              size={26}
+              color={showSendIcon ? "#033563" : "#888"}
+            />
+          </TouchableOpacity>
+        </View>
       </View>
+
+      <GameSearchModal
+        visible={gameModalVisible}
+        onSelect={handleGameModalSelect}
+        onClose={() => setGameModalVisible(false)}
+      />
     </View>
   );
 
@@ -335,6 +461,9 @@ const styles = StyleSheet.create({
     fontSize: 13,
     color: "#d32f2f",
     flex: 1,
+  },
+  inputWrapper: {
+    position: "relative",
   },
   inputContainer: {
     flexDirection: "row",
