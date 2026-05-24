@@ -1,5 +1,14 @@
 import React from 'react';
-import { View, Text, StyleSheet, FlatList, ActivityIndicator, RefreshControl, TouchableOpacity, ImageBackground } from 'react-native';
+import { 
+  View, 
+  Text, 
+  StyleSheet, 
+  FlatList, 
+  ActivityIndicator, 
+  RefreshControl, 
+  TouchableOpacity, 
+  ImageBackground 
+} from 'react-native';
 import { SafeAreaView } from 'react-native-safe-area-context';
 import { useNotifications } from '../../src/hooks/useNotifications';
 import { SectionHeader } from '../../src/components/screen/notifications/SectionHeader';
@@ -10,6 +19,17 @@ import { Ionicons } from '@expo/vector-icons';
 import { router } from 'expo-router';
 
 const BG_IMAGE = require('../../assets/images/bgbody.png');
+
+// Función para oscurecer el fondo de forma sutil y limpia en HEX
+const darkenHexSlightly = (hex: string, factor = 0.88): string => {
+  const cleanHex = hex.replace('#', '');
+  let r = Math.floor(parseInt(cleanHex.substring(0, 2), 16) * factor);
+  let g = Math.floor(parseInt(cleanHex.substring(2, 4), 16) * factor);
+  let b = Math.floor(parseInt(cleanHex.substring(4, 6), 16) * factor);
+
+  const toHex = (c: number) => c.toString(16).padStart(2, '0');
+  return `#${toHex(r)}${toHex(g)}${toHex(b)}`;
+};
 
 const CustomHeader: React.FC = () => (
   <View style={headerStyles.headerContainer}>
@@ -34,87 +54,92 @@ const NotificationsScreen: React.FC = () => {
     handleRejectInvitation,
   } = useNotifications();
 
+  // Filtrar solicitudes de seguimiento pendientes
   const followRequests = notifications.filter(
     (n) => n.type === NotificationType.FOLLOW_REQUEST && !(n as FollowRequestNotification).isAccepted
   ) as FollowRequestNotification[];
 
+  // El resto de las notificaciones generales
   const generalNotifications = notifications.filter(
     (n) => n.type !== NotificationType.FOLLOW_REQUEST || (n as FollowRequestNotification).isAccepted
   );
 
   if (isLoading) {
     return (
-      <SafeAreaView style={styles.loadingContainer}>
+      <View style={styles.centerContainer}>
         <ActivityIndicator size="large" color="#FF00FF" />
         <Text style={styles.loadingText}>Cargando notificaciones...</Text>
-      </SafeAreaView>
+      </View>
     );
   }
 
   if (error) {
     return (
-      <SafeAreaView style={styles.errorContainer}>
+      <View style={styles.centerContainer}>
         <Text style={styles.errorText}>Error: {error}</Text>
         <TouchableOpacity onPress={refreshNotifications} style={styles.retryButton}>
           <Text style={styles.retryButtonText}>Reintentar</Text>
         </TouchableOpacity>
-      </SafeAreaView>
+      </View>
     );
   }
 
   return (
     <ImageBackground source={BG_IMAGE} style={styles.backgroundImage}>
-      <SafeAreaView style={styles.container}>
-        <FlatList
-          data={generalNotifications}
-          keyExtractor={(item) => item.id}
-          renderItem={({ item }) => (
-            <NotificationItem
-              notification={item}
-              onMarkAsRead={markAsRead}
-              onAcceptFollowRequest={handleAcceptFollowRequest}
-              onRejectFollowRequest={handleRejectFollowRequest}
-              onAcceptInvitation={handleAcceptInvitation}
-              onRejectInvitation={handleRejectInvitation}
-            />
-          )}
-          ListHeaderComponent={
-            <>
-              <CustomHeader />
-              {followRequests.length > 0 && (
-                <FollowRequestsCard
-                  requests={followRequests}
-                  onAccept={handleAcceptFollowRequest}
-                  onReject={handleRejectFollowRequest}
-                />
-              )}
-              {generalNotifications.length > 0 && (
-                <SectionHeader title="Lo más destacado" />
-              )}
-              {generalNotifications.length > 0 && (
-                <SectionHeader title="Últimos 7 días" />
-              )}
-            </>
-          }
-          ListEmptyComponent={
-            (!isLoading && !isRefreshing) ? (
-              <View style={styles.emptyContainer}>
-                <Text style={styles.emptyText}>No tienes notificaciones.</Text>
+      {/* Usamos edges top para controlar la muesca/status bar del dispositivo */}
+      <SafeAreaView style={styles.safeArea} edges={['top']}>
+        
+        {/* El header se queda fijo arriba con excelente visibilidad */}
+        <CustomHeader />
+
+        <View style={styles.cardContainer}>
+          <FlatList
+            data={generalNotifications}
+            keyExtractor={(item) => item.id}
+            renderItem={({ item }) => (
+              <NotificationItem
+                notification={item}
+                onMarkAsRead={markAsRead}
+                onAcceptFollowRequest={handleAcceptFollowRequest}
+                onRejectFollowRequest={handleRejectFollowRequest}
+                onAcceptInvitation={handleAcceptInvitation}
+                onRejectInvitation={handleRejectInvitation}
+              />
+            )}
+            ListHeaderComponent={
+              <View style={styles.listHeaderGap}>
+                {followRequests.length > 0 && (
+                  <FollowRequestsCard
+                    requests={followRequests}
+                    onAccept={handleAcceptFollowRequest}
+                    onReject={handleRejectFollowRequest}
+                  />
+                )}
+                {/* Dejamos un solo header limpio para ordenar cronológicamente las celdas */}
+                {generalNotifications.length > 0 && (
+                  <SectionHeader title="Últimos 7 días" />
+                )}
               </View>
-            ) : null
-          }
-          refreshControl={
-            <RefreshControl
-              refreshing={isRefreshing}
-              onRefresh={refreshNotifications}
-              tintColor="#9b1999"
-              colors={['#9b1999', '#033563']}
-              progressBackgroundColor="#ffffff"
-            />
-          }
-          style={styles.list}
-          contentContainerStyle={styles.listContentContainer}
-        />
+            }
+            ListEmptyComponent={
+              (!isLoading && !isRefreshing) ? (
+                <View style={styles.emptyContainer}>
+                  <Text style={styles.emptyText}>No tienes notificaciones.</Text>
+                </View>
+              ) : null
+            }
+            refreshControl={
+              <RefreshControl
+                refreshing={isRefreshing}
+                onRefresh={refreshNotifications}
+                tintColor="#9b1999"
+                colors={['#9b1999', '#033563']}
+                progressBackgroundColor="#ffffff"
+              />
+            }
+            contentContainerStyle={styles.listContentContainer}
+          />
+        </View>
       </SafeAreaView>
     </ImageBackground>
   );
@@ -123,19 +148,17 @@ const NotificationsScreen: React.FC = () => {
 const headerStyles = StyleSheet.create({
   headerContainer: {
     backgroundColor: 'transparent',
-    paddingTop: 16,
-    paddingHorizontal: 16,
-    paddingBottom: 12,
+    paddingHorizontal: 20,
+    paddingBottom: 16,
     flexDirection: 'row',
     alignItems: 'center',
   },
   backButton: {
     marginRight: 10,
-    // Adjust as needed for alignment with title
   },
   headerTitle: {
     color: '#000000',
-    fontSize: 20,
+    fontSize: 22,
     fontWeight: 'bold',
   },
 });
@@ -146,27 +169,27 @@ const styles = StyleSheet.create({
     width: '100%',
     height: '100%',
   },
-  container: {
+  safeArea: {
     flex: 1,
-    backgroundColor: 'transparent',
   },
-  loadingContainer: {
+  cardContainer: {
+    flex: 1,
+    backgroundColor: darkenHexSlightly('#d9d9d9', 0.95), // Ajuste dinámico de tono levemente más oscuro
+    borderTopLeftRadius: 30,
+    borderTopRightRadius: 30,
+    marginHorizontal: 6,
+    overflow: 'hidden',
+  },
+  centerContainer: {
     flex: 1,
     justifyContent: 'center',
     alignItems: 'center',
-    backgroundColor: 'transparent',
+    backgroundColor: '#0A0A0A',
   },
   loadingText: {
     marginTop: 10,
     color: '#E0E0E0',
     fontSize: 16,
-  },
-  errorContainer: {
-    flex: 1,
-    justifyContent: 'center',
-    alignItems: 'center',
-    backgroundColor: 'transparent',
-    padding: 20,
   },
   errorText: {
     color: '#FF3D00',
@@ -185,22 +208,24 @@ const styles = StyleSheet.create({
     fontSize: 15,
     fontWeight: 'bold',
   },
-  list: {
-    flex: 1,
-  },
   listContentContainer: {
-    paddingBottom: 20,
+    marginHorizontal: 10,
+    paddingTop: 12,
+    paddingBottom: 40, // Ofrece espacio extra al final para que las celdas no se encimen con la barra de navegación inferior
+  },
+  listHeaderGap: {
+    marginBottom: 8,
   },
   emptyContainer: {
     flex: 1,
     justifyContent: 'center',
     alignItems: 'center',
-    marginTop: 50,
+    marginTop: 100,
     paddingHorizontal: 20,
   },
   emptyText: {
     color: '#000000',
-    opacity: 0.72,
+    opacity: 0.6,
     fontSize: 16,
     textAlign: 'center',
   },

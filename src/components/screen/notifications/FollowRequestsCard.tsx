@@ -73,11 +73,11 @@ export const FollowRequestsCard: React.FC<FollowRequestsCardProps> = ({
 
 const styles = StyleSheet.create({
   cardContainer: {
-    backgroundColor: '#d9d9d9',
-    borderRadius: 12,
+    backgroundColor: ('#d9d9d9'),
+    borderRadius: 30,
     marginHorizontal: 16,
     marginVertical: 8,
-    borderColor: '#3A3A3C',
+    borderColor: 'transparent', // Transparent border to maintain layout without visible border
     borderWidth: 1,
     overflow: 'hidden',
   },
