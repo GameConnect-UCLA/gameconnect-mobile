@@ -29,7 +29,7 @@ export default function ProfileScreen() {
       onAddPeoplePress={handleAddPeoplePress}
       onAddGamePress={handleAddGamePress}
       onBackPress={() => router.back()}
-      onSettingsPress={() => console.log("Ir a configuración")}
+      onSettingsPress={() => router.push('/user/settings')}
     />
   );
 }
