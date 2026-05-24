@@ -2,15 +2,15 @@ import { useMockUser } from '@/src/hooks/mock-data/useMockUser';
 import { Ionicons } from '@expo/vector-icons';
 import React, { useState } from 'react';
 import {
-    Image,
-    ImageBackground,
-    SafeAreaView,
-    ScrollView,
-    StyleSheet,
-    Text,
-    TextInput,
-    TouchableOpacity,
-    View
+  Image,
+  ImageBackground,
+  SafeAreaView,
+  ScrollView,
+  StyleSheet,
+  Text,
+  TextInput,
+  TouchableOpacity,
+  View
 } from 'react-native';
 
 const BG_IMAGE = require('@/assets/images/bgbody.png');
@@ -47,10 +47,9 @@ const EditProfileView: React.FC<EditProfileViewProps> = ({ onBack, onSave }) => 
             </ImageBackground>
           </View>
 
-          {/* RECTÁNGULO GRANDE (Superpuesto a la portada) */}
           <View style={styles.bigCard}>
             
-            {/* FOTO DE PERFIL (Ahora dentro de la card y subida con margen negativo) */}
+            {/* FOTO DE PERFIL */}
             <View style={styles.avatarWrapper}>
               <View style={styles.avatarContainer}>
                 <Image source={{ uri: user.profile_pic }} style={styles.avatar} />

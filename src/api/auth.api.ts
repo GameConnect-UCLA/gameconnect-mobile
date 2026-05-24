@@ -1,4 +1,4 @@
-import type { AuthResponse, LoginCredentials } from '@/src/types/auth.types'
+import type { AuthResponse, LoginCredentials, SignUpInfo } from '@/src/types/auth.types'
 import { mockUser } from '@/src/hooks/mock-data/mock-user'
 import { User } from '../types/user.types'
 
@@ -25,13 +25,17 @@ const login = async (credentials: LoginCredentials): Promise<AuthResponse> => {
   }
 }
 
-const register = async (user: Partial<User>): Promise<AuthResponse> => {
+const register = async (newUser: SignUpInfo): Promise<AuthResponse> => {
   await simulateLatency()
 
   return {
     accessToken: 'mock-access-token',
     refreshToken: 'mock-refresh-token',
-    user: mockUser,
+    user: {...mockUser, 
+              username: newUser.username, 
+              email: newUser.email, 
+              birth_date: newUser.birthDate
+    },
   }
 }
 

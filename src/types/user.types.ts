@@ -1,9 +1,6 @@
-// types/user.types.ts
-
 export enum UserRole {
   USER = 'USER',
-  ADMIN = 'ADMIN',
-  MODERATOR = 'MODERATOR'
+  ADMIN = 'ADMIN'
 }
 
 export enum UserState {
@@ -24,12 +21,31 @@ export interface FeaturedPost {
   tag: string;
 }
 
-// 1. AGREGA ESTA NUEVA INTERFAZ AQUÍ
 export interface FavoriteGame {
   id: string;
   name: string;
   image_url: string;
   description: string;
+}
+
+export interface Comment {
+  id: string;
+  userName: string;
+  userAvatar: string;
+  text: string;
+  date: string;
+}
+
+export interface Post {
+  id: string;
+  title: string;
+  content: string;
+  imageUrl: string;
+  likes: number;   
+  comments: number;
+  isLiked?: boolean; 
+  isSaved?: boolean;
+  commentsList?: Comment[];
 }
 
 export interface User {
@@ -53,4 +69,5 @@ export interface User {
   created_at: string;
   deleted_at?: string | null;
   verified?: boolean;
+  posts: Post[]; 
 }

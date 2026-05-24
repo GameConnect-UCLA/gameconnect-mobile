@@ -1,104 +1,99 @@
-import { useState } from 'react'
-import { View, Text, TextInput, Pressable, ActivityIndicator, StyleSheet } from 'react-native'
-import { Link, useRouter } from 'expo-router'
-import { useLogin } from '@/src/hooks/useAuth'
-
-
-
+import { useState } from "react";
+import {
+  StyleSheet,
+  TextInput,
+  Pressable,
+  Text,
+  ActivityIndicator,
+} from "react-native";
+import { Link, useRouter } from "expo-router";
+import { useLogin } from "@/src/hooks/useAuth";
+import { AuthBackground } from "@/src/components/auth/auth-background";
+import { AuthCard } from "@/src/components/auth/auth-card";
 
 export default function LoginScreen() {
-  const [email, setEmail] = useState('')
-  const [password, setPassword] = useState('')
+  const [form, setForm] = useState({ email: "", password: "" });
   const { mutate, isPending, error, isError } = useLogin();
-  const router = useRouter()
-
+  const router = useRouter();
 
   const handleLogin = () => {
-    // agregar verificacion de campos 
-    mutate({ email, password }, {
-      onSuccess: () => router.replace("/(tabs)")
-    })
-   
-  }
+    if (!form.email || !form.password)
+      return alert("Por favor, rellena todos los campos");
 
-
+    mutate(form, {
+      onSuccess: () => router.replace("/(tabs)"),
+    });
+  };
 
   return (
-    <View style={styles.container}>
+    <AuthBackground>
+      <AuthCard>
+        {isError && (
+          <Text style={styles.errorText}>
+            {error.message ?? "Error desconocido"}
+          </Text>
+        )}
 
-      {isError && (
-        <Text style={{ color: 'red' }}>
-          {error.message ?? 'Error desconocido'}
-        </Text>
-      )}
-      <Text style={styles.title}>Login</Text>
+        <TextInput
+          placeholder="Correo Electrónico"
+          placeholderTextColor="gray"
+          onChangeText={(val) => setForm({ ...form, email: val })}
+          value={form.email}
+          style={styles.input}
+        />
 
-      <TextInput
-        placeholder="example@email.com"
-        placeholderTextColor={"gray"}
-        onChangeText={newEmail => setEmail(newEmail)}
-        defaultValue={email}
-        style={styles.textInput}
-      />
+        <TextInput
+          placeholder="Contraseña"
+          placeholderTextColor="gray"
+          secureTextEntry
+          onChangeText={(val) => setForm({ ...form, password: val })}
+          value={form.password}
+          style={styles.input}
+        />
 
-      <TextInput
-        placeholder="password"
-        placeholderTextColor={"gray"}
-        onChangeText={newPassword => setPassword(newPassword)}
-        defaultValue={password}
-        secureTextEntry={true}
-        style={styles.textInput}
-      />
+        <Pressable
+          style={styles.btn}
+          onPress={handleLogin}
+          disabled={isPending}
+        >
+          {isPending ? (
+            <ActivityIndicator color="#fff" />
+          ) : (
+            <Text style={styles.btnText}>Ingresar</Text>
+          )}
+        </Pressable>
 
-      <Pressable style={styles.loginBtn} onPress={handleLogin}>
-        {isPending ? <ActivityIndicator style={styles.pending} />
-          : <Text>Login</Text>}
-      </Pressable>
-
-
-      <Link href="/(tabs)">
-        <Text style={styles.link}>Go to Tabs (bypass auth)</Text>
-      </Link>
-      <Link href="/register">
-        <Text style={styles.link}>Don{"'"}t have an account? Register</Text>
-      </Link>
-    </View>
+        <Link href="/(auth)/signup" style={styles.link}>
+          <Text style={styles.linkText}>
+            ¿No tienes cuenta? Regístrate Aquí
+          </Text>
+        </Link>
+        <Link href="/(auth)/forgot" style={styles.link}>
+          <Text style={styles.linkText}>¿Olvidaste tu contraseña?</Text>
+        </Link>
+      </AuthCard>
+    </AuthBackground>
   );
 }
 
 const styles = StyleSheet.create({
-  container: {
-    flex: 1,
-    justifyContent: 'center',
-    alignItems: 'center',
-    gap: 10
-  },
-  title: {
-    fontSize: 24,
-    fontWeight: 'bold',
+  input: {
+    height: 45,
+    borderBottomWidth: 1,
+    borderBottomColor: "#ccc",
     marginBottom: 20,
+    fontSize: 16,
+    color: "#000",
   },
-  link: {
-    color: 'blue',
+  btn: {
+    backgroundColor: "#9b1999",
+    borderRadius: 25,
+    padding: 15,
+    alignItems: "center",
     marginTop: 10,
   },
-  textInput: {
-    height: 40,
-    padding: 5,
-    marginHorizontal: 8,
-    borderWidth: 1,
-    minWidth: 120,
-    color: "#000"
-  },
-  pending: {
-    marginHorizontal: 0,
-    marginVertical: 0
-  },
-  loginBtn: {
-    borderColor: "black",
-    borderStyle: "solid",
-    borderWidth: 1,
-    padding: 4,
-    backgroundColor: "yellow"
-  }
+  btnText: { color: "white", fontWeight: "bold", fontSize: 18 },
+  link: { marginTop: 20, alignSelf: "center" },
+  linkText: { color: "#555", fontSize: 13 },
+  errorText: { color: "red", textAlign: "center", marginBottom: 10 },
 });
