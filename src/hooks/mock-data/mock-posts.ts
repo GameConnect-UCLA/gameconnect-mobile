@@ -7,7 +7,7 @@ export const mockPosts: Post[] = [
     id: 'p1',
     autor: 'jorge-id',
     author_display_name: 'JORGE SILVA',
-    author_username: 'jorgesilva',
+    author_username: 'jorgetech',
     author_profile_pic: FOTO_JORGE,
     post_title: 'DEAD SPACE',
     content: 'La tensión y el ambiente opresivo del USG Ishimura te mantendrán al borde del asiento. Cada disparo cuenta, cada sombra es una amenaza.',
@@ -26,6 +26,7 @@ export const mockPosts: Post[] = [
     comments: [
       { 
         id: 'c1', 
+        author_id: '550e8400-e29b-41d4-a716-446655440000',
         author_display_name: 'Mariangel Perez', 
         author_profile_pic: 'https://i.pravatar.cc/150?img=32', 
         content: '¡Este juego es increíble!', 
@@ -33,10 +34,12 @@ export const mockPosts: Post[] = [
       },
       { 
         id: 'c2', 
+        author_id: 'carlos-id', // ID de Carlos
         author_display_name: 'Carlos Mendoza', 
         author_profile_pic: 'https://i.pravatar.cc/150?img=12', 
         content: '¿Es el remake o el original?', 
-        created_at: 'Hace 2 min' }
+        created_at: 'Hace 2 min' 
+      }
     ]
   },
   {
@@ -63,6 +66,7 @@ export const mockPosts: Post[] = [
     comments: [
       {
         id: 'c1',
+        author_id: 'carlos-id',
         author_display_name: 'Carlos Mendoza',
         author_profile_pic: 'https://i.pravatar.cc/150?img=12',
         content: '¡Cierto! Lo probé ayer y los glitches ya no existen.',
@@ -70,6 +74,7 @@ export const mockPosts: Post[] = [
       },
       {
         id: 'c2',
+        author_id: 'maxy-id',
         author_display_name: 'MAXY3120',
         author_profile_pic: 'https://i.pravatar.cc/150?img=56',
         content: 'Totalmente de acuerdo, la inmersión ahora es de otro nivel.',
@@ -81,7 +86,7 @@ export const mockPosts: Post[] = [
     id: 'p3',
     autor: 'jorge-id',
     author_display_name: 'JORGE SILVA',
-    author_username: 'jorgesilva',
+    author_username: 'jorgetech',
     author_profile_pic: FOTO_JORGE,
     post_title: 'RESIDENT EVIL 4',
     content: 'Leon S. Kennedy se enfrenta a una pesadilla en la España rural. El equilibrio perfecto entre terror y acción.',
@@ -100,6 +105,7 @@ export const mockPosts: Post[] = [
     comments: [
       {
         id: 'c1',
+        author_id: 'carlos-id',
         author_display_name: 'Carlos Mendoza',
         author_profile_pic: 'https://i.pravatar.cc/150?img=12',
         content: '¡Cierto! Lo probé ayer y los glitches ya no existen.',
@@ -107,6 +113,7 @@ export const mockPosts: Post[] = [
       },
       {
         id: 'c2',
+        author_id: 'maxy-id',
         author_display_name: 'MAXY3120',
         author_profile_pic: 'https://i.pravatar.cc/150?img=56',
         content: 'Totalmente de acuerdo, la inmersión ahora es de otro nivel.',
@@ -142,6 +149,7 @@ export const mockPosts: Post[] = [
     comments: [
       {
         id: 'c3',
+        author_id: 'sofia-id',
         author_display_name: 'Sofia Vega',
         author_profile_pic: 'https://i.pravatar.cc/150?img=47',
         content: '¿Cuánto tiempo te tomó vencer al primer Boss?',
@@ -153,7 +161,7 @@ export const mockPosts: Post[] = [
     id: 'p5',
     autor: 'jorge-id',
     author_display_name: 'JORGE SILVA',
-    author_username: 'jorgesilva',
+    author_username: 'jorgetech',
     author_profile_pic: FOTO_JORGE,
     post_title: 'GEARS OF WAR 3',
     content: 'Acción frenética, coberturas y un modo horda que engancha. La historia de Marcus Fenix y su equipo llega a su mejor momento.',
@@ -172,6 +180,7 @@ export const mockPosts: Post[] = [
     comments: [
       {
         id: 'c1',
+        author_id: 'carlos-id',
         author_display_name: 'Carlos Mendoza',
         author_profile_pic: 'https://i.pravatar.cc/150?img=12',
         content: '¡Cierto! Lo probé ayer y los glitches ya no existen.',
@@ -179,6 +188,7 @@ export const mockPosts: Post[] = [
       },
       {
         id: 'c2',
+        author_id: 'maxy-id',
         author_display_name: 'MAXY3120',
         author_profile_pic: 'https://i.pravatar.cc/150?img=56',
         content: 'Totalmente de acuerdo, la inmersión ahora es de otro nivel.',
@@ -210,6 +220,7 @@ export const mockPosts: Post[] = [
     comments: [
       {
         id: 'c4',
+        author_id: 'ana-id',
         author_display_name: 'Ana Torres',
         author_profile_pic: 'https://i.pravatar.cc/150?img=21',
         content: 'La jugabilidad es una joya, Capcom se lució.',
@@ -221,7 +232,7 @@ export const mockPosts: Post[] = [
     id: 'p7',
     autor: 'jorge-id',
     author_display_name: 'JORGE SILVA',
-    author_username: 'jorgesilva',
+    author_username: 'jorgetech',
     author_profile_pic: FOTO_JORGE,
     post_title: 'ELDEN RING',
     content: 'Explorando las Tierras Intermedias. La dificultad es elevada pero la recompensa visual y de descubrimiento no tiene comparación.',
@@ -289,6 +300,7 @@ export const mockPosts: Post[] = [
     comments: [
       {
         id: 'c5',
+        author_id: '550e8400-e29b-41d4-a716-446655440000',
         author_display_name: 'Mariangel Perez',
         author_profile_pic: 'https://i.pravatar.cc/150?img=32',
         content: 'Christopher Larkin hizo un trabajo fenomenal en la música.',
@@ -304,7 +316,7 @@ export const mockPosts: Post[] = [
     author_profile_pic: 'https://i.pravatar.cc/150?img=21',
     post_title: 'El nuevo parche arregló varios detalles del remake',
     content:
-      'Capcom ajustó la cámara y la respuesta de los controles. El juego se siente más fino después de esta actualización.',
+      'Capcom adjusted the camera and the response of the controls. El juego se siente más fino después de esta actualización.',
     media: {
       images: ['https://images.unsplash.com/photo-1542751371-adc38448a05e?auto=format&fit=crop&w=1200&q=80'],
       hashtags: ['ResidentEvil4', 'Patch', 'Capcom'],

@@ -5,25 +5,28 @@ import React, { useState } from 'react';
 import {
   Image,
   ImageBackground,
-  KeyboardAvoidingView, Modal, Platform,
+  KeyboardAvoidingView,
+  Modal,
+  Platform,
   SafeAreaView,
   ScrollView,
   StyleSheet,
   Text,
-  TextInput, TouchableOpacity,
+  TextInput,
+  TouchableOpacity,
   View
 } from 'react-native';
 import PostCard from '../posts/post-card';
+import { PostComments } from './post-comments';
 
 const BG_IMAGE = require('@/assets/images/bgbody.png');
+const FOTO_JORGE = 'https://m.media-amazon.com/images/S/aplus-media-library-service-media/94865395-9e45-4e4b-9f4f-fac723fbf713.__CR0,0,362,453_PT0_SX362_V1___.jpg';
 
 export const PostDetailView = ({ post }: { post: Post }) => {
   const router = useRouter(); 
   const [commentText, setCommentText] = useState('');
   const [localComments, setLocalComments] = useState(post.comments);
   const [showSuccess, setShowSuccess] = useState(false);
-
-  // Estados para el Zoom de Imagen
   const [isImageModalVisible, setIsImageModalVisible] = useState(false);
   const [selectedImageUrl, setSelectedImageUrl] = useState('');
 
@@ -34,16 +37,15 @@ export const PostDetailView = ({ post }: { post: Post }) => {
 
   const handleSendComment = () => {
     if (commentText.trim().length === 0) return;
-
-    const newCommentObj = {
+    const newComment = {
       id: Math.random().toString(),
-      author_display_name: 'JORGE SILVA',
-      author_profile_pic: 'https://img.freepik.com/fotos-premium/joven-jugador-jugando-videojuegos-computadora-habitacion-oscura-luces-neon_23315-4123.jpg',
+      author_id: 'jorge-id',
+      author_display_name: 'Jorge Silva',
+      author_profile_pic: FOTO_JORGE,
       content: commentText,
       created_at: 'Ahora mismo'
     };
-
-    setLocalComments([...localComments, newCommentObj]);
+    setLocalComments([...localComments, newComment]);
     setCommentText('');
     setShowSuccess(true);
     setTimeout(() => setShowSuccess(false), 2000);
@@ -52,49 +54,70 @@ export const PostDetailView = ({ post }: { post: Post }) => {
   return (
     <ImageBackground source={BG_IMAGE} style={{ flex: 1 }}>
       <KeyboardAvoidingView 
-        behavior={Platform.OS === 'ios' ? 'padding' : 'height'}
+        behavior={Platform.OS === 'ios' ? 'padding' : undefined} 
         style={{ flex: 1 }}
       >
         <SafeAreaView style={{ flex: 1 }}>
           
-          {/* BOTÓN REGRESAR */}
-          <TouchableOpacity 
-            style={styles.backButton} 
-            onPress={() => router.back()}
-          >
-            <Ionicons name="chevron-back" size={32} color="white" />
-          </TouchableOpacity>
+          {/* HEADER */}
+          <View style={styles.topHeader}>
+            <TouchableOpacity onPress={() => router.back()}>
+              <Ionicons name="chevron-back" size={28} color="#000" />
+            </TouchableOpacity>
+            <Text style={styles.headerTitle}>Publicación</Text>
+            <View style={{ width: 28 }} /> 
+          </View>
+          <View style={styles.headerLine} />
 
-          <ScrollView 
-            showsVerticalScrollIndicator={false} 
-            contentContainerStyle={{ paddingBottom: 150 }} 
-          >
-            {/* POST CARD */}
-            <View style={styles.postContainer}>
-              <PostCard post={post} onImagePress={handleOpenImage} />
-            </View>
-
-            {/* COMENTARIOS */}
-            <View style={styles.commentsSection}>
-              <Text style={styles.commentTitle}>Conversación</Text>
-              
-              {localComments.map((c) => (
-                <View key={c.id} style={styles.commentCard}>
-                  <Image source={{ uri: c.author_profile_pic }} style={styles.commentAvatar} />
-                  <View style={styles.commentBubble}>
-                    <Text style={styles.commentAuthor}>{c.author_display_name}</Text>
-                    <Text style={styles.commentContent}>{c.content}</Text>
+          <View style={{ flex: 1 }}>
+            <ScrollView 
+              showsVerticalScrollIndicator={false} 
+              contentContainerStyle={{ paddingBottom: 10 }}
+            >
+              <View style={styles.postContent}>
+                <PostCard post={post} onImagePress={handleOpenImage} />
+                {post.is_review && (
+                  <View style={styles.reviewInfo}>
+                    <Text style={styles.reviewLabel}>Reseña de:</Text>
+                    <Text style={styles.reviewGame}>{post.reviewed_game}</Text>
                   </View>
-                </View>
-              ))}
-              
-              {localComments.length === 0 && (
-                <Text style={styles.noComments}>No hay comentarios aún.</Text>
-              )}
-            </View>
-          </ScrollView>
+                )}
+              </View>
 
-          {/* ZOOM PARA IMAGEN */}
+              <PostComments comments={localComments} />
+            </ScrollView>
+          </View>
+
+          {/* COMENTARIO */}
+          {showSuccess && (
+            <View style={styles.successToast}>
+              <Text style={styles.successText}>Comentario enviado</Text>
+            </View>
+          )}
+
+          {/* 3. BARRA DE ENTRADA */}
+          <View style={styles.inputBar}>
+            <Image 
+              source={{ uri: FOTO_JORGE }} 
+              style={styles.inputAvatar} 
+            />
+            
+            <View style={styles.inputBubble}>
+              <TextInput 
+                style={styles.textInput} 
+                placeholder="Escribe un comentario..." 
+                value={commentText} 
+                onChangeText={setCommentText}
+                placeholderTextColor="#555" 
+              />
+            </View>
+
+            <TouchableOpacity onPress={handleSendComment} style={styles.sendIcon}>
+              <Ionicons name="send" size={26} color="#033563" />
+            </TouchableOpacity>
+          </View>
+
+          {/* MODAL PARA ZOOM */}
           <Modal visible={isImageModalVisible} transparent={true} animationType="fade">
             <View style={styles.modalBg}>
               <TouchableOpacity style={styles.closeModal} onPress={() => setIsImageModalVisible(false)}>
@@ -104,30 +127,6 @@ export const PostDetailView = ({ post }: { post: Post }) => {
             </View>
           </Modal>
 
-          {/* MENSAJE DE ÉXITO */}
-          {showSuccess && (
-            <View style={styles.successToast}>
-              <Ionicons name="checkmark-circle" size={18} color="white" />
-              <Text style={styles.successText}>Comentario enviado</Text>
-            </View>
-          )}
-
-          {/* BARRA PARA COMENTAR*/}
-          <View style={styles.inputWrapper}>
-            <TextInput
-              style={styles.input}
-              placeholder="Escribe un comentario..."
-              value={commentText}
-              onChangeText={setCommentText}
-              placeholderTextColor="#666" 
-            />
-            <TouchableOpacity 
-              onPress={handleSendComment}
-              style={styles.sendIcon}
-            >
-              <Ionicons name="send" size={24} color="#033563" />
-            </TouchableOpacity>
-          </View>
         </SafeAreaView>
       </KeyboardAvoidingView>
     </ImageBackground>
@@ -135,140 +134,102 @@ export const PostDetailView = ({ post }: { post: Post }) => {
 };
 
 const styles = StyleSheet.create({
-  backButton: {
-    position: 'absolute',
-    top: 40,
-    left: 20,
-    zIndex: 10,
-    backgroundColor: 'rgba(0,0,0,0.3)', 
-    borderRadius: 25,
-    width: 35,
-    height: 35,
-    justifyContent: 'center',
-    alignItems: 'center',
+  topHeader: { 
+    flexDirection: 'row',  
+    alignItems: 'center', 
+    justifyContent: 'space-between',
+    paddingHorizontal: 20, 
+    paddingTop: Platform.OS === 'android' ? 45 : 10,
+    paddingBottom: 20 
   },
-  postContainer: { 
-    paddingHorizontal: 15,
-    paddingTop: 10,
-    marginTop: 65, 
-    marginBottom: 0, 
+  headerTitle: { 
+    fontSize: 20, 
+    fontWeight: 'bold', 
+    color: '#000', 
+    fontFamily: 'Inter' 
   },
-  commentsSection: {
-    backgroundColor: 'rgba(217, 217, 217, 0.85)',
-    borderTopLeftRadius: 30,
-    borderTopRightRadius: 30,
-    padding: 20,
-    minHeight: 300,
-    marginTop: -25,
+  headerLine: { 
+    height: 1, 
+    backgroundColor: '#000', 
+    opacity: 0.1, 
+    marginHorizontal: 30 
   },
-  commentTitle: { 
+  postContent: { 
+    padding: 5 
+  },
+  reviewInfo: { 
+    marginTop: 10, 
+    paddingHorizontal: 15 
+  },
+  reviewLabel: { 
+    fontSize: 14, 
+    color: '#666' 
+  },
+  reviewGame: { 
     fontSize: 18, 
     fontWeight: 'bold', 
-    color: '#033563', 
-    marginBottom: 20, 
-    fontFamily: 'Inter'
+    color: '#000', 
+    marginTop: 2 
   },
-  commentCard: { 
-    flexDirection: 'row', 
-    marginBottom: 10
-  },
-  commentAvatar: { 
-    width: 35, 
-    height: 35, 
-    borderRadius: 18, 
-    marginRight: 10
-  },
-  commentBubble: { 
-    flex: 1, 
-    backgroundColor: '#FFF', 
-    padding: 12, 
-    borderRadius: 15, 
-    elevation: 2,
-    shadowColor: '#000',
-    shadowOffset: { width: 0, height: 1 },
-    shadowOpacity: 0.1,
-  },
-  commentAuthor: { 
-    fontWeight: 'bold', 
-    fontSize: 13, 
-    color: '#000'
-  },
-  commentContent: { 
-    fontSize: 14, 
-    color: '#333', 
-    marginTop: 2
-  },
-  noComments: { 
-    textAlign: 'center', 
-    color: '#666', 
-    marginTop: 20, 
-    fontStyle: 'italic'
-  },
-  inputWrapper: {
+  
+  inputBar: {
     flexDirection: 'row',
     alignItems: 'center',
     paddingHorizontal: 15,
-    paddingVertical: 10,
-    backgroundColor: '#FFF',
-    borderTopColor: '#EEE',
-    position: 'absolute',
-    bottom: 50, 
-    width: '92%', 
-    alignSelf: 'center', 
-    borderRadius: 30, 
-    elevation: 5, 
-    shadowColor: '#000', 
-    shadowOffset: { width: 0, height: -3 },
-    shadowOpacity: 0.15,
-    shadowRadius: 5,
+    paddingVertical: 30,
+    backgroundColor: 'transparent',
   },
-  input: { 
-    flex: 1, 
-    height: 40, 
-    backgroundColor: '#F5F5F5', 
-    borderRadius: 20, 
-    paddingHorizontal: 15, 
-    color: '#000',
-    fontSize: 15
+  inputAvatar: { 
+    width: 48, 
+    height: 48, 
+    borderRadius: 24, 
+    marginRight: 10,
+    borderWidth: 2,
+    borderColor: '#FFF',
   },
-  sendIcon: { 
-    marginLeft: 5, 
-    padding: 5
+  inputBubble: {
+    flex: 1,
+    height: 45,
+    backgroundColor: 'rgba(200, 200, 200, 0.7)', 
+    borderRadius: 25,
+    paddingHorizontal: 18,
+    justifyContent: 'center',
+  },
+  textInput: { 
+    color: '#000', 
+    fontSize: 15 
+  },
+  sendIcon: {
+    marginLeft: 12,
   },
 
-  successToast: {
-    position: 'absolute',
-    bottom: 110, 
-    backgroundColor: 'rgba(3, 53, 99, 0.95)',
-    flexDirection: 'row',
-    alignItems: 'center',
-    paddingHorizontal: 20,
-    paddingVertical: 10,
-    borderRadius: 25,
-    alignSelf: 'center',
-    gap: 8,
-    elevation: 5,
-    zIndex: 1000
+  successToast: { 
+    position: 'absolute', 
+    bottom: 90, 
+    backgroundColor: '#033563', 
+    paddingHorizontal: 20, 
+    paddingVertical: 10, 
+    borderRadius: 20, 
+    alignSelf: 'center', 
+    zIndex: 1000 
   },
-  successText: {
-    color: 'white',
-    fontWeight: '600',
-    fontSize: 14
+  successText: { 
+    color: 'white', 
+    fontWeight: 'bold' 
   },
   modalBg: { 
     flex: 1, 
     backgroundColor: 'rgba(0,0,0,0.9)', 
-    justifyContent: 'center'
+    justifyContent: 'center' 
   },
   closeModal: { 
     position: 'absolute', 
     top: 50, 
-    right: 25, 
-    zIndex: 20
+    right: 25 
   },
   fullImage: { 
     width: '100%', 
-    height: '80%'
+    height: '80%' 
   }
 });
 
