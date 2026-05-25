@@ -20,6 +20,7 @@ import { SafeAreaView } from 'react-native-safe-area-context';
 
 import { mockGameProfiles } from '@/src/hooks/mock-data/mock-game';
 import { mockUser } from '@/src/hooks/mock-data/mock-user';
+import { mockUsersList } from '@/src/hooks/mock-data/mock-users-list';
 import { usePostStore } from '@/src/store/post.store';
 import { useToastStore } from '@/src/store/toast.store';
 import type { Post } from '@/src/types/post.types';
@@ -97,6 +98,7 @@ export default function CreatePostScreen() {
 
   const addPost = usePostStore((state) => state.addPost);
   const showToast = useToastStore((state) => state.showToast);
+  const currentUserProfile = mockUsersList.find((user) => user.username === mockUser.username) ?? mockUser;
 
   const activeLabels = isReview ? reviewFieldLabels : normalFieldLabels;
 
@@ -275,10 +277,10 @@ export default function CreatePostScreen() {
 
     const newPost: Post = {
       id: `${Date.now()}`,
-      autor: mockUser.id,
-      author_display_name: mockUser.display_name,
-      author_username: mockUser.username,
-      author_profile_pic: mockUser.profile_pic,
+      autor: currentUserProfile.id,
+      author_display_name: currentUserProfile.display_name,
+      author_username: currentUserProfile.username,
+      author_profile_pic: currentUserProfile.profile_pic,
       post_title: finalGameTitle,
       content: description.trim(),
       media: {
