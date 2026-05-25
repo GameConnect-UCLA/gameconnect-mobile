@@ -1,7 +1,14 @@
-import { Ionicons } from '@expo/vector-icons';
-import { useRouter } from 'expo-router';
-import React from 'react';
-import { Image, ImageBackground, StyleSheet, Text, TouchableOpacity, View } from 'react-native';
+import { Ionicons } from "@expo/vector-icons";
+import { useRouter } from "expo-router";
+import React from "react";
+import {
+  Image,
+  ImageBackground,
+  StyleSheet,
+  Text,
+  TouchableOpacity,
+  View,
+} from "react-native";
 
 type Props = {
   onSearchPress?: () => void;
@@ -10,18 +17,21 @@ type Props = {
 
 export default function Header({ onSearchPress, onChatPress }: Props) {
   const router = useRouter();
-  const handleSearchPress = onSearchPress ?? (() => router.push('/explore'));
+  const handleSearchPress = onSearchPress ?? (() => router.push("/explore"));
 
   return (
     <ImageBackground
-      source={require('../../../assets/images/bgheader.png')}
+      source={require("../../../assets/images/bgheader.png")}
       style={styles.headerBackground}
       imageStyle={styles.backgroundImage}
     >
       <View style={styles.safeArea}>
         <View style={styles.containerHeader}>
           <View style={styles.logoContainer}>
-            <Image source={require('../../../assets/images/headerlogo.png')} style={styles.logo} />
+            <Image
+              source={require("../../../assets/images/headerlogo.png")}
+              style={styles.logo}
+            />
             <Text style={styles.title}>GameConnect</Text>
           </View>
 
@@ -30,7 +40,11 @@ export default function Header({ onSearchPress, onChatPress }: Props) {
               <Ionicons name="search" size={24} color="#111111" />
             </TouchableOpacity>
             <TouchableOpacity onPress={onChatPress} style={styles.chatButton}>
-              <Ionicons name="chatbubble-ellipses-outline" size={24} color="#111111" />
+              <Ionicons
+                name="chatbubble-ellipses-outline"
+                size={24}
+                color="#111111"
+              />
             </TouchableOpacity>
           </View>
         </View>
@@ -41,29 +55,29 @@ export default function Header({ onSearchPress, onChatPress }: Props) {
 
 const styles = StyleSheet.create({
   headerBackground: {
-    width: '100%',
+    width: "100%",
     paddingBottom: 0,
     borderBottomWidth: 1,
-    borderBottomColor: 'rgba(17, 17, 17, 0.18)',
+    borderBottomColor: "rgba(17, 17, 17, 0.18)",
   },
   backgroundImage: {
-    resizeMode: 'cover',
+    resizeMode: "cover",
   },
   safeArea: {
-    backgroundColor: 'transparent',
+    backgroundColor: "transparent",
   },
   containerHeader: {
-    flexDirection: 'row',
-    justifyContent: 'space-between',
-    alignItems: 'center',
+    flexDirection: "row",
+    justifyContent: "space-between",
+    alignItems: "center",
     paddingHorizontal: 15,
     paddingTop: 10,
     paddingBottom: 10,
     gap: 70,
   },
   logoContainer: {
-    flexDirection: 'row',
-    alignItems: 'center'
+    flexDirection: "row",
+    alignItems: "center",
   },
   logo: {
     width: 40,
@@ -72,14 +86,14 @@ const styles = StyleSheet.create({
     marginRight: 10,
   },
   title: {
-    fontSize: 20, 
-    fontWeight: '700',
-    textAlignVertical: 'center',
-    color: '#000000',
+    fontSize: 20,
+    fontWeight: "700",
+    textAlignVertical: "center",
+    color: "#000000",
   },
   iconsContainer: {
-    flexDirection: 'row',
-    alignItems: 'center',
+    flexDirection: "row",
+    alignItems: "center",
     gap: 15,
   },
   chatButton: {

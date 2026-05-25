@@ -1,5 +1,5 @@
-import { Ionicons } from '@expo/vector-icons';
-import React from 'react';
+import { Ionicons } from "@expo/vector-icons";
+import React from "react";
 import {
   ImageBackground,
   ScrollView,
@@ -8,9 +8,9 @@ import {
   TextInput,
   TouchableOpacity,
   View,
-} from 'react-native';
+} from "react-native";
 
-import { FILTERS, type FilterKey } from './explore.utils';
+import { FILTERS, type FilterKey } from "./explore.utils";
 
 type Props = {
   searchQuery: string;
@@ -29,11 +29,8 @@ export default function ExploreStickyHeader({
 }: Props) {
   return (
     <ImageBackground
-      source={require('../../../assets/images/bgheader.png')}
-      style={[
-        styles.stickyHeader,
-        { paddingTop: 8 }
-      ]}
+      source={require("../../../assets/images/bgheader.png")}
+      style={[styles.stickyHeader, { paddingTop: 8 }]}
       imageStyle={styles.backgroundImage}
     >
       <View style={styles.contentContainer}>
@@ -71,7 +68,12 @@ export default function ExploreStickyHeader({
               onPress={() => onChangeFilter(filter.key)}
               style={[styles.filterChip, active && styles.filterChipActive]}
             >
-              <Ionicons name={filter.icon} size={16} color="#FFFFFF" style={styles.filterIcon} />
+              <Ionicons
+                name={filter.icon}
+                size={16}
+                color="#FFFFFF"
+                style={styles.filterIcon}
+              />
               <Text style={styles.filterLabel}>{filter.label}</Text>
             </TouchableOpacity>
           );
@@ -83,35 +85,35 @@ export default function ExploreStickyHeader({
 
 const styles = StyleSheet.create({
   stickyHeader: {
-    width: '100%', // Asegura que tome todo el ancho
+    width: "100%", // Asegura que tome todo el ancho
     paddingBottom: 12,
     borderBottomWidth: 1,
-    borderBottomColor: 'rgba(17, 17, 17, 0.18)',
+    borderBottomColor: "rgba(17, 17, 17, 0.18)",
   },
   backgroundImage: {
-    resizeMode: 'cover',
+    resizeMode: "cover",
   },
   contentContainer: {
     paddingHorizontal: 16, // Movemos el padding aquí para no afectar la imagen
   },
   headerRow: {
-    flexDirection: 'row',
-    alignItems: 'center',
+    flexDirection: "row",
+    alignItems: "center",
     gap: 8,
   },
   backButton: {
     width: 36,
     height: 36,
     borderRadius: 18,
-    alignItems: 'center',
-    justifyContent: 'center',
-    backgroundColor: '#F2ECE2',
+    alignItems: "center",
+    justifyContent: "center",
+    backgroundColor: "#F2ECE2",
   },
   title: {
-    fontSize: 30,
+    fontSize: 20,
     lineHeight: 34,
-    fontWeight: '700',
-    color: '#111111',
+    fontWeight: "700",
+    color: "#111111",
     flex: 1,
     marginLeft: 2,
   },
@@ -120,20 +122,20 @@ const styles = StyleSheet.create({
   },
   searchBar: {
     marginTop: 10,
-    flexDirection: 'row',
-    alignItems: 'center',
+    flexDirection: "row",
+    alignItems: "center",
     gap: 10,
     height: 42,
     paddingHorizontal: 14,
     borderRadius: 18,
-    backgroundColor: '#F2ECE2',
+    backgroundColor: "#F2ECE2",
     borderWidth: 1,
-    borderColor: 'rgba(17, 17, 17, 0.08)',
+    borderColor: "rgba(17, 17, 17, 0.08)",
   },
   searchInput: {
     flex: 1,
     fontSize: 14,
-    color: '#1A1A1A',
+    color: "#1A1A1A",
   },
   filterRail: {
     paddingTop: 14,
@@ -141,25 +143,25 @@ const styles = StyleSheet.create({
     paddingHorizontal: 16, // Añadido para que el primer chip no esté pegado al borde izquierdo
   },
   filterChip: {
-    flexDirection: 'row',
-    alignItems: 'center',
+    flexDirection: "row",
+    alignItems: "center",
     paddingHorizontal: 16,
     height: 42,
     borderRadius: 21,
-    backgroundColor: '#0B4B82',
+    backgroundColor: "#0B4B82",
     marginRight: 10,
   },
   filterChipActive: {
-    backgroundColor: '#0B4B82',
+    backgroundColor: "#0B4B82",
     transform: [{ scale: 1.03 }],
   },
   filterIcon: {
     marginRight: 7,
   },
   filterLabel: {
-    color: '#FFFFFF',
+    color: "#FFFFFF",
     fontSize: 13,
-    fontWeight: '700',
+    fontWeight: "700",
     letterSpacing: 0.3,
   },
 });

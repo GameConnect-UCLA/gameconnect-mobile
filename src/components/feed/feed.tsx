@@ -1,19 +1,19 @@
-import PostCard from '@/src/components/posts/post-card';
-import Header from '@/src/components/ui/feed-header';
-import { usePostStore } from '@/src/store/post.store';
-import { Ionicons } from '@expo/vector-icons';
-import { useRouter } from 'expo-router';
-import React, { useEffect, useRef, useState } from 'react';
+import PostCard from "@/src/components/posts/post-card";
+import Header from "@/src/components/ui/feed-header";
+import { usePostStore } from "@/src/store/post.store";
+import { Ionicons } from "@expo/vector-icons";
+import { useRouter } from "expo-router";
+import React, { useEffect, useRef, useState } from "react";
 import {
-    Animated,
-    FlatList,
-    ImageBackground,
-    StyleSheet,
-    Text,
-    TouchableOpacity,
-    View,
-} from 'react-native';
-import { SafeAreaView } from 'react-native-safe-area-context';
+  Animated,
+  FlatList,
+  ImageBackground,
+  StyleSheet,
+  Text,
+  TouchableOpacity,
+  View,
+} from "react-native";
+import { SafeAreaView } from "react-native-safe-area-context";
 
 const AnimatedFlatList = Animated.createAnimatedComponent(FlatList);
 
@@ -33,7 +33,7 @@ export default function Feed() {
     scrollY.interpolate({
       inputRange: [0, 1],
       outputRange: [0, 1],
-      extrapolateLeft: 'clamp',
+      extrapolateLeft: "clamp",
     }),
     0,
     headerHeight,
@@ -42,7 +42,7 @@ export default function Feed() {
   const headerTranslateY = clampedScrollY.interpolate({
     inputRange: [0, headerHeight],
     outputRange: [0, -headerHeight],
-    extrapolate: 'clamp',
+    extrapolate: "clamp",
   });
 
   useEffect(() => {
@@ -72,15 +72,23 @@ export default function Feed() {
   };
 
   return (
-    <ImageBackground source={require('../../../assets/images/bgbody.png')} style={styles.container}>
+    <ImageBackground
+      source={require("../../../assets/images/bgbody.png")}
+      style={styles.container}
+    >
       <SafeAreaView style={{ flex: 1 }} edges={["top"]}>
         <View style={styles.screenContent}>
           <AnimatedFlatList
             ref={flatListRef}
             data={posts}
             keyExtractor={(item) => item.id}
-            renderItem={({ item }) => <PostCard post={item} separatorColor="rgba(97, 75, 47, 0.16)" />}
-            contentContainerStyle={[styles.listContent, { paddingTop: headerHeight }]}
+            renderItem={({ item }) => (
+              <PostCard post={item} separatorColor="rgba(97, 75, 47, 0.16)" />
+            )}
+            contentContainerStyle={[
+              styles.listContent,
+              { paddingTop: headerHeight },
+            ]}
             showsVerticalScrollIndicator={false}
             refreshing={refreshing}
             onRefresh={handleRefresh}
@@ -89,7 +97,7 @@ export default function Feed() {
               {
                 useNativeDriver: true,
                 listener: handleScroll,
-              }
+              },
             )}
             scrollEventThrottle={16}
           />
@@ -99,17 +107,33 @@ export default function Feed() {
               styles.headerWrapper,
               { transform: [{ translateY: headerTranslateY }] },
             ]}
-            onLayout={(event) => setHeaderHeight(event.nativeEvent.layout.height)}
+            onLayout={(event) =>
+              setHeaderHeight(event.nativeEvent.layout.height)
+            }
           >
             {showReloadHint || refreshing ? (
               <View style={styles.reloadOverlay}>
-                <TouchableOpacity onPress={handleRefresh} style={styles.reloadButton}>
-                  <Ionicons name={refreshing ? 'refresh' : 'reload'} size={18} color="#0B4B82" />
-                  <Text style={styles.reloadText}>{refreshing ? 'Recargando...' : 'Recargar'}</Text>
+                <TouchableOpacity
+                  onPress={handleRefresh}
+                  style={styles.reloadButton}
+                >
+                  <Ionicons
+                    name={refreshing ? "refresh" : "reload"}
+                    size={18}
+                    color="#0B4B82"
+                  />
+                  <Text style={styles.reloadText}>
+                    {refreshing ? "Recargando..." : "Recargar"}
+                  </Text>
                 </TouchableOpacity>
               </View>
             ) : null}
-            <Header onSearchPress={() => router.push('/explore')} onChatPress={() => {}} />
+            <Header
+              onSearchPress={() => router.push("/explore")}
+              onChatPress={() => {
+                router.push("/chat");
+              }}
+            />
           </Animated.View>
         </View>
       </SafeAreaView>
@@ -123,10 +147,10 @@ const styles = StyleSheet.create({
   },
   screenContent: {
     flex: 1,
-    overflow: 'hidden',
+    overflow: "hidden",
   },
   headerWrapper: {
-    position: 'absolute',
+    position: "absolute",
     top: 0,
     left: 0,
     right: 0,
@@ -136,24 +160,24 @@ const styles = StyleSheet.create({
     paddingBottom: 24,
   },
   reloadOverlay: {
-    position: 'absolute',
+    position: "absolute",
     top: 6,
     left: 0,
     right: 0,
-    alignItems: 'center',
+    alignItems: "center",
     zIndex: 11,
   },
   reloadButton: {
-    flexDirection: 'row',
-    alignItems: 'center',
-    backgroundColor: 'rgba(11,75,130,0.06)',
+    flexDirection: "row",
+    alignItems: "center",
+    backgroundColor: "rgba(11,75,130,0.06)",
     paddingHorizontal: 10,
     paddingVertical: 6,
     borderRadius: 20,
-    alignSelf: 'center',
+    alignSelf: "center",
   },
   reloadText: {
-    color: '#0B4B82',
+    color: "#0B4B82",
     marginLeft: 8,
     fontSize: 13,
   },

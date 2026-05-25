@@ -7,7 +7,13 @@ import { AuthCard } from '@/src/components/auth/auth-card';
 import { AuthBackground } from '@/src/components/auth/auth-background';
 
 export default function SignUpScreen() {
-  const [form, setForm] = useState({ email: '', username: '', password: '', repeatPassword: '', birthDate: '' });
+  const [form, setForm] = useState({
+    email: "",
+    username: "",
+    password: "",
+    repeatPassword: "",
+    birthDate: "",
+  });
   const [successMessage, setSuccessMessage] = useState("");
   const { mutate, isPending, error, isError } = useSignup();
   const router = useRouter();
@@ -21,15 +27,19 @@ export default function SignUpScreen() {
       onSuccess: () => {
         setSuccessMessage("¡Registro Exitoso!");
         setTimeout(() => router.replace("/(tabs)/profile"), 1500);
-      }
+      },
     });
   };
 
   return (
     <AuthBackground>
       <AuthCard>
-        {!!successMessage && <Text style={styles.successText}>{successMessage}</Text>}
-        {isError && <Text style={styles.errorText}>{error.message ?? 'Error'}</Text>}
+        {!!successMessage && (
+          <Text style={styles.successText}>{successMessage}</Text>
+        )}
+        {isError && (
+          <Text style={styles.errorText}>{error.message ?? "Error"}</Text>
+        )}
 
         <TextInput
           placeholder="Correo Electrónico"
@@ -65,15 +75,23 @@ export default function SignUpScreen() {
           style={styles.input}
         />
 
-        <DateOfBirthInput 
+        <DateOfBirthInput
           label="Fecha de Nacimiento"
           value={form.birthDate}
-          onChange={(val) => setForm({...form, birthDate: val})}
+          onChange={(val) => setForm({ ...form, birthDate: val })}
           containerStyle={styles.dateInput}
         />
 
-        <Pressable style={styles.btn} onPress={handleSignup} disabled={isPending}>
-          {isPending ? <ActivityIndicator color="#fff" /> : <Text style={styles.btnText}>Regístrate</Text>}
+        <Pressable
+          style={styles.btn}
+          onPress={handleSignup}
+          disabled={isPending}
+        >
+          {isPending ? (
+            <ActivityIndicator color="#fff" />
+          ) : (
+            <Text style={styles.btnText}>Regístrate</Text>
+          )}
         </Pressable>
 
         <Link href="/(tabs)" style={styles.link}>
