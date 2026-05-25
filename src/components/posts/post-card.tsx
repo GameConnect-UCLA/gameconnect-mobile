@@ -1,3 +1,4 @@
+import { usePostStore } from '@/src/store/post.store';
 import { Ionicons } from '@expo/vector-icons';
 import { useRouter } from 'expo-router';
 import React, { useRef, useState } from 'react';
@@ -31,8 +32,14 @@ function formatDate(timestamp: string) {
 
 export default function PostCard({ post, separatorColor = 'transparent', onImagePress }: Props) {
   const router = useRouter();
+  const toggleFavorite = usePostStore((state) => state.toggleFavorite);
+  const favoriteIds = usePostStore((state) => state.favoriteIds);
+
+  // Se determina si un post específico está en favoritos
+  const isSaved = favoriteIds.includes(post.id);
+
   const [isLiked, setIsLiked] = useState(false);
-  const [isSaved, setIsSaved] = useState(false);
+  
   const [cardWidth, setCardWidth] = useState(0);
   const [activeImageIndex, setActiveImageIndex] = useState(0);
   const galleryRef = useRef<ScrollView>(null);
@@ -61,40 +68,45 @@ export default function PostCard({ post, separatorColor = 'transparent', onImage
       style={styles.card}
       onLayout={(event) => setCardWidth(event.nativeEvent.layout.width)}
     >
-      {/* --- HEADER --- */}
+      {/* HEADER */}
       <View style={styles.authorRow}>
-        <Image source={{ uri: post.author_profile_pic }} style={styles.avatar} />
-        <View style={styles.authorTextContainer}>
-          <View style={styles.authorMetaRow}>
-            <Text style={styles.authorName}>{post.author_display_name}</Text>
-            <Text style={styles.date}>{formatDate(post.created_at)}</Text>
-          </View>
-          <Text style={styles.handle}>{`@${post.author_username}`}</Text>
-          {post.is_review && (
-            <View style={styles.reviewMetaRow}>
-              <View style={styles.starsRow}>
-                {Array.from({ length: 5 }).map((_, index) => (
-                  <Ionicons
-                    key={index}
-                    name={index < (post.review_score ?? 0) ? 'star' : 'star-outline'}
-                    size={16}
-                    color="#C48200"
-                    style={styles.starIcon}
-                  />
-                ))}
-              </View>
+        <TouchableOpacity 
+          style={styles.authorClickArea}
+          onPress={() => router.push(`/user/${post.autor}` as any)}
+          activeOpacity={0.7}
+        >
+          <Image source={{ uri: post.author_profile_pic }} style={styles.avatar} />
+          <View style={styles.authorTextContainer}>
+            <View style={styles.authorMetaRow}>
+              <Text style={styles.authorName}>{post.author_display_name}</Text>
+              <Text style={styles.date}>{formatDate(post.created_at)}</Text>
             </View>
-          )}
-        </View>
+            <Text style={styles.handle}>{`@${post.author_username}`}</Text>
+            {post.is_review && (
+              <View style={styles.reviewMetaRow}>
+                <View style={styles.starsRow}>
+                  {Array.from({ length: 5 }).map((_, index) => (
+                    <Ionicons
+                      key={index}
+                      name={index < (post.review_score ?? 0) ? 'star' : 'star-outline'}
+                      size={16}
+                      color="#C48200"
+                      style={styles.starIcon}
+                    />
+                  ))}
+                </View>
+              </View>
+            )}
+          </View>
+        </TouchableOpacity>
       </View>
 
-      <Text style={[styles.title, post.is_review && styles.reviewTitle]}>
-        {displayedTitle}
-      </Text>
-      <Text style={styles.content}>
-        {contentPreview}{post.content.length > 160 ? '...' : ''}
-      </Text>
+      <View>
+        <Text style={[styles.title, post.is_review && styles.reviewTitle]}>{displayedTitle}</Text>
+        <Text style={styles.content}>{contentPreview}{post.content.length > 160 ? '...' : ''}</Text>
+      </View>
 
+      {/* GALERÍA DE IMÁGENES */}
       {post.media.images.length > 0 ? (
         <View style={styles.galleryWrapper}>
           {hasMultipleImages ? (
@@ -127,7 +139,6 @@ export default function PostCard({ post, separatorColor = 'transparent', onImage
                 ))}
               </ScrollView>
 
-              {/* Flechas de navegación */}
               <TouchableOpacity
                 onPress={() => handleScrollToImage(activeImageIndex - 1)}
                 disabled={activeImageIndex === 0}
@@ -168,11 +179,11 @@ export default function PostCard({ post, separatorColor = 'transparent', onImage
         </View>
       )}
 
-      {/* ACCIONES CON CONTADORES */}
+      {/* ACCIONES */}
       <View style={styles.actionsRow}>
         <View style={styles.actionsLeft}>
           <View style={styles.counterBlock}>
-            <TouchableOpacity onPress={() => setIsLiked(!isLiked)}>
+            <TouchableOpacity onPress={() => setIsLiked((current) => !current)}>
               <Ionicons
                 name={isLiked ? 'heart' : 'heart-outline'}
                 size={28}
@@ -192,11 +203,12 @@ export default function PostCard({ post, separatorColor = 'transparent', onImage
           </TouchableOpacity>
         </View>
 
-        <TouchableOpacity onPress={() => setIsSaved(!isSaved)}>
+        {/* BOTÓN DE FAVORITO */}
+        <TouchableOpacity onPress={() => toggleFavorite(post.id)}>
           <Ionicons
             name={isSaved ? 'bookmark' : 'bookmark-outline'}
             size={28}
-            color="#111111"
+            color={isSaved ? '#E8C339' : '#111111'}
           />
         </TouchableOpacity>
       </View>
@@ -216,7 +228,12 @@ const styles = StyleSheet.create({
   authorRow: {
     flexDirection: 'row',
     alignItems: 'flex-start',
+  },
+  authorClickArea: {
+    flexDirection: 'row',
+    alignItems: 'flex-start',
     gap: 12,
+    flex: 1,
   },
   avatar: {
     width: 54,

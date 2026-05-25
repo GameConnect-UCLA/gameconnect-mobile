@@ -5,6 +5,7 @@ export interface PostMedia {
 
 export interface Comment {
   id: string;
+  author_id: string;
   author_display_name: string;
   author_profile_pic: string;
   content: string;

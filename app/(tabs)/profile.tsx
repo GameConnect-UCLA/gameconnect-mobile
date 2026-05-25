@@ -1,9 +1,11 @@
 import ProfileView from '@/src/components/user/user-profile';
+import { useMockUser } from '@/src/hooks/mock-data/useMockUser';
 import { useRouter } from 'expo-router';
 import React from 'react';
 
 export default function ProfileScreen() {
   const router = useRouter();
+  const user = useMockUser(); 
 
   const handleEditPress = () => {
     router.push('/user/edit-profile');
@@ -18,12 +20,13 @@ export default function ProfileScreen() {
   };
 
   const handleAddGamePress = () => {
-    // Normalmente, el botón "+" también debería llevarte a la lista o a agregar
     router.push('/user/favorite-games');
   };
 
   return (
     <ProfileView
+      user={user}         
+      isSelf={true}       
       onEditPress={handleEditPress}
       onViewAllGamesPress={handleViewAllGamesPress}
       onAddPeoplePress={handleAddPeoplePress}
