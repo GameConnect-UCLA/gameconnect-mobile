@@ -20,6 +20,7 @@ import { SafeAreaView } from 'react-native-safe-area-context';
 
 import { mockGameProfiles } from '@/src/hooks/mock-data/mock-game';
 import { mockUser } from '@/src/hooks/mock-data/mock-user';
+import { mockUsersList } from '@/src/hooks/mock-data/mock-users-list';
 import { usePostStore } from '@/src/store/post.store';
 import { useToastStore } from '@/src/store/toast.store';
 import type { Post } from '@/src/types/post.types';
@@ -97,6 +98,7 @@ export default function CreatePostScreen() {
 
   const addPost = usePostStore((state) => state.addPost);
   const showToast = useToastStore((state) => state.showToast);
+  const currentUserProfile = mockUsersList.find((user) => user.username === mockUser.username) ?? mockUser;
 
   const activeLabels = isReview ? reviewFieldLabels : normalFieldLabels;
 
@@ -275,10 +277,10 @@ export default function CreatePostScreen() {
 
     const newPost: Post = {
       id: `${Date.now()}`,
-      autor: mockUser.id,
-      author_display_name: mockUser.display_name,
-      author_username: mockUser.username,
-      author_profile_pic: mockUser.profile_pic,
+      autor: currentUserProfile.id,
+      author_display_name: currentUserProfile.display_name,
+      author_username: currentUserProfile.username,
+      author_profile_pic: currentUserProfile.profile_pic,
       post_title: finalGameTitle,
       content: description.trim(),
       media: {
@@ -395,6 +397,7 @@ export default function CreatePostScreen() {
                           >
                             <Ionicons name="game-controller-outline" size={18} color="#0B4B82" />
                             <Text style={styles.suggestionText}>{game.title}</Text>
+                            {isSelected ? <Ionicons name="checkmark-circle" size={18} color="#0B4B82" /> : null}
                           </TouchableOpacity>
                         );
                       })
@@ -614,7 +617,7 @@ const styles = StyleSheet.create({
   },
   headerTitle: {
     flex: 1,
-    fontSize: 23,
+    fontSize: 20,
     fontWeight: '700',
     color: '#111111',
     textAlign: 'center',
@@ -650,7 +653,7 @@ const styles = StyleSheet.create({
   },
   sectionHint: {
     marginTop: 4,
-    maxWidth: 210,
+    maxWidth: 165,
     fontSize: 12,
     lineHeight: 16,
     color: '#5B5147',
@@ -658,7 +661,7 @@ const styles = StyleSheet.create({
   segmentControl: {
     flexDirection: 'row',
     flex: 1,
-    maxWidth: 180,
+    maxWidth: 240,
     alignSelf: 'flex-start',
     borderRadius: 999,
     overflow: 'hidden',
@@ -735,6 +738,8 @@ const styles = StyleSheet.create({
   },
   suggestionItemSelected: {
     backgroundColor: 'rgba(11,75,130,0.18)',
+    borderWidth: 1,
+    borderColor: 'rgba(11,75,130,0.35)',
   },
   suggestionText: {
     flex: 1,

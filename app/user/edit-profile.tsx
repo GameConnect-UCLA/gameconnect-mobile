@@ -6,9 +6,8 @@ export default function EditProfileScreen() {
   const router = useRouter();
 
   const handleSave = (data: any) => {
-    // Aquí iría la lógica cuando el backend esté listo
     console.log("Datos para guardar:", data);
-    router.back(); // Vuelve a la pantalla de perfil
+    router.back(); 
   };
 
   return (

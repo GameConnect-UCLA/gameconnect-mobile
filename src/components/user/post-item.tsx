@@ -1,7 +1,15 @@
+import { usePostStore } from '@/src/store/post.store';
 import { Ionicons } from '@expo/vector-icons';
 import { useRouter } from 'expo-router';
 import React, { useState } from 'react';
-import { Image, Share, StyleSheet, Text, TouchableOpacity, View } from 'react-native';
+import {
+  Image,
+  Share,
+  StyleSheet,
+  Text,
+  TouchableOpacity,
+  View
+} from 'react-native';
 
 interface PostItemProps {
   id: string; 
@@ -19,6 +27,10 @@ export const PostItem: React.FC<PostItemProps> = ({
   id, userName, userTag, userAvatar, title, content, imageUrl, likes, comments 
 }) => {
   const router = useRouter();
+  const toggleFavorite = usePostStore((state) => state.toggleFavorite);
+  const favoriteIds = usePostStore((state) => state.favoriteIds);
+  const isSaved = favoriteIds.includes(id);
+
   const [liked, setLiked] = useState(false);
   const [likesCount, setLikesCount] = useState(likes);
 
@@ -56,10 +68,9 @@ export const PostItem: React.FC<PostItemProps> = ({
         <View style={styles.leftActions}>
           <TouchableOpacity style={styles.actionBtn} onPress={handleLike}>
             <Ionicons name={liked ? "heart" : "heart-outline"} size={26} color={liked ? "#D11D3B" : "black"} />
-            <Text style={styles.actionText}>{liked ? likesCount : likes}</Text>
+            <Text style={styles.actionText}>{likesCount}</Text>
           </TouchableOpacity>
 
-          {/* BOTÓN COMENTARIO */}
           <TouchableOpacity 
             style={styles.actionBtn} 
             onPress={goToDetail} 
@@ -73,8 +84,13 @@ export const PostItem: React.FC<PostItemProps> = ({
           </TouchableOpacity>
         </View>
         
-        <TouchableOpacity>
-          <Ionicons name="bookmark-outline" size={26} color="black" />
+        {/* 3. BOTÓN DE FAVORITO */}
+        <TouchableOpacity onPress={() => toggleFavorite(id)}>
+          <Ionicons 
+            name={isSaved ? "bookmark" : "bookmark-outline"} 
+            size={26} 
+            color={isSaved ? "#E8C339" : "black"}
+          />
         </TouchableOpacity>
       </View>
     </View>

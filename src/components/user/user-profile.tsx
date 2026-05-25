@@ -1,4 +1,3 @@
-import { useMockUser } from '@/src/hooks/mock-data/useMockUser';
 import { usePostStore } from '@/src/store/post.store';
 import { Ionicons } from '@expo/vector-icons';
 import { useRouter } from 'expo-router';
@@ -18,27 +17,33 @@ import { PostItem } from './post-item';
 const BG_IMAGE = require('@/assets/images/bgbody.png');
 
 interface ProfileViewProps {
+  user: any;
+  isSelf?: boolean; 
   onEditPress?: () => void;
   onAddPeoplePress?: () => void;
   onAddGamePress?: () => void;
   onViewAllGamesPress?: () => void;
   onBackPress?: () => void;      
   onSettingsPress?: () => void;
+  onFollowPress?: () => void; 
 }
 
 const ProfileView: React.FC<ProfileViewProps> = ({
+  user,
+  isSelf = false,
   onEditPress,
   onAddPeoplePress,
   onAddGamePress,
   onViewAllGamesPress,
   onBackPress,
   onSettingsPress,
+  onFollowPress,
 }) => {
-  const user = useMockUser();
   const router = useRouter();
   
   const allPosts = usePostStore((state) => state.posts);
-  const jorgePosts = allPosts.filter(post => post.author_username === 'jorgesilva');
+  
+  const userPosts = allPosts.filter(post => post.author_username === user.username);
 
   const displayName = user.display_name.toUpperCase();
   const bioLine = user.bio?.split('\n').filter(Boolean).join(' | ') || '';
@@ -73,17 +78,18 @@ const ProfileView: React.FC<ProfileViewProps> = ({
               style={styles.coverImage}
               resizeMode="cover"
             >
-              {/* Botones de navegación superiores */}
               <View style={styles.topButtonsRow}>
-                <TouchableOpacity onPress={onBackPress} style={styles.topIconBtn}>
+                <TouchableOpacity onPress={onBackPress || (() => router.back())} style={styles.topIconBtn}>
                   <Ionicons name="chevron-back" size={32} color="white" />
                 </TouchableOpacity>
 
-                <TouchableOpacity onPress={onSettingsPress} style={styles.topIconBtn}>
-                  <View style={styles.settingsIconWrapper}>
-                    <Ionicons name="settings-sharp" size={28} color="#2533C8" /> 
-                  </View>
-                </TouchableOpacity>
+                {isSelf && (
+                  <TouchableOpacity onPress={onSettingsPress} style={styles.topIconBtn}>
+                    <View style={styles.settingsIconWrapper}>
+                      <Ionicons name="settings-sharp" size={28} color="#2533C8" /> 
+                    </View>
+                  </TouchableOpacity>
+                )}
               </View>
 
               <View style={styles.avatarWrapper}>
@@ -98,13 +104,25 @@ const ProfileView: React.FC<ProfileViewProps> = ({
               <View style={styles.nameRow}>
                 <Text style={styles.userName}>{displayName}</Text>
                 <View style={styles.actionButtons}>
-                  <TouchableOpacity onPress={onEditPress} style={styles.editButtonInline}>
-                    <Ionicons name="create-outline" size={20} color="#033563" />
-                    <Text style={styles.actionTextInline}>Editar</Text>
-                  </TouchableOpacity>
-                  <TouchableOpacity onPress={onAddPeoplePress} style={styles.addButtonInline}>
-                    <Ionicons name="person-add-outline" size={22} color="#007AFF" />
-                  </TouchableOpacity>
+                  {isSelf ? (
+                    // BOTÓN EDITAR 
+                    <TouchableOpacity onPress={onEditPress} style={styles.editButtonInline}>
+                      <Ionicons name="create-outline" size={20} color="#033563" />
+                      <Text style={styles.actionTextInline}>Editar</Text>
+                    </TouchableOpacity>
+                  ) : (
+                    // BOTÓN SEGUIR 
+                    <TouchableOpacity onPress={onFollowPress} style={styles.followButton}>
+                      <Ionicons name="person-add-outline" size={20} color="white" />
+                      <Text style={styles.followButtonText}>Seguir</Text>
+                    </TouchableOpacity>
+                  )}
+                  
+                  {isSelf && (
+                    <TouchableOpacity onPress={onAddPeoplePress} style={styles.addButtonInline}>
+                      <Ionicons name="person-add-outline" size={22} color="#007AFF" />
+                    </TouchableOpacity>
+                  )}
                 </View>
               </View>
 
@@ -119,7 +137,7 @@ const ProfileView: React.FC<ProfileViewProps> = ({
 
               <View style={styles.statsContainer}>
                 <View style={styles.statItem}>
-                  <Text style={styles.statNumber}>{jorgePosts.length}</Text>
+                  <Text style={styles.statNumber}>{userPosts.length}</Text> 
                   <Text style={styles.statLabel}>Posts</Text>
                 </View>
                 <View style={styles.statItem}>
@@ -141,9 +159,11 @@ const ProfileView: React.FC<ProfileViewProps> = ({
                     <Ionicons name="game-controller-outline" size={22} color="#000000" />
                     <Text style={styles.sectionTitle}>JUEGOS FAVORITOS</Text>
                   </View>
-                  <TouchableOpacity onPress={onAddGamePress} style={styles.plusButton}>
-                    <Ionicons name="add-circle" size={26} color="#033563" />
-                  </TouchableOpacity>
+                  {isSelf && (
+                    <TouchableOpacity onPress={onAddGamePress} style={styles.plusButton}>
+                      <Ionicons name="add-circle" size={26} color="#033563" />
+                    </TouchableOpacity>
+                  )}
                 </View>
 
                 <ScrollView 
@@ -151,7 +171,7 @@ const ProfileView: React.FC<ProfileViewProps> = ({
                   showsHorizontalScrollIndicator={false}
                   contentContainerStyle={styles.gamesScrollContent}
                 >
-                  {user.favorite_games.map((game) => (
+                  {user.favorite_games && user.favorite_games.map((game: any) => (
                     <View key={game.id} style={styles.gameCard}>
                       <Image source={{ uri: game.image_url }} style={styles.gameImage} />
                       <Text style={styles.gameNameLabel} numberOfLines={1}>{game.name}</Text>
@@ -162,9 +182,9 @@ const ProfileView: React.FC<ProfileViewProps> = ({
 
               <View style={styles.separatorLine} />
 
-              {/* POSTS */}
+              {/* POSTS DEL USUARIO */}
               <View style={styles.feedContainer}>
-                {jorgePosts.map((post) => (
+                {userPosts.map((post) => (
                   <PostItem 
                     key={post.id} 
                     id={post.id}
@@ -189,200 +209,223 @@ const ProfileView: React.FC<ProfileViewProps> = ({
 };
 
 const styles = StyleSheet.create({
-  backgroundImage: { flex: 1 },
-  container: { flex: 1, backgroundColor: 'transparent' },
-  scrollContent: {
-    paddingBottom: 5, 
+  backgroundImage: { 
+    flex: 1 
   },
-  coverContainer: { marginTop: 0 },
-  coverImage: {
-    width: '100%',
-    height: 240,
-    justifyContent: 'flex-end',
-    alignItems: 'flex-start',
+  container: { 
+    flex: 1, 
+    backgroundColor: 'transparent' 
   },
-  topButtonsRow: {
-    position: 'absolute',
-    top: 45,
-    left: 0,
-    right: 0,
-    flexDirection: 'row',
-    justifyContent: 'space-between',
-    paddingHorizontal: 15,
-    zIndex: 100,
+  scrollContent: { 
+    paddingBottom: 5 
   },
-  topIconBtn: {
-    width: 40,
-    height: 40,
-    justifyContent: 'center',
-    alignItems: 'center',
-    backgroundColor: 'rgba(0,0,0,0.4)',
-    borderRadius: 20,
-    marginTop: 10,
+  coverContainer: { 
+    marginTop: 0 
   },
-  settingsIconWrapper: {
+  coverImage: { 
+    width: '100%', 
+    height: 240, 
+    justifyContent: 'flex-end', 
+    alignItems: 'flex-start' 
+  },
+  topButtonsRow: { 
+    position: 'absolute', 
+    top: 45, 
+    left: 0, 
+    right: 0, 
+    flexDirection: 'row', 
+    justifyContent: 'space-between', 
+    paddingHorizontal: 15, 
+    zIndex: 100 
+  },
+  topIconBtn: { 
+    width: 40, 
+    height: 40, 
+    justifyContent: 'center', 
+    alignItems: 'center', 
+    backgroundColor: 'rgba(0,0,0,0.2)', 
+    borderRadius: 20 
+  },
+  settingsIconWrapper: { 
     backgroundColor: 'rgba(255, 255, 255, 0.8)', 
-    borderRadius: 20,
-    padding: 2,
+    borderRadius: 20, 
+    padding: 2 
   },
-  avatarWrapper: {
-    position: 'absolute',
-    bottom: 10,
-    left: 20,
-    borderRadius: 60,
-    borderWidth: 3,
-    borderColor: '#FFFFFF',
-    backgroundColor: '#FFFFFF',
-    zIndex: 10,
+  avatarWrapper: { 
+    position: 'absolute', 
+    bottom: -45, 
+    left: 20, 
+    borderRadius: 60, 
+    borderWidth: 3, 
+    borderColor: '#FFFFFF', 
+    backgroundColor: '#FFFFFF', 
+    zIndex: 10 
   },
-  avatar: { width: 100, height: 100, borderRadius: 50 },
-  bigCard: {
-    backgroundColor: 'rgba(204, 204, 204, 0.85)',
-    borderRadius: 24,            
-    marginHorizontal: 0,       
-    marginTop: -70,
-    paddingTop: 60,
-    paddingHorizontal: 16,
-    paddingBottom: 20,
-    marginBottom: 10,
-    shadowColor: '#000',
-    shadowOffset: { width: 0, height: 2 },
-    shadowOpacity: 0.2,
-    shadowRadius: 10,
-    elevation: 5,
+  avatar: { 
+    width: 100, 
+    height: 100, 
+    borderRadius: 50 
   },
-  profileCard: {
-    backgroundColor: 'transparent',
+  bigCard: { 
+    backgroundColor: 'rgba(204, 204, 204, 0.85)', 
+    borderRadius: 24, 
+    marginHorizontal: 0, 
+    marginTop: -30, 
+    paddingTop: 60, 
+    paddingHorizontal: 16, 
+    paddingBottom: 20, 
+    marginBottom: 10, 
+    elevation: 5 
   },
-  nameRow: {
-    flexDirection: 'row',
-    justifyContent: 'space-between',
-    alignItems: 'center',
-    width: '100%',
+  profileCard: { 
+    backgroundColor: 'transparent' 
   },
-  actionButtons: {
-    flexDirection: 'row',
-    alignItems: 'center',
-    gap: 8,
+  nameRow: { 
+    flexDirection: 'row', 
+    justifyContent: 'space-between', 
+    alignItems: 'center', 
+    width: '100%', 
+    marginTop: 15 
   },
-  userName: {
-    fontFamily: 'Inter',
-    fontSize: 25,
-    fontWeight: 'bold',
-    color: '#033563',
+  actionButtons: { 
+    flexDirection: 'row', 
+    alignItems: 'center', 
+    gap: 8 
   },
-  editButtonInline: {
-    flexDirection: 'row',
-    alignItems: 'center',
+  userName: { 
+    fontFamily: 'Inter', 
+    fontSize: 25, 
+    fontWeight: 'bold', 
+    color: '#033563' 
   },
-  actionTextInline: {
-    marginLeft: 4,
-    fontSize: 14,
-    color: '#033563',
-    fontWeight: '500',
+  editButtonInline: { 
+    flexDirection: 'row', 
+    alignItems: 'center' 
   },
-  addButtonInline: {
-    paddingLeft: 5,
+  actionTextInline: { 
+    marginLeft: 4, 
+    fontSize: 14, 
+    color: '#033563', 
+    fontWeight: '500' 
+  },
+  followButton: { 
+    backgroundColor: '#033563', 
+    flexDirection: 'row', 
+    alignItems: 'center', 
+    paddingHorizontal: 12, 
+    paddingVertical: 6, 
+    borderRadius: 20, 
+    gap: 5 
+  },
+  followButtonText: { 
+    color: 'white', 
+    fontWeight: 'bold', 
+    fontSize: 14 
+  },
+  addButtonInline: { 
+    paddingLeft: 5 
   },
   userUsername: { 
     fontSize: 16, 
     color: '#000000', 
     marginTop: 4 
   },
-  bioContainer: {
-    flexDirection: 'row',
-    alignItems: 'center',
-    marginTop: 5,
+  bioContainer: { 
+    flexDirection: 'row', 
+    alignItems: 'center', 
+    marginTop: 5 
   },
-  userBio: {
-    fontSize: 16,
-    color: '#000000',
+  userBio: { 
+    fontSize: 16, 
+    color: '#000000' 
   },
-  bioIconInline: {
-    marginHorizontal: 4,
+  bioIconInline: { 
+    marginHorizontal: 4 
   },
-  joinDateContainer: {
-    flexDirection: 'row',
-    alignItems: 'center',
-    marginTop: 4,
+  joinDateContainer: { 
+    flexDirection: 'row', 
+    alignItems: 'center', 
+    marginTop: 4 
   },
   joinDate: { 
     fontSize: 14, 
     color: '#666', 
-    marginLeft: 4
+    marginLeft: 4 
   },
-  statsContainer: {
-    flexDirection: 'row',
-    justifyContent: 'space-between',
-    width: '100%',
-    marginTop: 5,
-    marginBottom: 2,
+  statsContainer: { 
+    flexDirection: 'row', 
+    justifyContent: 'space-between', 
+    width: '100%', 
+    marginTop: 5, 
+    marginBottom: 2 
   },
   statItem: { 
-    alignItems: 'center'
+    alignItems: 'center' 
   },
   statNumber: { 
     fontSize: 20, 
     fontWeight: 'bold', 
-    color: '#000000'
+    color: '#000000' 
   },
   statLabel: { 
     fontSize: 14, 
     color: '#000000', 
-    marginTop: 2
+    marginTop: 2 
   },
-  separatorLine: {
-    height: 1,
-    backgroundColor: '#000000',
-    width: '100%',
-    marginVertical: 5,
-    opacity: 0.2
+  separatorLine: { 
+    height: 1, 
+    backgroundColor: '#000000', 
+    width: '100%', 
+    marginVertical: 5, 
+    opacity: 0.2 
   },
-  favoritesSection: { width: '100%' },
-  sectionHeaderRow: {
-    flexDirection: 'row',
-    justifyContent: 'space-between',
-    alignItems: 'center',
-    marginBottom: 15,
+  favoritesSection: { 
+    width: '100%' 
   },
-  titleWithIcon: {
-    flexDirection: 'row',
-    alignItems: 'center',
-    gap: 8,
+  sectionHeaderRow: { 
+    flexDirection: 'row', 
+    justifyContent: 'space-between', 
+    alignItems: 'center', 
+    marginBottom: 15 
+  },
+  titleWithIcon: { 
+    flexDirection: 'row', 
+    alignItems: 'center', 
+    gap: 8 
   },
   sectionTitle: { 
     fontSize: 16, 
     fontWeight: 'bold', 
     color: '#000' 
   },
-  plusButton: {
-    padding: 2,
+  plusButton: { 
+    padding: 2 
   },
-  gamesScrollContent: {
-    paddingRight: 20,
+  gamesScrollContent: { 
+    paddingRight: 20 
   },
-  gameCard: {
-    width: 120,
-    marginRight: 12,
-    alignItems: 'center',
+  gameCard: { 
+    width: 120, 
+    marginRight: 12, 
+    alignItems: 'center' 
   },
-  gameImage: {
-    width: 120,
-    height: 75,
-    borderRadius: 6,
-    backgroundColor: '#333',
-    marginBottom: 6,
+  gameImage: { 
+    width: 120, 
+    height: 75, 
+    borderRadius: 6, 
+    backgroundColor: '#333', 
+    marginBottom: 6 
   },
-  gameNameLabel: {
-    fontSize: 13,
-    fontWeight: '500',
-    color: '#000',
-    textAlign: 'center',
-    width: '100%'
+  gameNameLabel: { 
+    fontSize: 13, 
+    fontWeight: '500', 
+    color: '#000', 
+    textAlign: 'center', 
+    width: '100%' 
   },
-  feedContainer: {
-    width: '100%',
-    marginTop: -20,
+  feedContainer: { 
+    width: '100%', 
+    marginTop: -10 
   }
 });
 
