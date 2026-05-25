@@ -55,6 +55,15 @@ export default function PostCard({ post, separatorColor = 'transparent', onImage
     router.push(`/post/${post.id}` as any);
   };
 
+  const handleImagePress = (imageUrl: string) => {
+    if (onImagePress) {
+      onImagePress(imageUrl);
+      return;
+    }
+
+    handleGoToDetail();
+  };
+
   const handleScrollToImage = (index: number) => {
     if (!hasMultipleImages || !mediaWidth || index < 0 || index >= post.media.images.length) {
       return;
@@ -101,10 +110,14 @@ export default function PostCard({ post, separatorColor = 'transparent', onImage
         </TouchableOpacity>
       </View>
 
-      <View>
+      <TouchableOpacity
+        activeOpacity={0.9}
+        onPress={handleGoToDetail}
+        style={styles.contentTouchArea}
+      >
         <Text style={[styles.title, post.is_review && styles.reviewTitle]}>{displayedTitle}</Text>
         <Text style={styles.content}>{contentPreview}{post.content.length > 160 ? '...' : ''}</Text>
-      </View>
+      </TouchableOpacity>
 
       {/* GALERÍA DE IMÁGENES */}
       {post.media.images.length > 0 ? (
@@ -129,8 +142,7 @@ export default function PostCard({ post, separatorColor = 'transparent', onImage
                   <TouchableOpacity 
                     key={index} 
                     activeOpacity={0.9} 
-                    onPress={() => onImagePress?.(image)}
-                    disabled={!onImagePress}
+                    onPress={() => handleImagePress(image)}
                   >
                     <View style={[styles.mediaFrame, { width: mediaWidth }]}>
                       <Image source={{ uri: image }} style={styles.mediaImage} />
@@ -157,8 +169,7 @@ export default function PostCard({ post, separatorColor = 'transparent', onImage
           ) : (
             <TouchableOpacity 
               activeOpacity={0.9} 
-              onPress={() => onImagePress?.(post.media.images[0])}
-              disabled={!onImagePress}
+              onPress={() => handleImagePress(post.media.images[0])}
             >
               <View style={[styles.mediaFrame, styles.singleMediaFrame, { width: mediaWidth }]}>
                 <Image source={{ uri: post.media.images[0] }} style={styles.mediaImage} />
@@ -280,6 +291,9 @@ const styles = StyleSheet.create({
     color: '#6B6B6B',
     fontWeight: '600',
     lineHeight: 20,
+  },
+  contentTouchArea: {
+    marginTop: 2,
   },
   title: {
     marginTop: 10,
