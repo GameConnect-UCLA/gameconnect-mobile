@@ -1,4 +1,5 @@
 import { usePostStore } from '@/src/store/post.store';
+import { useToastStore } from '@/src/store/toast.store';
 import { Ionicons } from '@expo/vector-icons';
 import { useRouter } from 'expo-router';
 import React, { useEffect, useRef, useState } from 'react';
@@ -35,6 +36,7 @@ export default function PostCard({ post, separatorColor = 'transparent', onImage
   const router = useRouter();
   const toggleFavorite = usePostStore((state) => state.toggleFavorite);
   const favoriteIds = usePostStore((state) => state.favoriteIds);
+  const showToast = useToastStore((state) => state.showToast);
 
   const isSaved = favoriteIds.includes(post.id);
 
@@ -96,6 +98,10 @@ export default function PostCard({ post, separatorColor = 'transparent', onImage
     const boundedIndex = clampImageIndex(index);
     setActiveImageIndex(boundedIndex);
     scrollToImageIndex(boundedIndex, true);
+  };
+
+  const handleSharePress = () => {
+    showToast('La opción se creará próximamente', 'success');
   };
 
   return (
@@ -236,7 +242,7 @@ export default function PostCard({ post, separatorColor = 'transparent', onImage
             <Text style={styles.counterText}>{post.commets_counter}</Text>
           </TouchableOpacity>
 
-          <TouchableOpacity>
+          <TouchableOpacity onPress={handleSharePress}>
             <Ionicons name="share-social-outline" size={26} color="#111111" />
           </TouchableOpacity>
         </View>
