@@ -1,6 +1,8 @@
+import { usePostStore } from '@/src/store/post.store';
+import { useToastStore } from '@/src/store/toast.store';
 import { Ionicons } from '@expo/vector-icons';
 import { useRouter } from 'expo-router';
-import React, { useRef, useState } from 'react';
+import React, { useEffect, useRef, useState } from 'react';
 import {
   Image,
   ScrollView,
@@ -15,6 +17,7 @@ interface Props {
   post: Post;
   separatorColor?: string;
   onImagePress?: (url: string) => void;
+  initialImageIndex?: number;
 }
 
 function formatDate(timestamp: string) {
@@ -29,10 +32,16 @@ function formatDate(timestamp: string) {
   }
 }
 
-export default function PostCard({ post, separatorColor = 'transparent', onImagePress }: Props) {
+export default function PostCard({ post, separatorColor = 'transparent', onImagePress, initialImageIndex = 0 }: Props) {
   const router = useRouter();
+  const toggleFavorite = usePostStore((state) => state.toggleFavorite);
+  const favoriteIds = usePostStore((state) => state.favoriteIds);
+  const showToast = useToastStore((state) => state.showToast);
+
+  const isSaved = favoriteIds.includes(post.id);
+
   const [isLiked, setIsLiked] = useState(false);
-  const [isSaved, setIsSaved] = useState(false);
+  
   const [cardWidth, setCardWidth] = useState(0);
   const [activeImageIndex, setActiveImageIndex] = useState(0);
   const galleryRef = useRef<ScrollView>(null);
@@ -44,16 +53,55 @@ export default function PostCard({ post, separatorColor = 'transparent', onImage
   const mediaWidth = cardWidth > 0 ? cardWidth : undefined;
   const hasMultipleImages = post.media.images.length > 1;
 
-  const handleGoToDetail = () => {
-    router.push(`/post/${post.id}` as any);
+  const clampImageIndex = (index: number) => Math.max(0, Math.min(index, post.media.images.length - 1));
+
+  const scrollToImageIndex = (index: number, animated: boolean) => {
+    if (!hasMultipleImages || !mediaWidth) {
+      return;
+    }
+
+    const boundedIndex = clampImageIndex(index);
+    galleryRef.current?.scrollTo({ x: boundedIndex * mediaWidth, animated });
+  };
+
+  useEffect(() => {
+    if (!hasMultipleImages || !mediaWidth) {
+      return;
+    }
+
+    const boundedIndex = clampImageIndex(initialImageIndex);
+    setActiveImageIndex(boundedIndex);
+    requestAnimationFrame(() => {
+      scrollToImageIndex(boundedIndex, false);
+    });
+  }, [clampImageIndex, hasMultipleImages, initialImageIndex, mediaWidth, scrollToImageIndex]);
+
+  const handleGoToDetail = (imageIndex = activeImageIndex) => {
+    const boundedIndex = clampImageIndex(imageIndex);
+    router.push(`/post/${post.id}?imageIndex=${boundedIndex}` as any);
+  };
+
+  const handleImagePress = (imageUrl: string, imageIndex: number) => {
+    if (onImagePress) {
+      onImagePress(imageUrl);
+      return;
+    }
+
+    handleGoToDetail(imageIndex);
   };
 
   const handleScrollToImage = (index: number) => {
     if (!hasMultipleImages || !mediaWidth || index < 0 || index >= post.media.images.length) {
       return;
     }
-    setActiveImageIndex(index);
-    galleryRef.current?.scrollTo({ x: index * mediaWidth, animated: true });
+
+    const boundedIndex = clampImageIndex(index);
+    setActiveImageIndex(boundedIndex);
+    scrollToImageIndex(boundedIndex, true);
+  };
+
+  const handleSharePress = () => {
+    showToast('La opción se creará próximamente', 'success');
   };
 
   return (
@@ -61,40 +109,49 @@ export default function PostCard({ post, separatorColor = 'transparent', onImage
       style={styles.card}
       onLayout={(event) => setCardWidth(event.nativeEvent.layout.width)}
     >
-      {/* --- HEADER --- */}
+      {/* HEADER */}
       <View style={styles.authorRow}>
-        <Image source={{ uri: post.author_profile_pic }} style={styles.avatar} />
-        <View style={styles.authorTextContainer}>
-          <View style={styles.authorMetaRow}>
-            <Text style={styles.authorName}>{post.author_display_name}</Text>
-            <Text style={styles.date}>{formatDate(post.created_at)}</Text>
-          </View>
-          <Text style={styles.handle}>{`@${post.author_username}`}</Text>
-          {post.is_review && (
-            <View style={styles.reviewMetaRow}>
-              <View style={styles.starsRow}>
-                {Array.from({ length: 5 }).map((_, index) => (
-                  <Ionicons
-                    key={index}
-                    name={index < (post.review_score ?? 0) ? 'star' : 'star-outline'}
-                    size={16}
-                    color="#C48200"
-                    style={styles.starIcon}
-                  />
-                ))}
-              </View>
+        <TouchableOpacity 
+          style={styles.authorClickArea}
+          onPress={() => router.push(`/user/${post.autor}` as any)}
+          activeOpacity={0.7}
+        >
+          <Image source={{ uri: post.author_profile_pic }} style={styles.avatar} />
+          <View style={styles.authorTextContainer}>
+            <View style={styles.authorMetaRow}>
+              <Text style={styles.authorName}>{post.author_display_name}</Text>
+              <Text style={styles.date}>{formatDate(post.created_at)}</Text>
             </View>
-          )}
-        </View>
+            <Text style={styles.handle}>{`@${post.author_username}`}</Text>
+            {post.is_review && (
+              <View style={styles.reviewMetaRow}>
+                <View style={styles.starsRow}>
+                  {Array.from({ length: 5 }).map((_, index) => (
+                    <Ionicons
+                      key={index}
+                      name={index < (post.review_score ?? 0) ? 'star' : 'star-outline'}
+                      size={16}
+                      color="#C48200"
+                      style={styles.starIcon}
+                    />
+                  ))}
+                </View>
+              </View>
+            )}
+          </View>
+        </TouchableOpacity>
       </View>
 
-      <Text style={[styles.title, post.is_review && styles.reviewTitle]}>
-        {displayedTitle}
-      </Text>
-      <Text style={styles.content}>
-        {contentPreview}{post.content.length > 160 ? '...' : ''}
-      </Text>
+      <TouchableOpacity
+        activeOpacity={0.9}
+        onPress={() => handleGoToDetail()}
+        style={styles.contentTouchArea}
+      >
+        <Text style={[styles.title, post.is_review && styles.reviewTitle]}>{displayedTitle}</Text>
+        <Text style={styles.content}>{contentPreview}{post.content.length > 160 ? '...' : ''}</Text>
+      </TouchableOpacity>
 
+      {/* GALERÍA DE IMÁGENES */}
       {post.media.images.length > 0 ? (
         <View style={styles.galleryWrapper}>
           {hasMultipleImages ? (
@@ -109,25 +166,24 @@ export default function PostCard({ post, separatorColor = 'transparent', onImage
                 style={styles.gallery}
                 onMomentumScrollEnd={(event) => {
                   if (!mediaWidth) return;
-                  const nextIndex = Math.round(event.nativeEvent.contentOffset.x / mediaWidth);
+                  const nextIndex = clampImageIndex(Math.round(event.nativeEvent.contentOffset.x / mediaWidth));
                   setActiveImageIndex(nextIndex);
                 }}
               >
                 {post.media.images.map((image, index) => (
                   <TouchableOpacity 
                     key={index} 
+                    style={mediaWidth ? { width: mediaWidth } : undefined}
                     activeOpacity={0.9} 
-                    onPress={() => onImagePress?.(image)}
-                    disabled={!onImagePress}
+                    onPress={() => handleImagePress(image, index)}
                   >
-                    <View style={[styles.mediaFrame, { width: mediaWidth }]}>
+                    <View style={[styles.mediaFrame, styles.pagedMediaFrame, { width: mediaWidth }]}>
                       <Image source={{ uri: image }} style={styles.mediaImage} />
                     </View>
                   </TouchableOpacity>
                 ))}
               </ScrollView>
 
-              {/* Flechas de navegación */}
               <TouchableOpacity
                 onPress={() => handleScrollToImage(activeImageIndex - 1)}
                 disabled={activeImageIndex === 0}
@@ -146,8 +202,7 @@ export default function PostCard({ post, separatorColor = 'transparent', onImage
           ) : (
             <TouchableOpacity 
               activeOpacity={0.9} 
-              onPress={() => onImagePress?.(post.media.images[0])}
-              disabled={!onImagePress}
+              onPress={() => handleImagePress(post.media.images[0], 0)}
             >
               <View style={[styles.mediaFrame, styles.singleMediaFrame, { width: mediaWidth }]}>
                 <Image source={{ uri: post.media.images[0] }} style={styles.mediaImage} />
@@ -168,11 +223,11 @@ export default function PostCard({ post, separatorColor = 'transparent', onImage
         </View>
       )}
 
-      {/* ACCIONES CON CONTADORES */}
+      {/* ACCIONES */}
       <View style={styles.actionsRow}>
         <View style={styles.actionsLeft}>
           <View style={styles.counterBlock}>
-            <TouchableOpacity onPress={() => setIsLiked(!isLiked)}>
+            <TouchableOpacity onPress={() => setIsLiked((current) => !current)}>
               <Ionicons
                 name={isLiked ? 'heart' : 'heart-outline'}
                 size={28}
@@ -182,21 +237,22 @@ export default function PostCard({ post, separatorColor = 'transparent', onImage
             <Text style={styles.counterText}>{displayLikes}</Text>
           </View>
 
-          <TouchableOpacity style={styles.counterBlock} onPress={handleGoToDetail}>
+          <TouchableOpacity style={styles.counterBlock} onPress={() => handleGoToDetail()}>
             <Ionicons name="chatbubble-outline" size={26} color="#111111" />
             <Text style={styles.counterText}>{post.commets_counter}</Text>
           </TouchableOpacity>
 
-          <TouchableOpacity>
+          <TouchableOpacity onPress={handleSharePress}>
             <Ionicons name="share-social-outline" size={26} color="#111111" />
           </TouchableOpacity>
         </View>
 
-        <TouchableOpacity onPress={() => setIsSaved(!isSaved)}>
+        {/* BOTÓN DE FAVORITO */}
+        <TouchableOpacity onPress={() => toggleFavorite(post.id)}>
           <Ionicons
             name={isSaved ? 'bookmark' : 'bookmark-outline'}
             size={28}
-            color="#111111"
+            color={isSaved ? '#E8C339' : '#111111'}
           />
         </TouchableOpacity>
       </View>
@@ -216,7 +272,12 @@ const styles = StyleSheet.create({
   authorRow: {
     flexDirection: 'row',
     alignItems: 'flex-start',
+  },
+  authorClickArea: {
+    flexDirection: 'row',
+    alignItems: 'flex-start',
     gap: 12,
+    flex: 1,
   },
   avatar: {
     width: 54,
@@ -264,6 +325,9 @@ const styles = StyleSheet.create({
     fontWeight: '600',
     lineHeight: 20,
   },
+  contentTouchArea: {
+    marginTop: 2,
+  },
   title: {
     marginTop: 10,
     fontSize: 18,
@@ -284,9 +348,6 @@ const styles = StyleSheet.create({
   gallery: {
     marginTop: 12,
   },
-  galleryContent: {
-    paddingRight: 10,
-  },
   galleryWrapper: {
     marginTop: 10,
     position: 'relative',
@@ -297,8 +358,8 @@ const styles = StyleSheet.create({
     overflow: 'hidden',
     marginRight: 10,
   },
-  mediaPlaceholder: {
-    width: '100%',
+  pagedMediaFrame: {
+    marginRight: 0,
   },
   singleMediaFrame: {
     marginTop: 12,

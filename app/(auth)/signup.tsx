@@ -1,17 +1,10 @@
-import {
-  Text,
-  StyleSheet,
-  TextInput,
-  Pressable,
-  ActivityIndicator,
-  ImageBackground,
-} from "react-native";
-import { Link, useRouter } from "expo-router";
-import { useState } from "react";
-import { useSignup } from "@/src/hooks/useAuth";
-import { DateOfBirthInput } from "@/src/components/signup/DateOfBirthInput";
-import { AuthCard } from "@/src/components/auth/auth-card";
-import { AuthBackground } from "@/src/components/auth/auth-background";
+import { Text, StyleSheet, TextInput, Pressable, ActivityIndicator } from 'react-native';
+import { Link, useRouter } from 'expo-router';
+import { useState } from 'react';
+import { useSignup } from '@/src/hooks/useAuth';
+import { DateOfBirthInput } from '@/src/components/signup/DateOfBirthInput';
+import { AuthCard } from '@/src/components/auth/auth-card';
+import { AuthBackground } from '@/src/components/auth/auth-background';
 
 export default function SignUpScreen() {
   const [form, setForm] = useState({
@@ -24,10 +17,12 @@ export default function SignUpScreen() {
   const [successMessage, setSuccessMessage] = useState("");
   const { mutate, isPending, error, isError } = useSignup();
   const router = useRouter();
-  const titleimage = require("../../assets/images/title.png");
   const handleSignup = () => {
-    if (form.password !== form.repeatPassword)
-      return alert("Las contraseñas no coinciden");
+    if (!form.email || !form.username || !form.password || !form.repeatPassword || !form.birthDate) return alert("Por favor, rellena todos los campos");
+    if (!/\S+@\S+\.\S+/.test(form.email)) return alert("Por favor, ingresa un correo electrónico válido");
+    if (form.username.trim().length < 3) return alert("El nombre de usuario debe tener al menos 3 caracteres");
+    if (!/^(?=.*[0-9])(?=.*[a-z])(?=.*[A-Z])(?=.*[.!@#$%^&*()_+\-=\[\]{};':"\\|,.<>\/?]).{8,32}$/.test(form.password)) return alert("La contraseña debe tener al menos 8 caracteres");
+    if (form.password !== form.repeatPassword) return alert("Las contraseñas no coinciden");
     mutate(form, {
       onSuccess: () => {
         setSuccessMessage("¡Registro Exitoso!");
@@ -49,14 +44,16 @@ export default function SignUpScreen() {
         <TextInput
           placeholder="Correo Electrónico"
           placeholderTextColor="gray"
-          onChangeText={(val) => setForm({ ...form, email: val })}
-          style={styles.input}
+          value={form.email}
+          onChangeText={(val) => setForm({...form, email: val})}
+          style={styles.input}    
         />
 
         <TextInput
           placeholder="Usuario"
           placeholderTextColor="gray"
-          onChangeText={(val) => setForm({ ...form, username: val })}
+          value={form.username}
+          onChangeText={(val) => setForm({...form, username: val})}
           style={styles.input}
         />
 
@@ -64,7 +61,8 @@ export default function SignUpScreen() {
           placeholder="Contraseña"
           placeholderTextColor="gray"
           secureTextEntry
-          onChangeText={(val) => setForm({ ...form, password: val })}
+          value={form.password}
+          onChangeText={(val) => setForm({...form, password: val})}
           style={styles.input}
         />
 
@@ -72,7 +70,8 @@ export default function SignUpScreen() {
           placeholder="Confirmar Contraseña"
           placeholderTextColor="gray"
           secureTextEntry
-          onChangeText={(val) => setForm({ ...form, repeatPassword: val })}
+          value={form.repeatPassword}
+          onChangeText={(val) => setForm({...form, repeatPassword: val})}
           style={styles.input}
         />
 
@@ -104,25 +103,12 @@ export default function SignUpScreen() {
 }
 
 const styles = StyleSheet.create({
-  input: {
-    height: 45,
-    borderBottomWidth: 1,
-    borderBottomColor: "#ccc",
-    marginBottom: 15,
-    fontSize: 16,
-    color: "black",
-  },
-  dateInput: { borderBottomWidth: 1, borderBottomColor: "#ccc" },
-  btn: {
-    backgroundColor: "#9b1999",
-    borderRadius: 25,
-    padding: 15,
-    alignItems: "center",
-    marginTop: 20,
-  },
-  btnText: { color: "white", fontWeight: "bold", fontSize: 18 },
-  link: { marginTop: 15, alignSelf: "center" },
-  linkText: { color: "#555", fontSize: 13 },
-  successText: { color: "green", textAlign: "center", marginBottom: 10 },
-  errorText: { color: "red", textAlign: "center", marginBottom: 10 },
+  input: { minHeight: 45, paddingVertical: 8, borderBottomWidth: 1, borderBottomColor: '#ccc', marginBottom: 15, fontSize: 16, color: '#000' },
+  dateInput: { borderBottomWidth: 1, borderBottomColor: '#ccc' },
+  btn: { backgroundColor: "#9b1999", borderRadius: 25, padding: 15, alignItems: 'center', marginTop: 20 },
+  btnText: { color: 'white', fontWeight: 'bold', fontSize: 18 },
+  link: { marginTop: 15, alignSelf: 'center' },
+  linkText: { color: '#555', fontSize: 13 },
+  successText: { color: 'green', textAlign: 'center', marginBottom: 10 },
+  errorText: { color: 'red', textAlign: 'center', marginBottom: 10 }
 });

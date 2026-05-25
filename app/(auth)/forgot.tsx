@@ -48,7 +48,7 @@ export default function ForgotPasswordScreen() {
           <Text style={styles.linkText}>Volver al inicio</Text>
         </Link>
         <Link href="/(auth)/recovery" style={styles.link}>
-            <Text style={styles.linkText}>recover</Text>
+            <Text style={styles.linkText}>Recuperar Contraseña</Text>
         </Link>
       </AuthCard>
     </AuthBackground>
