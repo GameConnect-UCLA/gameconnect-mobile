@@ -3,18 +3,18 @@ import { Ionicons } from '@expo/vector-icons';
 import { useRouter } from 'expo-router';
 import React, { useState } from 'react';
 import {
-  Image,
-  ImageBackground,
-  KeyboardAvoidingView,
-  Modal,
-  Platform,
-  SafeAreaView,
-  ScrollView,
-  StyleSheet,
-  Text,
-  TextInput,
-  TouchableOpacity,
-  View
+    Image,
+    ImageBackground,
+    KeyboardAvoidingView,
+    Modal,
+    Platform,
+    SafeAreaView,
+    ScrollView,
+    StyleSheet,
+    Text,
+    TextInput,
+    TouchableOpacity,
+    View
 } from 'react-native';
 import PostCard from '../posts/post-card';
 import { PostComments } from './post-comments';
@@ -22,7 +22,7 @@ import { PostComments } from './post-comments';
 const BG_IMAGE = require('@/assets/images/bgbody.png');
 const FOTO_JORGE = 'https://m.media-amazon.com/images/S/aplus-media-library-service-media/94865395-9e45-4e4b-9f4f-fac723fbf713.__CR0,0,362,453_PT0_SX362_V1___.jpg';
 
-export const PostDetailView = ({ post }: { post: Post }) => {
+export const PostDetailView = ({ post, initialImageIndex = 0 }: { post: Post; initialImageIndex?: number }) => {
   const router = useRouter(); 
   const [commentText, setCommentText] = useState('');
   const [localComments, setLocalComments] = useState(post.comments);
@@ -75,7 +75,7 @@ export const PostDetailView = ({ post }: { post: Post }) => {
               contentContainerStyle={{ paddingBottom: 10 }}
             >
               <View style={styles.postContent}>
-                <PostCard post={post} onImagePress={handleOpenImage} />
+                <PostCard post={post} onImagePress={handleOpenImage} initialImageIndex={initialImageIndex} />
                 {post.is_review && (
                   <View style={styles.reviewInfo}>
                     <Text style={styles.reviewLabel}>Reseña de:</Text>

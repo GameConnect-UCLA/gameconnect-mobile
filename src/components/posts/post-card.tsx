@@ -1,7 +1,7 @@
 import { usePostStore } from '@/src/store/post.store';
 import { Ionicons } from '@expo/vector-icons';
 import { useRouter } from 'expo-router';
-import React, { useRef, useState } from 'react';
+import React, { useEffect, useRef, useState } from 'react';
 import {
   Image,
   ScrollView,
@@ -16,6 +16,7 @@ interface Props {
   post: Post;
   separatorColor?: string;
   onImagePress?: (url: string) => void;
+  initialImageIndex?: number;
 }
 
 function formatDate(timestamp: string) {
@@ -30,12 +31,11 @@ function formatDate(timestamp: string) {
   }
 }
 
-export default function PostCard({ post, separatorColor = 'transparent', onImagePress }: Props) {
+export default function PostCard({ post, separatorColor = 'transparent', onImagePress, initialImageIndex = 0 }: Props) {
   const router = useRouter();
   const toggleFavorite = usePostStore((state) => state.toggleFavorite);
   const favoriteIds = usePostStore((state) => state.favoriteIds);
 
-  // Se determina si un post específico está en favoritos
   const isSaved = favoriteIds.includes(post.id);
 
   const [isLiked, setIsLiked] = useState(false);
@@ -51,25 +51,51 @@ export default function PostCard({ post, separatorColor = 'transparent', onImage
   const mediaWidth = cardWidth > 0 ? cardWidth : undefined;
   const hasMultipleImages = post.media.images.length > 1;
 
-  const handleGoToDetail = () => {
-    router.push(`/post/${post.id}` as any);
+  const clampImageIndex = (index: number) => Math.max(0, Math.min(index, post.media.images.length - 1));
+
+  const scrollToImageIndex = (index: number, animated: boolean) => {
+    if (!hasMultipleImages || !mediaWidth) {
+      return;
+    }
+
+    const boundedIndex = clampImageIndex(index);
+    galleryRef.current?.scrollTo({ x: boundedIndex * mediaWidth, animated });
   };
 
-  const handleImagePress = (imageUrl: string) => {
+  useEffect(() => {
+    if (!hasMultipleImages || !mediaWidth) {
+      return;
+    }
+
+    const boundedIndex = clampImageIndex(initialImageIndex);
+    setActiveImageIndex(boundedIndex);
+    requestAnimationFrame(() => {
+      scrollToImageIndex(boundedIndex, false);
+    });
+  }, [clampImageIndex, hasMultipleImages, initialImageIndex, mediaWidth, scrollToImageIndex]);
+
+  const handleGoToDetail = (imageIndex = activeImageIndex) => {
+    const boundedIndex = clampImageIndex(imageIndex);
+    router.push(`/post/${post.id}?imageIndex=${boundedIndex}` as any);
+  };
+
+  const handleImagePress = (imageUrl: string, imageIndex: number) => {
     if (onImagePress) {
       onImagePress(imageUrl);
       return;
     }
 
-    handleGoToDetail();
+    handleGoToDetail(imageIndex);
   };
 
   const handleScrollToImage = (index: number) => {
     if (!hasMultipleImages || !mediaWidth || index < 0 || index >= post.media.images.length) {
       return;
     }
-    setActiveImageIndex(index);
-    galleryRef.current?.scrollTo({ x: index * mediaWidth, animated: true });
+
+    const boundedIndex = clampImageIndex(index);
+    setActiveImageIndex(boundedIndex);
+    scrollToImageIndex(boundedIndex, true);
   };
 
   return (
@@ -112,7 +138,7 @@ export default function PostCard({ post, separatorColor = 'transparent', onImage
 
       <TouchableOpacity
         activeOpacity={0.9}
-        onPress={handleGoToDetail}
+        onPress={() => handleGoToDetail()}
         style={styles.contentTouchArea}
       >
         <Text style={[styles.title, post.is_review && styles.reviewTitle]}>{displayedTitle}</Text>
@@ -134,17 +160,18 @@ export default function PostCard({ post, separatorColor = 'transparent', onImage
                 style={styles.gallery}
                 onMomentumScrollEnd={(event) => {
                   if (!mediaWidth) return;
-                  const nextIndex = Math.round(event.nativeEvent.contentOffset.x / mediaWidth);
+                  const nextIndex = clampImageIndex(Math.round(event.nativeEvent.contentOffset.x / mediaWidth));
                   setActiveImageIndex(nextIndex);
                 }}
               >
                 {post.media.images.map((image, index) => (
                   <TouchableOpacity 
                     key={index} 
+                    style={mediaWidth ? { width: mediaWidth } : undefined}
                     activeOpacity={0.9} 
-                    onPress={() => handleImagePress(image)}
+                    onPress={() => handleImagePress(image, index)}
                   >
-                    <View style={[styles.mediaFrame, { width: mediaWidth }]}>
+                    <View style={[styles.mediaFrame, styles.pagedMediaFrame, { width: mediaWidth }]}>
                       <Image source={{ uri: image }} style={styles.mediaImage} />
                     </View>
                   </TouchableOpacity>
@@ -169,7 +196,7 @@ export default function PostCard({ post, separatorColor = 'transparent', onImage
           ) : (
             <TouchableOpacity 
               activeOpacity={0.9} 
-              onPress={() => handleImagePress(post.media.images[0])}
+              onPress={() => handleImagePress(post.media.images[0], 0)}
             >
               <View style={[styles.mediaFrame, styles.singleMediaFrame, { width: mediaWidth }]}>
                 <Image source={{ uri: post.media.images[0] }} style={styles.mediaImage} />
@@ -204,7 +231,7 @@ export default function PostCard({ post, separatorColor = 'transparent', onImage
             <Text style={styles.counterText}>{displayLikes}</Text>
           </View>
 
-          <TouchableOpacity style={styles.counterBlock} onPress={handleGoToDetail}>
+          <TouchableOpacity style={styles.counterBlock} onPress={() => handleGoToDetail()}>
             <Ionicons name="chatbubble-outline" size={26} color="#111111" />
             <Text style={styles.counterText}>{post.commets_counter}</Text>
           </TouchableOpacity>
@@ -315,9 +342,6 @@ const styles = StyleSheet.create({
   gallery: {
     marginTop: 12,
   },
-  galleryContent: {
-    paddingRight: 10,
-  },
   galleryWrapper: {
     marginTop: 10,
     position: 'relative',
@@ -328,8 +352,8 @@ const styles = StyleSheet.create({
     overflow: 'hidden',
     marginRight: 10,
   },
-  mediaPlaceholder: {
-    width: '100%',
+  pagedMediaFrame: {
+    marginRight: 0,
   },
   singleMediaFrame: {
     marginTop: 12,
