@@ -615,7 +615,7 @@ const styles = StyleSheet.create({
   },
   headerTitle: {
     flex: 1,
-    fontSize: 23,
+    fontSize: 20,
     fontWeight: '700',
     color: '#111111',
     textAlign: 'center',
@@ -651,7 +651,7 @@ const styles = StyleSheet.create({
   },
   sectionHint: {
     marginTop: 4,
-    maxWidth: 210,
+    maxWidth: 165,
     fontSize: 12,
     lineHeight: 16,
     color: '#5B5147',
@@ -659,7 +659,7 @@ const styles = StyleSheet.create({
   segmentControl: {
     flexDirection: 'row',
     flex: 1,
-    maxWidth: 180,
+    maxWidth: 240,
     alignSelf: 'flex-start',
     borderRadius: 999,
     overflow: 'hidden',
