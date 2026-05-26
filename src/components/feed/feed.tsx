@@ -1,6 +1,7 @@
 import PostCard from "@/src/components/posts/post-card";
 import Header from "@/src/components/ui/feed-header";
 import { usePostStore } from "@/src/store/post.store";
+import type { Post } from "@/src/types/post.types";
 import { Ionicons } from "@expo/vector-icons";
 import { useRouter } from "expo-router";
 import React, { useEffect, useRef, useState } from "react";
@@ -15,7 +16,7 @@ import {
 } from "react-native";
 import { SafeAreaView } from "react-native-safe-area-context";
 
-const AnimatedFlatList = Animated.createAnimatedComponent(FlatList);
+const AnimatedFlatList = Animated.createAnimatedComponent(FlatList) as unknown as React.ComponentType<React.ComponentProps<typeof FlatList<Post>> & { ref?: React.Ref<FlatList<Post>> }>;
 
 export default function Feed() {
   const router = useRouter();
@@ -23,7 +24,7 @@ export default function Feed() {
   const lastAddedId = usePostStore((state) => state.lastAddedId);
   const reloadPosts = usePostStore((state) => state.reloadPosts);
 
-  const flatListRef = useRef<FlatList<any> | null>(null);
+  const flatListRef = useRef<FlatList<Post> | null>(null);
   const [refreshing, setRefreshing] = useState(false);
   const [showReloadHint, setShowReloadHint] = useState(false);
   const [headerHeight, setHeaderHeight] = useState(132);
@@ -81,8 +82,8 @@ export default function Feed() {
           <AnimatedFlatList
             ref={flatListRef}
             data={posts}
-            keyExtractor={(item) => item.id}
-            renderItem={({ item }) => (
+            keyExtractor={(item: Post) => item.id}
+            renderItem={({ item }: { item: Post }) => (
               <PostCard post={item} separatorColor="rgba(97, 75, 47, 0.16)" />
             )}
             contentContainerStyle={[
