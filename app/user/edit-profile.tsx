@@ -1,19 +1,13 @@
-// app/user/edit-profile.tsx
-import EditProfileView from '@/src/components/user/edit-profile';
-import { useRouter } from 'expo-router';
+import EditProfileView from '@/src/features/profile/components/EditProfileView'
+import { useNavigation } from '@/src/core/hooks/useNavigation'
 
 export default function EditProfileScreen() {
-  const router = useRouter();
+  const { back } = useNavigation()
 
   const handleSave = (data: any) => {
-    console.log("Datos para guardar:", data);
-    router.back(); 
-  };
+    console.log('Datos para guardar:', data)
+    back()
+  }
 
-  return (
-    <EditProfileView 
-      onBack={() => router.back()} 
-      onSave={handleSave} 
-    />
-  );
+  return <EditProfileView onBack={() => back()} onSave={handleSave} />
 }

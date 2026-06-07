@@ -1,11 +1,10 @@
-import AppToast from '@/src/components/ui/app-toast';
-import { QueryClient, QueryClientProvider } from '@tanstack/react-query';
+import AppToast from '@/src/core/components/AppToast';
+import { ConfirmDialog } from '@/src/core/components/ConfirmDialog';
+import { QueryClientProvider } from '@tanstack/react-query';
+import { queryClient } from '@/src/core/lib/query-client';
 import { Stack } from 'expo-router';
 import { GestureHandlerRootView } from 'react-native-gesture-handler';
 import { KeyboardProvider } from 'react-native-keyboard-controller';
-
-
-const queryClient = new QueryClient();
 
 export default function RootLayout() {
   return (
@@ -16,6 +15,7 @@ export default function RootLayout() {
             <Stack.Screen name="(tabs)" />
           </Stack>
           <AppToast />
+          <ConfirmDialog />
         </KeyboardProvider>
       </QueryClientProvider>
     </GestureHandlerRootView>

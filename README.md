@@ -34,9 +34,6 @@ Antes de correr el proyecto asegúrate de tener instalado:
 
 ---
 
-<<<<<<< HEAD
-## Instalación y setup
-=======
 ## Setup Inicial y Development Build
 
 Este proyecto utiliza **Expo Development Builds**. A diferencia de *Expo Go*, esto nos permite incluir dependencias nativas personalizadas y tener un control total sobre el entorno de ejecución.
@@ -44,7 +41,6 @@ Este proyecto utiliza **Expo Development Builds**. A diferencia de *Expo Go*, es
 **Importante:** Una vez que instales el APK de desarrollo en tu emulador o dispositivo físico, **no es necesario volver a compilar o generar otro APK** mientras no se agreguen nuevas dependencias nativas de Android. Los cambios en el código de React Native se reflejan instantáneamente mediante el servidor de desarrollo.
 
 ### 1. Clonar el repositorio
->>>>>>> dev
 
 ```bash
 # 1. Clonar el repositorio
@@ -64,37 +60,6 @@ npx expo start
 # Para correr específicamente en Android
 npx expo start --android
 ```
-```bash
-npm install
-```
-
-<<<<<<< HEAD
-Para generar un APK de desarrollo con EAS:
-
-```bash
-eas build --profile development --platform android
-```
-
----
-
-## Variables de entorno
-
-Copia `.env.example` a `.env` y completa los valores. Nunca subas `.env` al repositorio.
-
-```env
-# URL base del backend (sin slash al final)
-EXPO_PUBLIC_API_URL=http://localhost:3000
-
-# URL del servidor de WebSockets
-EXPO_PUBLIC_WS_URL=http://localhost:3000
-```
-
-Todas las variables del cliente deben tener el prefijo `EXPO_PUBLIC_` para ser accesibles desde la app. Las variables sin ese prefijo solo están disponibles en tiempo de build.
-
----
-
-## Estructura del proyecto
-=======
 ### 3. Generar el proyecto nativo Android (Solo la primera vez)
 
 ```bash
@@ -229,20 +194,18 @@ Todos los comandos se ejecutan desde la carpeta `gameconnect-mobile/`.
 ---
 
 ## Estructura del Proyecto
->>>>>>> dev
 
 ```
 gameconnect-mobile/
-├── app/          # Rutas de navegación (Expo Router). Solo rutas, sin lógica.
+├── app/          # Rutas de navegación (Expo Router). Thin wrappers < 40 líneas.
 ├── src/
-│   ├── api/      # Funciones de comunicación con el backend.
-│   ├── store/    # Estado global de la app (Zustand).
-│   ├── hooks/    # Lógica React reutilizable y queries (TanStack Query).
-│   ├── components/ # Componentes visuales reutilizables.
-│   ├── lib/      # Configuración de librerías externas.
-│   └── types/    # Interfaces y tipos TypeScript globales.
+│   ├── core/     # Infraestructura compartida (theme, components, hooks, store, types, i18n, lib)
+│   ├── features/ # Módulos de negocio autocontenidos (auth, chat, feed, game, etc.)
+│   ├── mocks/    # Datos mock para desarrollo
+│   └── types/    # Interfaces y tipos TypeScript globales (legacy, re-exportados desde features/)
 ├── assets/       # Imágenes, íconos y fuentes estáticas.
-└── constants/    # Constantes globales (theme, config).
+├── docs/         # Documentación del proyecto
+└── scripts/      # Automatización de desarrollo
 ```
 
 Para más detalle sobre convenciones de código, nomenclatura, estructura de rutas y flujo de Git, ver [CONVENTIONS.md](./CONVENTIONS.md).

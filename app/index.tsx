@@ -1,13 +1,9 @@
 import { Redirect } from 'expo-router'
-import { useSessionCheck } from '@/src/hooks/useAuth';
+import { useSessionCheck } from '@/src/features/auth/hooks';
 import { ActivityIndicator, View } from 'react-native';
-import { useAuthStore } from '@/src/store/auth.store';
 
 export default function Index() {
-  const isAuthenticated = useAuthStore((s) => s.isAuthenticated); 
-  const aToken = useAuthStore((s) => s.accessToken); 
-  const { data, isLoading} = useSessionCheck();
-
+  const { data, isLoading } = useSessionCheck();
 
   if (isLoading) {
     return (
@@ -17,12 +13,5 @@ export default function Index() {
     );
   }
 
-  // console.log(isAuthenticated);
-  // console.log(aToken);
-  // console.log(data);
-  
-  
-  
-  
   return <Redirect href={data ? '/(tabs)' : '/(auth)/login'} />
 }

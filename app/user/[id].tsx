@@ -1,45 +1,36 @@
-import ProfileView from '@/src/components/user/user-profile';
-import { mockUsersList } from '@/src/hooks/mock-data/mock-users-list';
-import { useLocalSearchParams, useRouter } from 'expo-router';
-import { StyleSheet, Text, View } from 'react-native';
+import ProfileView from '@/src/features/profile/components/ProfileView'
+import { mockUsersList } from '@/src/mocks/mock-users-list'
+import { useLocalSearchParams } from 'expo-router'
+import { StyleSheet, Text, View } from 'react-native'
+import { useNavigation } from '@/src/core/hooks/useNavigation'
 
 export default function UserProfileScreen() {
-  const { id } = useLocalSearchParams();
-  const router = useRouter(); 
+  const { push, back } = useNavigation()
+  const { id } = useLocalSearchParams()
 
-  const userFound = mockUsersList.find(u => String(u.id) === String(id));
+  const userFound = mockUsersList.find((u) => String(u.id) === String(id))
 
   if (!userFound) {
     return (
       <View style={styles.errorContainer}>
         <Text style={styles.errorText}>Usuario no encontrado</Text>
       </View>
-    );
+    )
   }
 
   return (
-    <ProfileView 
-      user={userFound} 
-      isSelf={id === 'jorge-id'} 
-      
-      onEditPress={() => router.push('/user/edit-profile')}
-      onSettingsPress={() => router.push('/user/settings')}
-      onAddGamePress={() => router.push('/user/favorite-games')}
-      onBackPress={() => router.back()}
+    <ProfileView
+      user={userFound}
+      isSelf={id === 'jorge-id'}
+      onEditPress={() => push('/user/edit-profile')}
+      onSettingsPress={() => push('/user/settings')}
+      onAddGamePress={() => push('/user/favorite-games')}
+      onBackPress={() => back()}
     />
-  );
+  )
 }
 
 const styles = StyleSheet.create({
-  errorContainer: {
-    flex: 1,
-    justifyContent: 'center',
-    alignItems: 'center',
-    backgroundColor: '#F5F5F5'
-  },
-  errorText: {
-    fontSize: 18,
-    color: '#666',
-    fontWeight: 'bold'
-  },
-});
+  errorContainer: { flex: 1, justifyContent: 'center', alignItems: 'center', backgroundColor: '#F5F5F5' },
+  errorText: { fontSize: 18, color: '#666', fontWeight: 'bold' },
+})

@@ -1,5 +1,5 @@
-import { Favorites } from '@/src/components/favorities/favorites';
+import { FavoritesScreen } from '@/src/features/feed/components/FavoritesScreen';
 
-export default function FavoritesScreen() {
-  return <Favorites />;
+export default function FavoritesRoute() {
+  return <FavoritesScreen />;
 }

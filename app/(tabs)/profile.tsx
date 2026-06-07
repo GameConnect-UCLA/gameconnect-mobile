@@ -1,38 +1,21 @@
-import ProfileView from '@/src/components/user/user-profile';
-import { useMockUser } from '@/src/hooks/mock-data/useMockUser';
-import { useRouter } from 'expo-router';
-import React from 'react';
+import ProfileView from '@/src/features/profile/components/ProfileView'
+import { useMockUser } from '@/src/features/profile/hooks/useCurrentUser'
+import { useNavigation } from '@/src/core/hooks/useNavigation'
 
 export default function ProfileScreen() {
-  const router = useRouter();
-  const user = useMockUser(); 
-
-  const handleEditPress = () => {
-    router.push('/user/edit-profile');
-  };
-
-  const handleViewAllGamesPress = () => {
-    router.push('/user/favorite-games');
-  };
-
-  const handleAddPeoplePress = () => {
-    console.log("Navegar a búsqueda de personas");
-  };
-
-  const handleAddGamePress = () => {
-    router.push('/user/favorite-games');
-  };
+  const { push, back } = useNavigation()
+  const user = useMockUser()
 
   return (
     <ProfileView
-      user={user}         
-      isSelf={true}       
-      onEditPress={handleEditPress}
-      onViewAllGamesPress={handleViewAllGamesPress}
-      onAddPeoplePress={handleAddPeoplePress}
-      onAddGamePress={handleAddGamePress}
-      onBackPress={() => router.back()}
-      onSettingsPress={() => router.push('/user/settings')}
+      user={user}
+      isSelf={true}
+      onEditPress={() => push('/user/edit-profile')}
+      onViewAllGamesPress={() => push('/user/favorite-games')}
+      onAddPeoplePress={() => console.log('Navegar a búsqueda de personas')}
+      onAddGamePress={() => push('/user/favorite-games')}
+      onBackPress={() => back()}
+      onSettingsPress={() => push('/user/settings')}
     />
-  );
+  )
 }
