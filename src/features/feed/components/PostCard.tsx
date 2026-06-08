@@ -36,6 +36,8 @@ interface Props {
   onImagePress?: (url: string) => void
   initialImageIndex?: number
   variant?: 'card' | 'item'
+  hideComment?: boolean
+  onHashtagPress?: (tag: string) => void
   id?: string
   userName?: string
   userTag?: string
@@ -66,6 +68,8 @@ export default function PostCard({
   onImagePress,
   initialImageIndex = 0,
   variant = 'card',
+  hideComment = false,
+  onHashtagPress,
   id: itemId,
   userName: itemUserName,
   userTag: itemUserTag,
@@ -148,6 +152,7 @@ export default function PostCard({
     }
 
     const goToDetail = () => {
+      if (hideComment) return
       push(`/post/${resolvedId}` as any)
     }
 
@@ -258,7 +263,7 @@ export default function PostCard({
 
       <TouchableOpacity
         activeOpacity={0.9}
-        onPress={() => handleGoToDetail()}
+        onPress={hideComment ? undefined : () => handleGoToDetail()}
         style={styles.contentTouchArea}
       >
         <Text style={[styles.title, post.is_review && styles.reviewTitle]}>{displayedTitle}</Text>
@@ -328,7 +333,7 @@ export default function PostCard({
       {post.media.hashtags.length > 0 && (
         <View style={styles.hashtagRow}>
           {post.media.hashtags.map((tag) => (
-            <TouchableOpacity key={tag} style={styles.hashtagPill} onPress={() => push(`/explore?q=%23${tag}`)}>
+            <TouchableOpacity key={tag} style={styles.hashtagPill} onPress={() => onHashtagPress ? onHashtagPress(tag) : push(`/explore?q=%23${tag}`)}>
               <Text style={styles.hashtagText}>{`#${tag}`}</Text>
             </TouchableOpacity>
           ))}
@@ -348,7 +353,7 @@ export default function PostCard({
             <Text style={styles.counterText}>{displayLikes}</Text>
           </View>
 
-          <TouchableOpacity style={styles.counterBlock} onPress={() => handleGoToDetail()}>
+          <TouchableOpacity style={styles.counterBlock} onPress={hideComment ? undefined : () => handleGoToDetail()}>
             <Ionicons name="chatbubble-outline" size={26} color={Colors.text.primary} />
             <Text style={styles.counterText}>{post.comments_counter}</Text>
           </TouchableOpacity>

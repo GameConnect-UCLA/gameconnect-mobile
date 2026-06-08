@@ -110,7 +110,7 @@ function normalizeError(error: unknown): Error {
 if (USE_MOCKS) {
   // eslint-disable-next-line @typescript-eslint/no-require-imports
   const { setupMocks } = require('./mocks')
-  setupMocks(apiClient)
+  setupMocks(apiClient, API_BASE_URL)
   // eslint-disable-next-line @typescript-eslint/no-require-imports
   require('./mocks/auth.handlers')
   // eslint-disable-next-line @typescript-eslint/no-require-imports

@@ -5,6 +5,11 @@ import { GroupRole } from '@/src/features/chat/types/chat.types'
 
 let mockIdCounter = 0
 
+function parseBody(config: { data?: unknown }) {
+  const raw = config.data || '{}'
+  return typeof raw === 'string' ? JSON.parse(raw) : raw
+}
+
 function getCurrentUserId(): string {
   try {
     // eslint-disable-next-line @typescript-eslint/no-require-imports
@@ -28,7 +33,7 @@ mockRoutes.set('/chat/conversations/', (config) => {
 
 mockRoutes.set('/chat/conversations/send', (config) => {
   const { conversationId, messageText, attachments, senderId, replyToId, gameCard } =
-    JSON.parse(config.data || '{}')
+    parseBody(config)
   const conversation = mockChat.CONVERSATIONS.find((c) => c.id === conversationId)
   if (!conversation) throw { status: 404, message: 'No existe la conversación' }
 
@@ -62,7 +67,7 @@ mockRoutes.set('/chat/conversations/send', (config) => {
 })
 
 mockRoutes.set('/chat/conversations/clear', (config) => {
-  const { conversationId } = JSON.parse(config.data || '{}')
+  const { conversationId } = parseBody(config)
   const conversation = mockChat.CONVERSATIONS.find((c) => c.id === conversationId)
   if (!conversation) throw { status: 404, message: 'Conversation not found' }
   conversation.messages = []
@@ -73,7 +78,7 @@ mockRoutes.set('/chat/conversations/clear', (config) => {
 })
 
 mockRoutes.set('/chat/conversations/delete-message', (config) => {
-  const { conversationId, messageId } = JSON.parse(config.data || '{}')
+  const { conversationId, messageId } = parseBody(config)
   const conversation = mockChat.CONVERSATIONS.find((c) => c.id === conversationId)
   if (!conversation) throw { status: 404, message: 'Conversation not found' }
   conversation.messages = (conversation.messages || []).filter((m) => m.id !== messageId)
@@ -81,7 +86,7 @@ mockRoutes.set('/chat/conversations/delete-message', (config) => {
 })
 
 mockRoutes.set('/chat/users/block', (config) => {
-  const { userId } = JSON.parse(config.data || '{}')
+  const { userId } = parseBody(config)
   try {
     // eslint-disable-next-line @typescript-eslint/no-require-imports
     const { useChatStore } = require('@/src/features/chat/store/chat.store')
@@ -91,7 +96,7 @@ mockRoutes.set('/chat/users/block', (config) => {
 })
 
 mockRoutes.set('/chat/users/unblock', (config) => {
-  const { userId } = JSON.parse(config.data || '{}')
+  const { userId } = parseBody(config)
   try {
     // eslint-disable-next-line @typescript-eslint/no-require-imports
     const { useChatStore } = require('@/src/features/chat/store/chat.store')
@@ -101,7 +106,7 @@ mockRoutes.set('/chat/users/unblock', (config) => {
 })
 
 mockRoutes.set('/chat/groups', (config) => {
-  const { name, groupPic, memberIds } = JSON.parse(config.data || '{}')
+  const { name, groupPic, memberIds } = parseBody(config)
   const currentUserId = getCurrentUserId()
 
   const members: GroupMember[] = [
@@ -150,7 +155,7 @@ mockRoutes.set('/chat/groups', (config) => {
 })
 
 mockRoutes.set('/chat/conversations/start', (config) => {
-  const { userId } = JSON.parse(config.data || '{}')
+  const { userId } = parseBody(config)
   const currentUserId = getCurrentUserId()
 
   const existing = mockChat.CONVERSATIONS.find(
@@ -200,7 +205,7 @@ mockRoutes.set('/chat/conversations/start', (config) => {
 })
 
 mockRoutes.set('/chat/groups/promote', (config) => {
-  const { conversationId, memberId } = JSON.parse(config.data || '{}')
+  const { conversationId, memberId } = parseBody(config)
   const conversation = mockChat.CONVERSATIONS.find((c) => c.id === conversationId)
   if (!conversation) throw { status: 404, message: 'Conversation not found' }
   const member = conversation.members?.find((m) => m.id === memberId)
@@ -211,7 +216,7 @@ mockRoutes.set('/chat/groups/promote', (config) => {
 })
 
 mockRoutes.set('/chat/groups/demote', (config) => {
-  const { conversationId, memberId } = JSON.parse(config.data || '{}')
+  const { conversationId, memberId } = parseBody(config)
   const conversation = mockChat.CONVERSATIONS.find((c) => c.id === conversationId)
   if (!conversation) throw { status: 404, message: 'Conversation not found' }
   const member = conversation.members?.find((m) => m.id === memberId)
@@ -222,7 +227,7 @@ mockRoutes.set('/chat/groups/demote', (config) => {
 })
 
 mockRoutes.set('/chat/groups/remove-member', (config) => {
-  const { conversationId, memberId } = JSON.parse(config.data || '{}')
+  const { conversationId, memberId } = parseBody(config)
   const conversation = mockChat.CONVERSATIONS.find((c) => c.id === conversationId)
   if (!conversation) throw { status: 404, message: 'Conversation not found' }
   const member = conversation.members?.find((m) => m.id === memberId)
@@ -234,7 +239,7 @@ mockRoutes.set('/chat/groups/remove-member', (config) => {
 })
 
 mockRoutes.set('/chat/groups/leave', (config) => {
-  const { conversationId } = JSON.parse(config.data || '{}')
+  const { conversationId } = parseBody(config)
   const conversation = mockChat.CONVERSATIONS.find((c) => c.id === conversationId)
   if (!conversation) throw { status: 404, message: 'Conversation not found' }
   const currentUserId = getCurrentUserId()
@@ -244,7 +249,7 @@ mockRoutes.set('/chat/groups/leave', (config) => {
 })
 
 mockRoutes.set('/chat/groups/add-member', (config) => {
-  const { conversationId, userId } = JSON.parse(config.data || '{}')
+  const { conversationId, userId } = parseBody(config)
   const conversation = mockChat.CONVERSATIONS.find((c) => c.id === conversationId)
   if (!conversation) throw { status: 404, message: 'Conversation not found' }
   const existing = conversation.members?.find((m) => m.user_id === userId)
@@ -266,7 +271,7 @@ mockRoutes.set('/chat/groups/add-member', (config) => {
 })
 
 mockRoutes.set('/chat/groups/transfer-ownership', (config) => {
-  const { conversationId, memberId } = JSON.parse(config.data || '{}')
+  const { conversationId, memberId } = parseBody(config)
   const conversation = mockChat.CONVERSATIONS.find((c) => c.id === conversationId)
   if (!conversation) throw { status: 404, message: 'Conversation not found' }
   const currentUserId = getCurrentUserId()

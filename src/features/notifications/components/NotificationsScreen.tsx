@@ -21,6 +21,7 @@ import { NotificationItem } from './NotificationItem'
 import { NotificationType } from '../types/notifications.types'
 import type { FollowRequestNotification } from '../types/notifications.types'
 import { Ionicons } from '@expo/vector-icons'
+import { Colors } from '@/src/core/theme'
 
 const BG_IMAGE = require('../../../../assets/images/bgbody.png')
 
@@ -70,77 +71,69 @@ const NotificationsScreen: React.FC = () => {
     (n) => n.type !== NotificationType.FOLLOW || (n as FollowRequestNotification).is_accepted,
   )
 
-  if (isLoading) {
-    return (
-      <View style={styles.centerContainer}>
-        <ActivityIndicator size="large" color="#FF00FF" />
-        <Text style={styles.loadingText}>Cargando notificaciones...</Text>
-      </View>
-    )
-  }
-
-  if (error) {
-    return (
-      <View style={styles.centerContainer}>
-        <Text style={styles.errorText}>Error: {error}</Text>
-        <TouchableOpacity onPress={refreshNotifications} style={styles.retryButton}>
-          <Text style={styles.retryButtonText}>Reintentar</Text>
-        </TouchableOpacity>
-      </View>
-    )
-  }
-
   return (
     <ImageBackground source={BG_IMAGE} style={styles.backgroundImage}>
       <SafeAreaView style={styles.safeArea} edges={['top']}>
         <CustomHeader />
-        <View style={styles.cardContainer}>
-          <FlatList
-            data={generalNotifications}
-            keyExtractor={(item) => item.id}
-            renderItem={({ item }) => (
-              <NotificationItem
-                notification={item}
-                onMarkAsRead={markAsRead}
-                onAcceptFollowRequest={handleAcceptFollowRequest}
-                onRejectFollowRequest={handleRejectFollowRequest}
-                onAcceptInvitation={handleAcceptInvitation}
-                onRejectInvitation={handleRejectInvitation}
-              />
-            )}
-            ListHeaderComponent={
-              <View style={styles.listHeaderGap}>
-                {followRequests.length > 0 && (
-                  <FollowRequestsCard
-                    requests={followRequests}
-                    onAccept={handleAcceptFollowRequest}
-                    onReject={handleRejectFollowRequest}
-                  />
-                )}
-                {generalNotifications.length > 0 && (
-                  <SectionHeader title="Últimos 7 días" />
-                )}
-              </View>
-            }
-            ListEmptyComponent={
-              (!isLoading && !isRefreshing) ? (
+        {isLoading ? (
+          <View style={styles.centerContainer}>
+            <ActivityIndicator size="large" color={Colors.primary} />
+            <Text style={styles.loadingText}>Cargando notificaciones...</Text>
+          </View>
+        ) : error ? (
+          <View style={styles.centerContainer}>
+            <Text style={styles.errorText}>Error: {error}</Text>
+            <TouchableOpacity onPress={refreshNotifications} style={styles.retryButton}>
+              <Text style={styles.retryButtonText}>Reintentar</Text>
+            </TouchableOpacity>
+          </View>
+        ) : (
+          <View style={styles.cardContainer}>
+            <FlatList
+              data={generalNotifications}
+              keyExtractor={(item) => item.id}
+              renderItem={({ item }) => (
+                <NotificationItem
+                  notification={item}
+                  onMarkAsRead={markAsRead}
+                  onAcceptFollowRequest={handleAcceptFollowRequest}
+                  onRejectFollowRequest={handleRejectFollowRequest}
+                  onAcceptInvitation={handleAcceptInvitation}
+                  onRejectInvitation={handleRejectInvitation}
+                />
+              )}
+              ListHeaderComponent={
+                <View style={styles.listHeaderGap}>
+                  {followRequests.length > 0 && (
+                    <FollowRequestsCard
+                      requests={followRequests}
+                      onAccept={handleAcceptFollowRequest}
+                      onReject={handleRejectFollowRequest}
+                    />
+                  )}
+                  {generalNotifications.length > 0 && (
+                    <SectionHeader title="Últimos 7 días" />
+                  )}
+                </View>
+              }
+              ListEmptyComponent={
                 <View style={styles.emptyContainer}>
                   <Text style={styles.emptyText}>No tienes notificaciones.</Text>
                 </View>
-              ) : null
-            }
-            refreshControl={
-              <RefreshControl
-                refreshing={isRefreshing}
-                onRefresh={refreshNotifications}
-                tintColor="#9b1999"
-                colors={['#9b1999', '#033563']}
-                progressBackgroundColor="#ffffff"
-              />
-            }
-            contentContainerStyle={styles.listContentContainer}
-          />
-        </View>
+              }
+              refreshControl={
+                <RefreshControl
+                  refreshing={isRefreshing}
+                  onRefresh={refreshNotifications}
+                  tintColor="#9b1999"
+                  colors={['#9b1999', '#033563']}
+                  progressBackgroundColor="#ffffff"
+                />
+              }
+              contentContainerStyle={styles.listContentContainer}
+            />
+          </View>
+        )}
       </SafeAreaView>
     </ImageBackground>
   )
@@ -185,11 +178,10 @@ const styles = StyleSheet.create({
     flex: 1,
     justifyContent: 'center',
     alignItems: 'center',
-    backgroundColor: '#0A0A0A',
   },
   loadingText: {
     marginTop: 10,
-    color: '#E0E0E0',
+    color: '#555',
     fontSize: 16,
   },
   errorText: {

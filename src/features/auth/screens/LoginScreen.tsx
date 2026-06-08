@@ -5,8 +5,11 @@ import {
   Pressable,
   Text,
   ActivityIndicator,
+  TouchableOpacity,
+  View,
 } from "react-native";
-import { Link } from "expo-router";
+import { Ionicons } from "@expo/vector-icons";
+import { Link, router } from "expo-router";
 import { useLogin } from "@/src/features/auth/hooks/useLogin";
 import { useToastStore } from "@/src/core/store/toast.store";
 import { Colors } from "@/src/core/theme";
@@ -15,23 +18,22 @@ import { AuthCard } from "@/src/features/auth/components/AuthCard";
 
 export default function LoginView() {
   const [form, setForm] = useState({ email: "", password: "" });
-  const { mutate, isPending, error, isError } = useLogin();
+  const [showPassword, setShowPassword] = useState(false);
+  const { mutate, isPending } = useLogin();
   const showToast = useToastStore((s) => s.showToast);
 
   const handleLogin = () => {
     if (!form.email || !form.password)
       return showToast("Por favor, rellena todos los campos", "warning");
-    mutate(form, { onSuccess: () => {} });
+    mutate(form, {
+      onSuccess: () => router.replace("/(tabs)"),
+      onError: (err) => showToast(err.message, "error"),
+    });
   };
 
   return (
     <AuthBackground>
       <AuthCard>
-        {isError && (
-          <Text style={styles.errorText}>
-            {error.message ?? "Error desconocido"}
-          </Text>
-        )}
         <TextInput
           placeholder="Correo Electrónico"
           placeholderTextColor="gray"
@@ -39,14 +41,23 @@ export default function LoginView() {
           value={form.email}
           style={styles.input}
         />
-        <TextInput
-          placeholder="Contraseña"
-          placeholderTextColor="gray"
-          secureTextEntry
-          onChangeText={(val) => setForm({ ...form, password: val })}
-          value={form.password}
-          style={styles.input}
-        />
+        <View style={styles.inputWrapper}>
+          <TextInput
+            placeholder="Contraseña"
+            placeholderTextColor="gray"
+            secureTextEntry={!showPassword}
+            onChangeText={(val) => setForm({ ...form, password: val })}
+            value={form.password}
+            style={[styles.input, styles.inputInner]}
+          />
+          <TouchableOpacity onPress={() => setShowPassword(!showPassword)}>
+            <Ionicons
+              name={showPassword ? "eye-off-outline" : "eye-outline"}
+              size={22}
+              color="#666"
+            />
+          </TouchableOpacity>
+        </View>
         <Pressable
           style={styles.btn}
           onPress={handleLogin}
@@ -80,6 +91,18 @@ const styles = StyleSheet.create({
     fontSize: 16,
     color: "#000",
   },
+  inputInner: {
+    flex: 1,
+    borderBottomWidth: 0,
+    marginBottom: 0,
+  },
+  inputWrapper: {
+    flexDirection: "row",
+    alignItems: "center",
+    borderBottomWidth: 1,
+    borderBottomColor: "#ccc",
+    marginBottom: 20,
+  },
   btn: {
     backgroundColor: Colors.accent,
     borderRadius: 25,
@@ -90,5 +113,4 @@ const styles = StyleSheet.create({
   btnText: { color: "white", fontWeight: "bold", fontSize: 18 },
   link: { marginTop: 20, alignSelf: "center" },
   linkText: { color: "#555", fontSize: 13 },
-  errorText: { color: "red", textAlign: "center", marginBottom: 10 },
 });

@@ -8,9 +8,18 @@ function delay(ms = 300) {
   return new Promise((r) => setTimeout(r, ms))
 }
 
-export function setupMocks(instance: AxiosInstance) {
+export function setupMocks(instance: AxiosInstance, baseURL: string) {
   instance.interceptors.request.use(async (config) => {
-    const handler = mockRoutes.get(config.url ?? '')
+    const url = (config.url ?? '').replace(baseURL, '')
+    let handler = mockRoutes.get(url)
+    if (!handler) {
+      for (const [route, h] of mockRoutes.entries()) {
+        if (url.startsWith(route) && route.endsWith('/')) {
+          handler = h
+          break
+        }
+      }
+    }
     if (!handler) return config
 
     await delay(200 + Math.random() * 400)

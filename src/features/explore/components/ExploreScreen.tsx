@@ -19,11 +19,13 @@ import {
 import PostCard from '@/src/features/feed/components/PostCard'
 import { mockPosts } from '@/src/mocks/mock-posts'
 import { useNavigation } from '@/src/core/hooks/useNavigation'
+import { useRouter } from 'expo-router'
 
 /** Explore screen with search, filters, trends, featured players, and posts @returns ExploreScreen component */
 export default function ExploreScreen() {
   const { q } = useLocalSearchParams<{ q?: string }>()
   const { back } = useNavigation()
+  const router = useRouter()
   const [searchQuery, setSearchQuery] = useState(q?.replace('%23', '#') ?? '')
   const [activeFilter, setActiveFilter] = useState<FilterKey>('todo')
   const [visibleCount, setVisibleCount] = useState(INITIAL_VISIBLE_POSTS)
@@ -152,7 +154,7 @@ export default function ExploreScreen() {
           >
             {featuredPosts.length > 0 ? (
               featuredPosts.map((post) => (
-                <PostCard key={post.id} post={post} separatorColor="transparent" />
+                <PostCard key={post.id} post={post} separatorColor="transparent" onHashtagPress={(tag) => router.replace(`/explore?q=%23${tag}`)} />
               ))
             ) : (
               <View style={styles.emptyState}>
@@ -167,7 +169,7 @@ export default function ExploreScreen() {
 
           <View style={styles.postsSection}>
             {feedPosts.map((post) => (
-              <PostCard key={post.id} post={post} separatorColor="rgba(24, 18, 10, 0.12)" />
+              <PostCard key={post.id} post={post} separatorColor="rgba(24, 18, 10, 0.12)" onHashtagPress={(tag) => router.replace(`/explore?q=%23${tag}`)} />
             ))}
 
             {hasMorePosts ? (

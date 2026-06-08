@@ -20,7 +20,7 @@ function parseDate(str: string): Date {
     const [dd, mm, yyyy] = parts.map(Number);
     if (dd && mm && yyyy) return new Date(yyyy, mm - 1, dd);
   }
-  return new Date();
+  return new Date(2000, 0, 1);
 }
 
 function formatDate(d: Date): string {
@@ -43,6 +43,7 @@ export const DatePicker = ({
 
   const handleChange = useCallback(
     (_event: DateTimePickerEvent, selectedDate?: Date) => {
+      setShow(false);
       if (selectedDate) onChange(formatDate(selectedDate));
     },
     [onChange],
