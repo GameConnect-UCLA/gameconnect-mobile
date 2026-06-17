@@ -1,6 +1,6 @@
 /** Edit profile component */
-import { useMockUser } from '../hooks/useCurrentUser'
 import { Ionicons } from '@expo/vector-icons'
+import * as ImagePicker from 'expo-image-picker'
 import React, { useState } from 'react'
 import {
   Image,
@@ -12,37 +12,109 @@ import {
   TextInput,
   TouchableOpacity,
   View,
+  Alert,
+  ActivityIndicator,
 } from 'react-native'
 import { Colors, Spacing, Typography } from '@/src/core/theme'
 
 const BG_IMAGE = require('@/assets/images/bgbody.png')
 
 interface EditProfileViewProps {
+  user: {
+    display_name: string
+    username: string
+    email: string
+    bio?: string | null
+    pronouns?: string | null
+    profile_pic: string
+    cover_pic: string
+  }
   onBack: () => void
-  onSave: (data: any) => void
+  onSave: (data: {
+    displayName: string
+    username: string
+    email: string
+    pronouns: string
+    bio: string
+    newProfilePic?: string
+    newCoverPic?: string
+  }) => Promise<void>
+  isSaving?: boolean
 }
 
-/** Edit profile screen with form fields for name, username, email, pronouns, bio @param onBack Back callback @param onSave Save callback @returns EditProfileView component */
-const EditProfileView: React.FC<EditProfileViewProps> = ({ onBack, onSave }) => {
-  const user = useMockUser()
-
+const EditProfileView: React.FC<EditProfileViewProps> = ({ user, onBack, onSave, isSaving }) => {
   const [name, setName] = useState(user.display_name)
   const [username, setUsername] = useState(user.username)
   const [email, setEmail] = useState(user.email)
-  const [pronouns, setPronouns] = useState('')
-  const [bio, setBio] = useState(user.bio || '')
+  const [pronouns, setPronouns] = useState(user.pronouns ?? '')
+  const [bio, setBio] = useState(user.bio ?? '')
+  const [profilePic, setProfilePic] = useState<string | null>(null)
+  const [coverPic, setCoverPic] = useState<string | null>(null)
+  const [picking, setPicking] = useState<'profile' | 'cover' | null>(null)
+
+  const pickImage = async (target: 'profile' | 'cover') => {
+    const permission = await ImagePicker.requestMediaLibraryPermissionsAsync()
+    if (!permission.granted) {
+      Alert.alert('Permiso requerido', 'Necesitamos acceso a tu galería para cambiar la foto.')
+      return
+    }
+
+    setPicking(target)
+    try {
+      const result = await ImagePicker.launchImageLibraryAsync({
+        mediaTypes: ['images'],
+        allowsEditing: true,
+        aspect: target === 'profile' ? [1, 1] : [16, 9],
+        quality: 0.8,
+      })
+
+      if (!result.canceled && result.assets[0]) {
+        if (target === 'profile') {
+          setProfilePic(result.assets[0].uri)
+        } else {
+          setCoverPic(result.assets[0].uri)
+        }
+      }
+    } finally {
+      setPicking(null)
+    }
+  }
+
+  const handleSave = async () => {
+    await onSave({
+      displayName: name,
+      username,
+      email,
+      pronouns,
+      bio,
+      ...(profilePic ? { newProfilePic: profilePic } : {}),
+      ...(coverPic ? { newCoverPic: coverPic } : {}),
+    })
+  }
 
   return (
     <ImageBackground source={BG_IMAGE} style={styles.backgroundImage}>
       <SafeAreaView style={styles.container}>
         <ScrollView showsVerticalScrollIndicator={false} contentContainerStyle={styles.scrollContent}>
           <View style={styles.headerContainer}>
-            <ImageBackground source={{ uri: user.cover_pic }} style={styles.coverImage} resizeMode="cover">
+            <ImageBackground
+              source={{ uri: coverPic || user.cover_pic }}
+              style={styles.coverImage}
+              resizeMode="cover"
+            >
               <TouchableOpacity onPress={onBack} style={styles.backButton}>
                 <Ionicons name="chevron-back" size={28} color="white" />
               </TouchableOpacity>
-              <TouchableOpacity style={styles.editCoverLabel}>
-                <Text style={styles.editCoverText}>Editar Foto Portada</Text>
+              <TouchableOpacity
+                style={styles.editCoverLabel}
+                onPress={() => pickImage('cover')}
+                disabled={isSaving || picking !== null}
+              >
+                {picking === 'cover' ? (
+                  <ActivityIndicator color="white" />
+                ) : (
+                  <Text style={styles.editCoverText}>Editar Foto Portada</Text>
+                )}
               </TouchableOpacity>
             </ImageBackground>
           </View>
@@ -50,29 +122,58 @@ const EditProfileView: React.FC<EditProfileViewProps> = ({ onBack, onSave }) => 
           <View style={styles.bigCard}>
             <View style={styles.avatarWrapper}>
               <View style={styles.avatarContainer}>
-                <Image source={{ uri: user.profile_pic }} style={styles.avatar} />
+                <Image source={{ uri: profilePic || user.profile_pic }} style={styles.avatar} />
               </View>
-              <TouchableOpacity style={styles.editAvatarLabel}>
-                <Text style={styles.editAvatarText}>Editar Foto Perfil</Text>
+              <TouchableOpacity
+                style={styles.editAvatarLabel}
+                onPress={() => pickImage('profile')}
+                disabled={isSaving || picking !== null}
+              >
+                {picking === 'profile' ? (
+                  <ActivityIndicator color="#000" />
+                ) : (
+                  <Text style={styles.editAvatarText}>Editar Foto Perfil</Text>
+                )}
               </TouchableOpacity>
             </View>
 
             <View style={styles.formContainer}>
               <View style={styles.inputBox}>
                 <Text style={styles.inputLabel}>Nombre y Apellido</Text>
-                <TextInput style={styles.inputText} value={name} onChangeText={setName} />
+                <TextInput
+                  style={styles.inputText}
+                  value={name}
+                  onChangeText={setName}
+                  editable={!isSaving}
+                />
               </View>
               <View style={styles.inputBox}>
                 <Text style={styles.inputLabel}>Nombre de Usuario</Text>
-                <TextInput style={styles.inputText} value={username} onChangeText={setUsername} />
+                <TextInput
+                  style={styles.inputText}
+                  value={username}
+                  onChangeText={setUsername}
+                  editable={!isSaving}
+                />
               </View>
               <View style={styles.inputBox}>
                 <Text style={styles.inputLabel}>Correo Electrónico</Text>
-                <TextInput style={styles.inputText} value={email} onChangeText={setEmail} />
+                <TextInput
+                  style={styles.inputText}
+                  value={email}
+                  onChangeText={setEmail}
+                  editable={!isSaving}
+                  keyboardType="email-address"
+                />
               </View>
               <View style={styles.inputBox}>
                 <Text style={styles.inputLabel}>Pronombres</Text>
-                <TextInput style={styles.inputText} value={pronouns} onChangeText={setPronouns} />
+                <TextInput
+                  style={styles.inputText}
+                  value={pronouns}
+                  onChangeText={setPronouns}
+                  editable={!isSaving}
+                />
               </View>
               <View style={styles.inputBox}>
                 <Text style={styles.inputLabel}>Presentación</Text>
@@ -81,6 +182,7 @@ const EditProfileView: React.FC<EditProfileViewProps> = ({ onBack, onSave }) => 
                   value={bio}
                   onChangeText={setBio}
                   multiline
+                  editable={!isSaving}
                 />
               </View>
 
@@ -91,10 +193,15 @@ const EditProfileView: React.FC<EditProfileViewProps> = ({ onBack, onSave }) => 
               <View style={styles.divider} />
 
               <TouchableOpacity
-                style={styles.saveButton}
-                onPress={() => onSave({ name, username, email, pronouns, bio })}
+                style={[styles.saveButton, isSaving && styles.saveButtonDisabled]}
+                onPress={handleSave}
+                disabled={isSaving}
               >
-                <Text style={styles.saveButtonText}>Guardar cambios</Text>
+                {isSaving ? (
+                  <ActivityIndicator color="#FFFFFF" />
+                ) : (
+                  <Text style={styles.saveButtonText}>Guardar cambios</Text>
+                )}
               </TouchableOpacity>
             </View>
           </View>
@@ -142,6 +249,7 @@ const styles = StyleSheet.create({
   verifiedContainer: { paddingVertical: 10 },
   verifiedText: { fontFamily: 'Inter', color: '#2533C8', fontWeight: '600', textAlign: 'center', fontSize: Typography.sizes.md },
   saveButton: { backgroundColor: Colors.accentLight, borderRadius: 30, height: 55, justifyContent: 'center', alignItems: 'center', marginTop: 10 },
+  saveButtonDisabled: { opacity: 0.6 },
   saveButtonText: { color: '#FFFFFF', fontFamily: 'Inter', fontWeight: '600', fontSize: Typography.sizes.xl },
 })
 

@@ -1,8 +1,11 @@
-/** Current user hook (temporary mock) */
-import type { User } from '@/src/core/types/user.types'
-import { mockUser } from '@/src/mocks/mock-user'
+import { useQuery } from '@tanstack/react-query'
+import { profileApi } from '../api/profile.api'
 
-/** Hook returning mock user data (temp until backend) @returns User */
-export const useMockUser = (): User => {
-  return mockUser
+export const useCurrentUser = () => {
+  return useQuery({
+    queryKey: ['current-user'],
+    queryFn: profileApi.getProfile,
+    staleTime: 60_000,
+    retry: 1,
+  })
 }

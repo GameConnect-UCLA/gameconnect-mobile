@@ -31,9 +31,11 @@ enum MESSAGE_TYPE {
 }
 
 enum EVENT {
-  LIKE_POST
+  LIKE
   FOLLOW
-  COMMENTED_POST
+  COMMENT
+  MENTION
+  MESSAGE
 }
 
 enum REPORT_STATUS {
@@ -68,12 +70,16 @@ enum REPORT_REASON {
 Table user {
   id uuid [pk, not null]
   username varchar(30)
+  display_name varchar(30)
+  pronouns varchar(30)
   role USER_ROLE
   email varchar(30) [unique]
   bio varchar(120)
   birth_date date
   account_settings jsonb
   profile_pic url
+  cover_pic url
+  verified bool
   state USER_STATE
   banned_at timestampz
   ban_reason text
@@ -103,11 +109,16 @@ Table post {
   id uuid [pk, not null]
   author uuid [ref: > user.id]
   original_post_id uuid [null, ref: > post.id]
+
+  title text
   content text // preferible simple .md
   media jsonb // urls for img, gif, videos
+
+  hashtags text[]
   is_review bool 
   is_repost bool
   reviewed_game uuid [null, ref: > game.id]
+  review_score float
   likes_counter int
   comments_counter int
 
@@ -134,6 +145,7 @@ Table game {
   id uuid [pk, not null]
   metadata jsonb // extracted from IGDB
   score int
+  review_rating_count int
 }
 
 table game_staff {
@@ -141,6 +153,7 @@ table game_staff {
   user_id uuid [ref: > user.id]
   game_id uuid [ref: > game.id]
   staff_title varchar(30)
+  
 }
 
 Table likes {
@@ -193,6 +206,7 @@ Table notification {
   type EVENT
   payload jsonb
   read bool
+  created_at timestampz
 
 }
 
@@ -228,6 +242,3 @@ Table reports {
 //   reason text
 //   created_at timestampz [not null]
 // }
-
-
-
