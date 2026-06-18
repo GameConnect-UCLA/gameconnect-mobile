@@ -15,6 +15,7 @@ import { useToastStore } from "@/src/core/store/toast.store";
 import { Colors } from "@/src/core/theme";
 import { AuthBackground } from "@/src/features/auth/components/AuthBackground";
 import { AuthCard } from "@/src/features/auth/components/AuthCard";
+import { apiClient } from "@/src/core/api/client";
 
 export default function LoginView() {
   const [form, setForm] = useState({ email: "", password: "" });

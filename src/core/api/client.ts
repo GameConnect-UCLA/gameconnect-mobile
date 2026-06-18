@@ -121,6 +121,8 @@ if (USE_MOCKS) {
   require('./mocks/notifications.handlers')
   // eslint-disable-next-line @typescript-eslint/no-require-imports
   require('./mocks/posts.handlers')
+  // eslint-disable-next-line @typescript-eslint/no-require-imports
+  require('./mocks/users.handlers')
 }
 
 /** Axios instance with JWT auth interceptor and auto-refresh on 401. */

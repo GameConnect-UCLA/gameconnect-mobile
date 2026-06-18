@@ -5,7 +5,6 @@ import React, { useState } from 'react'
 import {
   Image,
   ImageBackground,
-  SafeAreaView,
   ScrollView,
   StyleSheet,
   Text,
@@ -15,6 +14,7 @@ import {
   Alert,
   ActivityIndicator,
 } from 'react-native'
+import { SafeAreaView } from 'react-native-safe-area-context'
 import { Colors, Spacing, Typography } from '@/src/core/theme'
 
 const BG_IMAGE = require('@/assets/images/bgbody.png')
