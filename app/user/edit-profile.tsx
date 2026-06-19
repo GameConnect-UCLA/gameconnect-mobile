@@ -1,26 +1,23 @@
-import { useState } from 'react'
 import { Alert, View, ActivityIndicator, Text } from 'react-native'
 import EditProfileView from '@/src/features/profile/components/EditProfileView'
 import { useCurrentUser } from '@/src/features/profile/hooks/useCurrentUser'
-import { profileApi } from '@/src/features/profile/api/profile.api'
+import { useProfile } from '@/src/features/profile/hooks/useProfile'
 import { mediaApi } from '@/src/core/api/media'
 import { useNavigation } from '@/src/core/hooks/useNavigation'
 
 export default function EditProfileScreen() {
   const { back } = useNavigation()
   const { data: user, isLoading, isError } = useCurrentUser()
-  const [isSaving, setIsSaving] = useState(false)
+  const { updateProfile, isPending } = useProfile()
 
   const handleSave = async (data: {
     displayName: string
     username: string
-    email: string
     pronouns: string
     bio: string
     newProfilePic?: string
     newCoverPic?: string
   }) => {
-    setIsSaving(true)
     try {
       const payload: Record<string, string> = {
         displayName: data.displayName,
@@ -49,12 +46,10 @@ export default function EditProfileScreen() {
         payload.coverPic = coverResult.url
       }
 
-      await profileApi.updateProfile(payload)
+      await updateProfile(payload)
       back()
     } catch (error) {
       Alert.alert('Error', 'No se pudo guardar el perfil. Intenta de nuevo.')
-    } finally {
-      setIsSaving(false)
     }
   }
 
@@ -79,7 +74,7 @@ export default function EditProfileScreen() {
       user={user}
       onBack={() => back()}
       onSave={handleSave}
-      isSaving={isSaving}
+      isSaving={isPending}
     />
   )
 }

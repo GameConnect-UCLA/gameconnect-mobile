@@ -33,7 +33,6 @@ interface EditProfileViewProps {
   onSave: (data: {
     displayName: string
     username: string
-    email: string
     pronouns: string
     bio: string
     newProfilePic?: string
@@ -45,12 +44,12 @@ interface EditProfileViewProps {
 const EditProfileView: React.FC<EditProfileViewProps> = ({ user, onBack, onSave, isSaving }) => {
   const [name, setName] = useState(user.display_name)
   const [username, setUsername] = useState(user.username)
-  const [email, setEmail] = useState(user.email)
   const [pronouns, setPronouns] = useState(user.pronouns ?? '')
   const [bio, setBio] = useState(user.bio ?? '')
   const [profilePic, setProfilePic] = useState<string | null>(null)
   const [coverPic, setCoverPic] = useState<string | null>(null)
   const [picking, setPicking] = useState<'profile' | 'cover' | null>(null)
+
 
   const pickImage = async (target: 'profile' | 'cover') => {
     const permission = await ImagePicker.requestMediaLibraryPermissionsAsync()
@@ -84,7 +83,6 @@ const EditProfileView: React.FC<EditProfileViewProps> = ({ user, onBack, onSave,
     await onSave({
       displayName: name,
       username,
-      email,
       pronouns,
       bio,
       ...(profilePic ? { newProfilePic: profilePic } : {}),
@@ -154,16 +152,6 @@ const EditProfileView: React.FC<EditProfileViewProps> = ({ user, onBack, onSave,
                   value={username}
                   onChangeText={setUsername}
                   editable={!isSaving}
-                />
-              </View>
-              <View style={styles.inputBox}>
-                <Text style={styles.inputLabel}>Correo Electrónico</Text>
-                <TextInput
-                  style={styles.inputText}
-                  value={email}
-                  onChangeText={setEmail}
-                  editable={!isSaving}
-                  keyboardType="email-address"
                 />
               </View>
               <View style={styles.inputBox}>

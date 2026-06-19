@@ -1,4 +1,4 @@
-/** Date picker component with DD-MM-YYYY format. */
+/** Date picker that opens on press and returns ISO 8601 string. */
 import React, { useState, useCallback } from "react";
 import { View, Text, Pressable, StyleSheet } from "react-native";
 import DateTimePicker, {
@@ -8,29 +8,12 @@ import { Colors, Spacing, Typography } from "@/src/core/theme";
 
 interface Props {
   label?: string;
-  value: string; // DD-MM-YYYY
-  onChange: (date: string) => void;
+  value: string; // ISO 8601 (e.g. "2002-02-20T00:00:00.000Z")
+  onChange: (iso: string) => void;
   error?: string;
   maximumDate?: Date;
 }
 
-function parseDate(str: string): Date {
-  const parts = str.split("-");
-  if (parts.length === 3) {
-    const [dd, mm, yyyy] = parts.map(Number);
-    if (dd && mm && yyyy) return new Date(yyyy, mm - 1, dd);
-  }
-  return new Date(2000, 0, 1);
-}
-
-function formatDate(d: Date): string {
-  const dd = String(d.getDate()).padStart(2, "0");
-  const mm = String(d.getMonth() + 1).padStart(2, "0");
-  const yyyy = d.getFullYear();
-  return `${dd}-${mm}-${yyyy}`;
-}
-
-/** Date picker that opens on press and returns DD-MM-YYYY string. */
 export const DatePicker = ({
   label,
   value,
@@ -39,12 +22,12 @@ export const DatePicker = ({
   maximumDate,
 }: Props) => {
   const [show, setShow] = useState(false);
-  const date = parseDate(value);
+  const date = value ? new Date(value) : new Date();
 
   const handleChange = useCallback(
     (_event: DateTimePickerEvent, selectedDate?: Date) => {
       setShow(false);
-      if (selectedDate) onChange(formatDate(selectedDate));
+      if (selectedDate) onChange(selectedDate.toISOString());
     },
     [onChange],
   );
@@ -57,7 +40,9 @@ export const DatePicker = ({
         onPress={() => setShow(true)}
       >
         <Text style={[styles.valueText, !value && styles.placeholder]}>
-          {value || "DD-MM-AAAA"}
+          {value
+            ? `${String(date.getDate()).padStart(2, "0")}-${String(date.getMonth() + 1).padStart(2, "0")}-${date.getFullYear()}`
+            : "DD-MM-AAAA"}
         </Text>
       </Pressable>
       {error && <Text style={styles.errorText}>{error}</Text>}
