@@ -22,69 +22,69 @@ export enum GroupRole {
 export type Conversation = {
   id: string
   name: string | null
-  group_picture: string | null
-  created_by: string
-  created_at: string
+  groupPicture: string | null
+  createdBy: string
+  createdAt: string
   // UI-enhancement fields
-  member_count?: number
-  is_group?: boolean
-  last_message?: string
-  last_message_time?: string
-  last_message_sender?: string
+  memberCount?: number
+  isGroup?: boolean
+  lastMessage?: string
+  lastMessageTime?: string
+  lastMessageSender?: string
   members?: GroupMember[]
   messages?: Message[]
 }
 
 export type GroupMember = {
   id: string
-  user_id: string
+  userId: string
   conversation: string
   role: GroupRole
-  joined_at: string
-  left_at: string | null
+  joinedAt: string
+  leftAt: string | null
   // UI-enhancement fields
   username?: string
-  profile_pic?: string | null
+  profilePic?: string | null
 }
 
 // Attachment type for media content
 export type Attachment = {
   url: string
   type: AttachmentType
-  thumbnail_url?: string
+  thumbnailUrl?: string
   width?: number
   height?: number
 }
 
 export type GameInfoCard = {
-  game_id: string
+  gameId: string
   title: string
-  cover_url: string
+  coverUrl: string
   developer: string
-  rating_score: string
+  ratingScore: string
   tags: string[]
 }
 
 export type Message = {
   id: string
-  sent_by: string
+  sentBy: string
   conversation: string | null
-  reply_to: string | null
+  replyTo: string | null
   type: MessageType
-  message_text: string | null
-  attached_media: Attachment[] | null
-  sent_at: string
+  messageText: string | null
+  attachedMedia: Attachment[] | null
+  sentAt: string
   status?: 'sending' | 'sent' | 'delivered' | 'read'
-  sender_username?: string
-  sender_profile_pic?: string | null
-  reply_to_message?: Message | null
-  game_card?: GameInfoCard | null
+  senderUsername?: string
+  senderProfilePic?: string | null
+  replyToMessage?: Message | null
+  gameCard?: GameInfoCard | null
 }
 
 export type ActiveUser = {
   id: string
   username: string
-  profile_pic: string | null
+  profilePic: string | null
   conversationId?: string
 }
 
@@ -92,8 +92,8 @@ export type SharedMediaItem = {
   id: string
   url: string
   duration: string
-  sent_at: string
-  message_id: string
+  sentAt: string
+  messageId: string
   width?: number
   height?: number
 }
@@ -102,8 +102,8 @@ export type SharedLinkItem = {
   id: string
   url: string
   title: string
-  sent_at: string
-  message_id: string
+  sentAt: string
+  messageId: string
 }
 
 export type ContactInfo = {

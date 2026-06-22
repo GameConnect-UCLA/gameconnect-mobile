@@ -10,31 +10,31 @@ export interface PostMedia {
 export interface Comment {
   id: string;
   author_id: string;
-  author_display_name: string;
-  author_profile_pic: string;
+  authorDisplayName: string;
+  author_profilePic: string;
   content: string;
-  created_at: string;
+  createdAt: string;
 }
 
 /** Full post entity */
 export interface Post {
   id: string;
   author: string;
-  author_display_name: string;
-  author_username: string;
-  author_profile_pic: string;
-  post_title: string;
+  authorDisplayName: string;
+  authorUsername: string;
+  author_profilePic: string;
+  postTitle: string;
   content: string;
-  media: PostMedia;
+  media: PostMedia | null;
   is_review: boolean;
   review_score: number | null;
   reviewed_game: string;
   likes_counter: number;
-  comments_counter: number;
+  commentsCounter: number;
   comments: Comment[];
   is_liked?: boolean;
   is_saved?: boolean;
-  created_at: string;
+  createdAt: string;
   last_modified_at: string;
-  deleted_at: string | null;
+  deletedAt: string | null;
 }

@@ -5,7 +5,7 @@ export const mockNotifications: Notification[] = [
   {
     id: '1',
     type: NotificationType.FOLLOW,
-    created_at: new Date(Date.now() - 1000 * 60 * 5).toISOString(), // 5 minutes ago
+    createdAt: new Date(Date.now() - 1000 * 60 * 5).toISOString(), // 5 minutes ago
     read: false,
     is_accepted: false,
     sender: {
@@ -17,7 +17,7 @@ export const mockNotifications: Notification[] = [
   {
     id: '2',
     type: NotificationType.FOLLOW,
-    created_at: new Date(Date.now() - 1000 * 60 * 15).toISOString(), // 15 minutes ago
+    createdAt: new Date(Date.now() - 1000 * 60 * 15).toISOString(), // 15 minutes ago
     read: false,
     is_accepted: false,
     sender: {
@@ -29,7 +29,7 @@ export const mockNotifications: Notification[] = [
   {
     id: '3',
     type: NotificationType.LIKE_POST,
-    created_at: new Date(Date.now() - 1000 * 60 * 30).toISOString(), // 30 minutes ago
+    createdAt: new Date(Date.now() - 1000 * 60 * 30).toISOString(), // 30 minutes ago
     read: false,
     sender: {
       id: 'user3',
@@ -43,7 +43,7 @@ export const mockNotifications: Notification[] = [
   {
     id: '4',
     type: NotificationType.COMMENTED_POST,
-    created_at: new Date(Date.now() - 1000 * 60 * 60 * 2).toISOString(), // 2 hours ago
+    createdAt: new Date(Date.now() - 1000 * 60 * 60 * 2).toISOString(), // 2 hours ago
     read: false,
     sender: {
       id: 'user4',
@@ -57,7 +57,7 @@ export const mockNotifications: Notification[] = [
   {
     id: '5',
     type: NotificationType.INVITATION_GAME,
-    created_at: new Date(Date.now() - 1000 * 60 * 60 * 5).toISOString(), // 5 hours ago
+    createdAt: new Date(Date.now() - 1000 * 60 * 60 * 5).toISOString(), // 5 hours ago
     read: false,
     status: 'pending',
     sender: {
@@ -74,7 +74,7 @@ export const mockNotifications: Notification[] = [
   {
     id: '6',
     type: NotificationType.MENTION,
-    created_at: new Date(Date.now() - 1000 * 60 * 60 * 24).toISOString(), // 1 day ago
+    createdAt: new Date(Date.now() - 1000 * 60 * 60 * 24).toISOString(), // 1 day ago
     read: true,
     sender: {
       id: 'user6',
@@ -88,7 +88,7 @@ export const mockNotifications: Notification[] = [
   {
     id: '7',
     type: NotificationType.SUGGESTION,
-    created_at: new Date(Date.now() - 1000 * 60 * 60 * 24 * 2).toISOString(), // 2 days ago
+    createdAt: new Date(Date.now() - 1000 * 60 * 60 * 24 * 2).toISOString(), // 2 days ago
     read: true,
     text: 'Nueva sugerencia de seguimiento:',
     suggestion_type: 'user',
@@ -101,7 +101,7 @@ export const mockNotifications: Notification[] = [
   {
     id: '8',
     type: NotificationType.INVITATION_TEAM,
-    created_at: new Date(Date.now() - 1000 * 60 * 60 * 24 * 3).toISOString(), // 3 days ago
+    createdAt: new Date(Date.now() - 1000 * 60 * 60 * 24 * 3).toISOString(), // 3 days ago
     read: true,
     status: 'pending',
     sender: {
@@ -118,7 +118,7 @@ export const mockNotifications: Notification[] = [
   {
     id: '9',
     type: NotificationType.LIKE_POST,
-    created_at: new Date(Date.now() - 1000 * 60 * 60 * 24 * 4).toISOString(), // 4 days ago
+    createdAt: new Date(Date.now() - 1000 * 60 * 60 * 24 * 4).toISOString(), // 4 days ago
     read: true,
     sender: {
       id: 'user9',
@@ -132,7 +132,7 @@ export const mockNotifications: Notification[] = [
   {
     id: '10',
     type: NotificationType.COMMENTED_POST,
-    created_at: new Date(Date.now() - 1000 * 60 * 60 * 24 * 5).toISOString(), // 5 days ago
+    createdAt: new Date(Date.now() - 1000 * 60 * 60 * 24 * 5).toISOString(), // 5 days ago
     read: true,
     sender: {
       id: 'user10',

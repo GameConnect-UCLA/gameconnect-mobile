@@ -53,7 +53,7 @@ const NotificationsScreen: React.FC = () => {
   const {
     notifications,
     isLoading,
-    isRefreshing,
+    isFetching,
     error,
     refreshNotifications,
     markAsRead,
@@ -123,7 +123,7 @@ const NotificationsScreen: React.FC = () => {
               }
               refreshControl={
                 <RefreshControl
-                  refreshing={isRefreshing}
+                  refreshing={isFetching}
                   onRefresh={refreshNotifications}
                   tintColor="#9b1999"
                   colors={['#9b1999', '#033563']}

@@ -96,7 +96,7 @@ export default function PostCard({
 
   // ---- derived values ----
   const isSaved = favoriteIds.includes(post?.id ?? itemId ?? '')
-  const displayedTitle = post?.is_review ? post?.reviewed_game : post?.post_title
+  const displayedTitle = post?.is_review ? post?.reviewed_game : post?.postTitle
   const contentPreview = post?.content?.slice(0, 160) ?? ''
   const displayLikes = isLiked ? (post?.likes_counter ?? 0) + 1 : (post?.likes_counter ?? 0)
 
@@ -148,7 +148,7 @@ export default function PostCard({
     }
 
     const handleItemShare = async () => {
-      await Share.share({ message: `Mira este post sobre ${itemTitle || post?.post_title || ''}` })
+      await Share.share({ message: `Mira este post sobre ${itemTitle || post?.postTitle || ''}` })
     }
 
     const goToDetail = () => {
@@ -159,15 +159,15 @@ export default function PostCard({
     return (
       <View style={styles.itemContainer}>
         <View style={styles.itemHeader}>
-          <Image source={{ uri: itemUserAvatar || post?.author_profile_pic || '' }} style={styles.itemAvatar} />
+          <Image source={{ uri: itemUserAvatar || post?.author_profilePic || '' }} style={styles.itemAvatar} />
           <View>
-            <Text style={styles.itemUserName}>{itemUserName || post?.author_display_name || ''}</Text>
-            <Text style={styles.itemUserTag}>{itemUserTag || `@${post?.author_username || ''}`}</Text>
+            <Text style={styles.itemUserName}>{itemUserName || post?.authorDisplayName || ''}</Text>
+            <Text style={styles.itemUserTag}>{itemUserTag || `@${post?.authorUsername || ''}`}</Text>
           </View>
         </View>
 
         <View>
-          <Text style={styles.itemPostTitle}>{itemTitle || post?.post_title || ''}</Text>
+          <Text style={styles.itemPostTitle}>{itemTitle || post?.postTitle || ''}</Text>
           <Text style={styles.itemPostContent}>{itemContent || post?.content || ''}</Text>
         </View>
 
@@ -183,7 +183,7 @@ export default function PostCard({
             </TouchableOpacity>
             <TouchableOpacity style={styles.itemActionBtn} onPress={goToDetail}>
               <Ionicons name="chatbubble-outline" size={24} color="black" />
-              <Text style={styles.itemActionText}>{itemComments || post?.comments_counter || 0}</Text>
+              <Text style={styles.itemActionText}>{itemComments || post?.commentsCounter || 0}</Text>
             </TouchableOpacity>
             <TouchableOpacity onPress={handleItemShare}>
               <Ionicons name="share-social-outline" size={24} color="black" />
@@ -218,7 +218,7 @@ export default function PostCard({
   }
 
   const handleScrollToImage = (index: number) => {
-    if (!hasMultipleImages || !mediaWidth || index < 0 || index >= post.media.images.length) return
+    if (!hasMultipleImages || !mediaWidth || index < 0 || index >= (post.media?.images?.length ?? 0)) return
     const boundedIndex = clampImageIndex(index)
     setActiveImageIndex(boundedIndex)
     scrollToImageIndex(boundedIndex, true)
@@ -235,13 +235,13 @@ export default function PostCard({
           onPress={() => push(`/user/${post.author}` as any)}
           activeOpacity={0.7}
         >
-          <Image source={{ uri: post.author_profile_pic }} style={styles.avatar} />
+          <Image source={{ uri: post.author_profilePic }} style={styles.avatar} />
           <View style={styles.authorTextContainer}>
             <View style={styles.authorMetaRow}>
-              <Text style={styles.authorName}>{post.author_display_name}</Text>
-              <Text style={styles.date}>{formatDate(post.created_at)}</Text>
+              <Text style={styles.authorName}>{post.authorDisplayName}</Text>
+              <Text style={styles.date}>{formatDate(post.createdAt)}</Text>
             </View>
-            <Text style={styles.handle}>{`@${post.author_username}`}</Text>
+            <Text style={styles.handle}>{`@${post.authorUsername}`}</Text>
             {post.is_review && (
               <View style={styles.reviewMetaRow}>
                 <View style={styles.starsRow}>
@@ -270,7 +270,7 @@ export default function PostCard({
         <Text style={styles.content}>{contentPreview}{post.content.length > 160 ? '...' : ''}</Text>
       </TouchableOpacity>
 
-      {post.media.images.length > 0 ? (
+      {(post.media?.images?.length ?? 0) > 0 ? (
         <View style={styles.galleryWrapper}>
           {hasMultipleImages ? (
             <>
@@ -288,7 +288,7 @@ export default function PostCard({
                   setActiveImageIndex(nextIndex)
                 }}
               >
-                {post.media.images.map((image, index) => (
+                {post.media?.images?.map((image, index) => (
                   <TouchableOpacity
                     key={index}
                     style={mediaWidth ? { width: mediaWidth } : undefined}
@@ -311,8 +311,8 @@ export default function PostCard({
               </TouchableOpacity>
               <TouchableOpacity
                 onPress={() => handleScrollToImage(activeImageIndex + 1)}
-                disabled={activeImageIndex === post.media.images.length - 1}
-                style={[styles.arrowButton, styles.rightArrow, activeImageIndex === post.media.images.length - 1 && styles.arrowDisabled]}
+                disabled={activeImageIndex >= (post.media?.images?.length ?? 1) - 1}
+                style={[styles.arrowButton, styles.rightArrow, activeImageIndex >= (post.media?.images?.length ?? 1) - 1 && styles.arrowDisabled]}
               >
                 <Ionicons name="chevron-forward" size={22} color="#FFFFFF" />
               </TouchableOpacity>
@@ -320,19 +320,19 @@ export default function PostCard({
           ) : (
             <TouchableOpacity
               activeOpacity={0.9}
-              onPress={() => handleImagePress(post.media.images[0], 0)}
+              onPress={() => handleImagePress(post.media?.images?.[0] ?? '', 0)}
             >
               <View style={[styles.mediaFrame, styles.singleMediaFrame, { width: mediaWidth }]}>
-                <Image source={{ uri: post.media.images[0] }} style={styles.mediaImage} />
+                <Image source={{ uri: post.media?.images?.[0] ?? '' }} style={styles.mediaImage} />
               </View>
             </TouchableOpacity>
           )}
         </View>
       ) : null}
 
-      {post.media.hashtags.length > 0 && (
+      {(post.media?.hashtags?.length ?? 0) > 0 && (
         <View style={styles.hashtagRow}>
-          {post.media.hashtags.map((tag) => (
+          {post.media?.hashtags?.map((tag) => (
             <TouchableOpacity key={tag} style={styles.hashtagPill} onPress={() => onHashtagPress ? onHashtagPress(tag) : push(`/explore?q=%23${tag}`)}>
               <Text style={styles.hashtagText}>{`#${tag}`}</Text>
             </TouchableOpacity>
@@ -355,7 +355,7 @@ export default function PostCard({
 
           <TouchableOpacity style={styles.counterBlock} onPress={hideComment ? undefined : () => handleGoToDetail()}>
             <Ionicons name="chatbubble-outline" size={26} color={Colors.text.primary} />
-            <Text style={styles.counterText}>{post.comments_counter}</Text>
+            <Text style={styles.counterText}>{post.commentsCounter}</Text>
           </TouchableOpacity>
 
           <TouchableOpacity onPress={handleSharePress}>

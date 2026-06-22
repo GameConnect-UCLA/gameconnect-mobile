@@ -18,18 +18,19 @@ import {
 import { SafeAreaView } from 'react-native-safe-area-context'
 import { Colors, Spacing, Typography } from '@/src/core/theme'
 import { useNavigation } from '@/src/core/hooks/useNavigation'
+import { useFetchFeed } from '../hooks/useFetchFeed'
 
 const AnimatedFlatList = Animated.createAnimatedComponent(FlatList) as unknown as React.ComponentType<React.ComponentProps<typeof FlatList<Post>> & { ref?: React.Ref<FlatList<Post>> }>
 
 /** Renders scrollable feed of posts with animated collapsible header. */
 export default function Feed() {
-  const posts = usePostStore((state) => state.posts)
-  const lastAddedId = usePostStore((state) => state.lastAddedId)
-  const reloadPosts = usePostStore((state) => state.reloadPosts)
+  const { data, refetch, fetchNextPage, hasNextPage, isFetchingNextPage, isRefetching} = useFetchFeed(); 
 
+  const posts = data?.pages.flat() ?? [];
+  console.log(posts)
+  const lastAddedId = usePostStore((state) => state.lastAddedId)
   const flatListRef = useRef<FlatList<Post> | null>(null)
   const { push } = useNavigation()
-  const [refreshing, setRefreshing] = useState(false)
   const [showReloadHint, setShowReloadHint] = useState(false)
   const [headerHeight, setHeaderHeight] = useState(132)
   const scrollY = useRef(new Animated.Value(0)).current
@@ -41,7 +42,7 @@ export default function Feed() {
       extrapolateLeft: 'clamp',
     }),
     0,
-    headerHeight,
+    headerHeight, 
   )
 
   const headerTranslateY = clampedScrollY.interpolate({
@@ -59,14 +60,8 @@ export default function Feed() {
   }, [lastAddedId])
 
   const handleRefresh = async () => {
-    setRefreshing(true)
     setShowReloadHint(false)
-    try {
-      reloadPosts()
-    } catch {
-      // ignore for mock
-    }
-    setTimeout(() => setRefreshing(false), 600)
+    await refetch();
   }
 
   const handleScroll = (e: any) => {
@@ -93,8 +88,14 @@ export default function Feed() {
               { paddingTop: headerHeight },
             ]}
             showsVerticalScrollIndicator={false}
-            refreshing={refreshing}
+            refreshing={isRefetching}
             onRefresh={handleRefresh}
+            onEndReached={() => {
+              if (hasNextPage && !isFetchingNextPage) {
+                fetchNextPage();
+              }
+            }}
+            onEndReachedThreshold={0.5}
             onScroll={Animated.event(
               [{ nativeEvent: { contentOffset: { y: scrollY } } }],
               {
@@ -114,19 +115,19 @@ export default function Feed() {
               setHeaderHeight(event.nativeEvent.layout.height)
             }
           >
-            {showReloadHint || refreshing ? (
+            {showReloadHint || isRefetching ? (
               <View style={styles.reloadOverlay}>
                 <TouchableOpacity
                   onPress={handleRefresh}
                   style={styles.reloadButton}
                 >
                   <Ionicons
-                    name={refreshing ? 'refresh' : 'reload'}
+                    name={isRefetching ? 'refresh' : 'reload'}
                     size={18}
                     color={Colors.primaryDark}
                   />
                   <Text style={styles.reloadText}>
-                    {refreshing ? 'Recargando...' : 'Recargar'}
+                    {isRefetching ? 'Recargando...' : 'Recargar'}
                   </Text>
                 </TouchableOpacity>
               </View>

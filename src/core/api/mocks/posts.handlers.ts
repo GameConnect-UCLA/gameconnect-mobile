@@ -8,10 +8,10 @@ mockRoutes.set('/posts', (config) => {
     id: `post-${Date.now()}`,
     ...body,
     likes_counter: 0,
-    comments_counter: 0,
-    created_at: new Date().toISOString(),
+    commentsCounter: 0,
+    createdAt: new Date().toISOString(),
     last_modified_at: new Date().toISOString(),
-    deleted_at: null,
+    deletedAt: null,
   }
 })
 

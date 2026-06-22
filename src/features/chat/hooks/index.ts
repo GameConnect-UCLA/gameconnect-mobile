@@ -1,6 +1,5 @@
 /** Re-exports all chat hooks */
 export { useAutocomplete } from './useAutocomplete'
-export { useChatList } from './useChatList'
 export { useConversation } from './useConversation'
 export { useGroupMembers } from './useGroupMembers'
 export { useScrollToBottom } from './useScrollToBottom'

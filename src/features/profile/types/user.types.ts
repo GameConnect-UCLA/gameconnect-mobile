@@ -34,31 +34,31 @@ export interface FeaturedPost {
 export interface FavoriteGame {
   id: string;
   name: string;
-  image_url: string;
+  imageUrl: string;
   description: string;
 }
 
 /** Full user entity */
 export interface User {
   id: string;
-  display_name: string;
+  displayName: string;
   username: string;
   role: UserRole;
   email: string;
   bio?: string;
   pronouns?: string;
-  birth_date?: string;
-  account_settings: Record<string, any>;
-  profile_pic: string;
-  cover_pic: string;
+  birthDate?: string;
+  accountSettings: Record<string, any>;
+  profilePic: string;
+  coverPic: string;
   stats: UserStats;
-  favorite_games: FavoriteGame[];
-  featured_post: FeaturedPost;
+  favoriteGames: FavoriteGame[];
+  featuredPost: FeaturedPost;
   state: UserState;
-  banned_at?: string | null;
-  ban_reason?: string | null;
-  created_at: string;
-  deleted_at?: string | null;
+  bannedAt?: string | null;
+  banReason?: string | null;
+  createdAt: string;
+  deletedAt?: string | null;
   verified?: boolean;
   posts: Post[];
 }

@@ -170,7 +170,7 @@ npm run doctor             # expo doctor diagnostics
 |-------|-------------|-----|
 | `Module has no exported member` | Importing from wrong barrel | Check the type's canonical location in `features/[feature]/types/` |
 | `Cannot find module` | Path is wrong or file was moved | Use `@/src/` prefix, verify file exists |
-| `Object literal may only specify known properties` | Field name mismatch | Editor showed 13 fields (Post) but you used 9 (old UserPost). Use `post_title`, `likes_counter`, etc. |
+| `Object literal may only specify known properties` | Field name mismatch | Editor showed 13 fields (Post) but you used 9 (old UserPost). Use `postTitle`, `likes_counter`, etc. |
 | `'e' is of type 'unknown'` | Catch clause without type | Use `instanceof ApiError` or `as Error` |
 | TypeDoc "entry point not referenced" | Directory/glob entry points | Safe to ignore — files are still compiled |
 

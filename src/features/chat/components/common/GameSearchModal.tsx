@@ -27,11 +27,11 @@ interface GameSearchModalProps {
 
 function toGameInfoCard(game: GameProfile): GameInfoCard {
   return {
-    game_id: game.id,
+    gameId: game.id,
     title: game.title,
-    cover_url: game.cover_url,
+    coverUrl: game.coverUrl,
     developer: game.developer,
-    rating_score: (game.score / 10).toFixed(1) + ' / 5',
+    ratingScore: (game.score / 10).toFixed(1) + ' / 5',
     tags: game.tags,
   };
 }
@@ -143,7 +143,7 @@ export default function GameSearchModal({
                   style={styles.row}
                   onPress={() => handleSelect(item)}
                 >
-                  <Image source={{ uri: item.cover_url }} style={styles.cover} />
+                  <Image source={{ uri: item.coverUrl }} style={styles.cover} />
                   <View style={styles.info}>
                     <Text style={styles.title}>{item.title}</Text>
                     <Text style={styles.developer}>{item.developer}</Text>

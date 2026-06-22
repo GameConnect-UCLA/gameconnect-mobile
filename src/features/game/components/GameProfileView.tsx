@@ -41,7 +41,7 @@ export default function GameProfileView({ game }: Props) {
         <ScrollView style={styles.screen} contentContainerStyle={styles.contentContainer}>
           <View style={[styles.mainCard, { minHeight: height }]}>
             <View style={styles.coverWrapper}>
-              <Image source={{ uri: game.cover_url }} style={styles.coverImage} />
+              <Image source={{ uri: game.coverUrl }} style={styles.coverImage} />
               <View style={styles.headerOverlay}>
                 <TouchableOpacity onPress={() => back()} style={styles.backButton}>
                   <Ionicons name="chevron-back" size={28} color="#fff" />

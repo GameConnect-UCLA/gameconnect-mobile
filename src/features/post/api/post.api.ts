@@ -3,6 +3,12 @@ import { apiClient } from '@/src/core/api/client'
 import type { Post } from '@/src/core/types/post.types'
 
 /** Fetch all posts @returns Post list */
+export const fetchFeed = async (offset: number = 0, limit: number = 10): Promise<Post[]> => {
+  const { data } = await apiClient.get<Post[]>(`/feed?limit=${limit}&offset=${offset}`)
+  return data
+}
+
+/** Fetch all posts @returns Post list */
 export const fetchPosts = async (): Promise<Post[]> => {
   const { data } = await apiClient.get<Post[]>('/posts')
   return data

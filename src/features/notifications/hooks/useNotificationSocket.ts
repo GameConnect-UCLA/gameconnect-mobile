@@ -8,7 +8,7 @@ import type { Notification } from '../types/notifications.types'
 /** Subscribes to notification:new events and inserts them into the notifications query cache. */
 export function useNotificationSocket() {
   const queryClient = useQueryClient()
-  const cleanupRef = useRef<() => void>(() => {})
+  const cleanupRef = useRef<() => void>(() => { })
 
   useEffect(() => {
     let disposed = false
@@ -16,14 +16,9 @@ export function useNotificationSocket() {
     async function init() {
       let s: any
 
-      if (USE_MOCKS) {
-        const { createMockSocket } = await import('@/src/core/api/mock-socket')
-        s = createMockSocket()
-      } else {
-        const { createSocket } = await import('@/src/core/api/socket')
-        s = await createSocket()
-      }
-
+      const { createSocket } = await import('@/src/core/api/socket')
+      s = await createSocket()
+      
       if (disposed) {
         if (s.disconnect) s.disconnect()
         return

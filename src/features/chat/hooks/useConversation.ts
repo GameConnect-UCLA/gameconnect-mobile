@@ -10,7 +10,7 @@ import { MessageType } from '../types/chat.types';
 export function useConversation(conversationId: string) {
   const queryClient = useQueryClient();
   const queryKey = ["conversation", conversationId];
-  const currentUserId = useUserStore((s) => s.user?.id ?? "current_user");
+  const currentUserId = useUserStore((s) => s.user?.id ?? "currentUser");
 
   const conversationQuery = useQuery<Conversation, ApiError>({
     queryKey,
@@ -51,19 +51,19 @@ export function useConversation(conversationId: string) {
 
       const optimisticMessage: Message = {
         id: `temp-${Date.now()}`,
-        sent_by: currentUserId,
+        sentBy: currentUserId,
         conversation: conversationId,
-        reply_to: replyToId ?? null,
-        type: previousConversation?.is_group
+        replyTo: replyToId ?? null,
+        type: previousConversation?.isGroup
           ? MessageType.GROUP_MESSAGE
           : MessageType.DIRECT_MESSAGE,
-        message_text: text,
-        attached_media: attachments ?? null,
-        sent_at: new Date().toISOString(),
-        sender_username: "You",
-        sender_profile_pic: null,
-        reply_to_message: repliedMessage,
-        game_card: gameCard ?? null,
+        messageText: text,
+        attachedMedia: attachments ?? null,
+        sentAt: new Date().toISOString(),
+        senderUsername: "You",
+        senderProfilePic: null,
+        replyToMessage: repliedMessage,
+        gameCard: gameCard ?? null,
       };
 
       if (previousConversation) {

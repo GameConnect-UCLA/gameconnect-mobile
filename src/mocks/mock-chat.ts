@@ -23,13 +23,13 @@ export const ACTIVE_USERS: ActiveUser[] = [
   {
     id: "user1",
     username: "Luna",
-    profile_pic: CHAT_IMAGES.luna,
+    profilePic: CHAT_IMAGES.luna,
     conversationId: "1",
   },
   {
     id: "user2",
     username: "Game",
-    profile_pic: CHAT_IMAGES.game,
+    profilePic: CHAT_IMAGES.game,
     conversationId: "2",
   },
 ];
@@ -42,13 +42,13 @@ const createMockMember = (
   profilePic?: string,
 ): GroupMember => ({
   id,
-  user_id: userId,
+  userId: userId,
   conversation: "",
   role,
-  joined_at: new Date().toISOString(),
-  left_at: null,
+  joinedAt: new Date().toISOString(),
+  leftAt: null,
   username,
-  profile_pic: profilePic ?? GROUP_MEMBER_PICS[userId] ?? null,
+  profilePic: profilePic ?? GROUP_MEMBER_PICS[userId] ?? null,
 });
 
 const GROUP_MEMBER_PICS: Record<string, string> = {
@@ -70,19 +70,19 @@ const createMockMessage = (
   profilePic?: string | null,
 ): Message => ({
   id,
-  sent_by: sentBy,
+  sentBy,
   conversation: null,
-  reply_to: replyTo,
+  replyTo,
   type,
-  message_text: text,
-  attached_media: attachedMedia?.map((url) => ({
+  messageText: text,
+  attachedMedia: attachedMedia?.map((url) => ({
     url,
     type: AttachmentType.IMAGE,
   })) ?? null,
-  sent_at: sentAt,
-  sender_username: username,
-  sender_profile_pic: profilePic ?? GROUP_MEMBER_PICS[sentBy] ?? null,
-  reply_to_message: null,
+  sentAt: sentAt,
+  senderUsername: username,
+  senderProfilePic: profilePic ?? GROUP_MEMBER_PICS[sentBy] ?? null,
+  replyToMessage: null,
 });
 
 const getTimestamp = (minutesAgo: number): string => {
@@ -92,7 +92,7 @@ const getTimestamp = (minutesAgo: number): string => {
 };
 
 const generateLunaMessages = (): Message[] => {
-  const me = "current_user";
+  const me = "currentUser";
   const luna = "user1";
   const name = "Luna _Streams";
 
@@ -339,12 +339,12 @@ export const CONVERSATIONS: Conversation[] = [
   {
     id: "1",
     name: "Luna _Streams",
-    group_picture: CHAT_IMAGES.luna,
-    created_by: "user1",
-    created_at: new Date().toISOString(),
-    last_message: "Full mago esta vez 💫",
-    last_message_time: "10:30 AM",
-    is_group: false,
+    groupPicture: CHAT_IMAGES.luna,
+    createdBy: "user1",
+    createdAt: new Date().toISOString(),
+    lastMessage: "Full mago esta vez 💫",
+    lastMessageTime: "10:30 AM",
+    isGroup: false,
     members: [
       createMockMember(
         "m1",
@@ -359,12 +359,12 @@ export const CONVERSATIONS: Conversation[] = [
   {
     id: "2",
     name: "GameLink",
-    group_picture: CHAT_IMAGES.game,
-    created_by: "user2",
-    created_at: new Date().toISOString(),
-    last_message: undefined,
-    last_message_time: undefined,
-    is_group: false,
+    groupPicture: CHAT_IMAGES.game,
+    createdBy: "user2",
+    createdAt: new Date().toISOString(),
+    lastMessage: undefined,
+    lastMessageTime: undefined,
+    isGroup: false,
     members: [
       createMockMember(
         "m2",
@@ -378,16 +378,16 @@ export const CONVERSATIONS: Conversation[] = [
   {
     id: "3",
     name: "Fanáticos de RPG",
-    group_picture: CHAT_IMAGES.rpg,
-    created_by: "user1",
-    created_at: new Date().toISOString(),
-    last_message: "¿Alguien quiere cooperar para el jefe final?",
-    last_message_time: "Ayer",
-    last_message_sender: "Pedro",
-    member_count: 4,
-    is_group: true,
+    groupPicture: CHAT_IMAGES.rpg,
+    createdBy: "user1",
+    createdAt: new Date().toISOString(),
+    lastMessage: "¿Alguien quiere cooperar para el jefe final?",
+    lastMessageTime: "Ayer",
+    lastMessageSender: "Pedro",
+    memberCount: 4,
+    isGroup: true,
     members: [
-      createMockMember("m0", "current_user", "You", GroupRole.OWNER),
+      createMockMember("m0", "currentUser", "You", GroupRole.OWNER),
       createMockMember("m3", "user1", "Luna", GroupRole.ADMIN),
       createMockMember("m4", "user3", "Carlos"),
       createMockMember("m5", "user4", "Maria"),
@@ -416,36 +416,36 @@ export const MOCK_SHARED_MEDIA: Record<string, SharedMediaItem[]> = {
       id: "sm1",
       url: "https://picsum.photos/seed/game1/400/400",
       duration: "11:29",
-      sent_at: getTimestamp(1135),
-      message_id: "dm8",
+      sentAt: getTimestamp(1135),
+      messageId: "dm8",
     },
     {
       id: "sm2",
       url: "https://picsum.photos/seed/game8/400/400",
       duration: "12:05",
-      sent_at: getTimestamp(1120),
-      message_id: "dm9",
+      sentAt: getTimestamp(1120),
+      messageId: "dm9",
     },
     {
       id: "sm3",
       url: "https://picsum.photos/seed/game9/400/400",
       duration: "09:37",
-      sent_at: getTimestamp(1115),
-      message_id: "dm10",
+      sentAt: getTimestamp(1115),
+      messageId: "dm10",
     },
     {
       id: "sm4",
       url: "https://picsum.photos/seed/game10/400/400",
       duration: "14:21",
-      sent_at: getTimestamp(1115),
-      message_id: "dm10",
+      sentAt: getTimestamp(1115),
+      messageId: "dm10",
     },
     {
       id: "sm5",
       url: "https://picsum.photos/seed/game13/400/400",
       duration: "13:09",
-      sent_at: getTimestamp(1100),
-      message_id: "dm11",
+      sentAt: getTimestamp(1100),
+      messageId: "dm11",
     },
   ],
   "3": [
@@ -453,43 +453,43 @@ export const MOCK_SHARED_MEDIA: Record<string, SharedMediaItem[]> = {
       id: "sm6",
       url: "https://picsum.photos/seed/rpg1/400/400",
       duration: "10:15",
-      sent_at: getTimestamp(1960),
-      message_id: "gm5",
+      sentAt: getTimestamp(1960),
+      messageId: "gm5",
     },
     {
       id: "sm7",
       url: "https://picsum.photos/seed/rpg2/400/400",
       duration: "08:42",
-      sent_at: getTimestamp(1950),
-      message_id: "gm6",
+      sentAt: getTimestamp(1950),
+      messageId: "gm6",
     },
     {
       id: "sm8",
       url: "https://picsum.photos/seed/rpg3/400/400",
       duration: "09:03",
-      sent_at: getTimestamp(1950),
-      message_id: "gm6",
+      sentAt: getTimestamp(1950),
+      messageId: "gm6",
     },
     {
       id: "sm9",
       url: "https://picsum.photos/seed/rpg4/400/400",
       duration: "07:38",
-      sent_at: getTimestamp(1920),
-      message_id: "gm9",
+      sentAt: getTimestamp(1920),
+      messageId: "gm9",
     },
     {
       id: "sm10",
       url: "https://picsum.photos/seed/rpg5/400/400",
       duration: "11:14",
-      sent_at: getTimestamp(1920),
-      message_id: "gm9",
+      sentAt: getTimestamp(1920),
+      messageId: "gm9",
     },
     {
       id: "sm11",
       url: "https://picsum.photos/seed/rpg6/400/400",
       duration: "06:55",
-      sent_at: getTimestamp(1920),
-      message_id: "gm9",
+      sentAt: getTimestamp(1920),
+      messageId: "gm9",
     },
   ],
 };
@@ -500,15 +500,15 @@ export const MOCK_SHARED_LINKS: Record<string, SharedLinkItem[]> = {
       id: "sl1",
       url: "https://www.youtube.com/watch?v=eldendringdlc",
       title: "Elden Ring DLC - Official Trailer",
-      sent_at: getTimestamp(1080),
-      message_id: "dm13",
+      sentAt: getTimestamp(1080),
+      messageId: "dm13",
     },
     {
       id: "sl2",
       url: "https://steamcommunity.com/sharedfiles/filedetails/?id=123456",
       title: "Guía completa de builds para Elden Ring",
-      sent_at: getTimestamp(1060),
-      message_id: "dm15",
+      sentAt: getTimestamp(1060),
+      messageId: "dm15",
     },
   ],
   "3": [
@@ -516,8 +516,8 @@ export const MOCK_SHARED_LINKS: Record<string, SharedLinkItem[]> = {
       id: "sl3",
       url: "https://eldenring.wiki.fextralife.com",
       title: "Elden Ring Wiki - Guía interactiva",
-      sent_at: getTimestamp(1940),
-      message_id: "gm7",
+      sentAt: getTimestamp(1940),
+      messageId: "gm7",
     },
   ],
 };

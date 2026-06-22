@@ -1,7 +1,7 @@
 import { Alert, View, ActivityIndicator, Text } from 'react-native'
 import EditProfileView from '@/src/features/profile/components/EditProfileView'
-import { useCurrentUser } from '@/src/features/profile/hooks/useCurrentUser'
-import { useProfile } from '@/src/features/profile/hooks/useProfile'
+import { useCurrentUser } from '@/src/features/profile/hooks/useGetUser'
+import { useProfile } from '@/src/features/profile/hooks/useUpdateProfile'
 import { mediaApi } from '@/src/core/api/media'
 import { useNavigation } from '@/src/core/hooks/useNavigation'
 

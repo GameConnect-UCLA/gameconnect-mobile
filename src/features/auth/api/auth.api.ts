@@ -5,27 +5,22 @@ import type {
   LoginCredentials,
   SignUpInfo,
 } from "../types/auth.types";
+import axios from "axios";
 
 const login = async (credentials: LoginCredentials): Promise<AuthResponse> => {
-  console.log("Entrando en login");
   const { data } = await apiClient.post("/login", credentials);
   return data;
 };
 
 const register = async (newUser: SignUpInfo): Promise<AuthResponse> => {
-  const payload = {
-    email: newUser.email,
-    password: newUser.password,
-    username: newUser.username,
-    birthDate: newUser.birth_date ?? null,
-  };
-  const { data } = await apiClient.post("/register", payload);
-  return data;
+  const res = await apiClient.post("/register", newUser);
+  console.log(res)
+  return res.data;
 };
 
 const refresh = async (token: string): Promise<AuthResponse> => {
   const { data } = await apiClient.post("/refresh", {
-    refresh_token: token,
+    refreshToken: token,
   });
   return data;
 };

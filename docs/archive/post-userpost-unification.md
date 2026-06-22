@@ -10,21 +10,21 @@ Two separate types represent the same concept (a post):
 interface Post {
   id: string;
   author: string;
-  author_display_name: string;
-  author_username: string;
-  author_profile_pic: string;
-  post_title: string;
+  authorDisplayName: string;
+  authorUsername: string;
+  author_profilePic: string;
+  postTitle: string;
   content: string;
   media: PostMedia;         // { images: string[], hashtags: string[] }
   is_review: boolean;
   review_score: number | null;
   reviewed_game: string;
   likes_counter: number;
-  comments_counter: number;
+  commentsCounter: number;
   comments: Comment[];
-  created_at: string;
+  createdAt: string;
   last_modified_at: string;
-  deleted_at: string | null;
+  deletedAt: string | null;
 }
 ```
 
@@ -35,11 +35,11 @@ Used by: mock-posts, PostCard, PostDetailView, post.api, useCreatePost, ProfileV
 ```typescript
 interface UserPost {
   id: string;
-  title: string;            // same as Post.post_title
+  title: string;            // same as Post.postTitle
   content: string;
-  image_url: string;         // single image vs Post.media.images[]
+  imageUrl: string;         // single image vs Post.media.images[]
   likes: number;             // same as Post.likes_counter
-  comments_count: number;    // same as Post.comments_counter
+  comments_count: number;    // same as Post.commentsCounter
   is_liked?: boolean;        // not in Post
   is_saved?: boolean;        // not in Post
   comments_list?: UserPostComment[];  // same as Post.comments
@@ -52,10 +52,10 @@ Used by: only as type re-export from core/types/index.ts. No actual code accesse
 
 | UserPostComment | Comment |
 |---|---|
-| `user_name: string` | `author_display_name: string` |
-| `user_avatar: string` | `author_profile_pic: string` |
+| `user_name: string` | `authorDisplayName: string` |
+| `user_avatar: string` | `author_profilePic: string` |
 | `text: string` | `content: string` |
-| `date: string` | `created_at: string` |
+| `date: string` | `createdAt: string` |
 
 ## Unification
 

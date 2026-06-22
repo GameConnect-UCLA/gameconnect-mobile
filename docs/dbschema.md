@@ -70,30 +70,30 @@ enum REPORT_REASON {
 Table user {
   id uuid [pk, not null]
   username varchar(30)
-  display_name varchar(30)
+  displayName varchar(30)
   pronouns varchar(30)
   role USER_ROLE
   email varchar(30) [unique]
   bio varchar(120)
-  birth_date date
-  account_settings jsonb
-  profile_pic url
-  cover_pic url
+  birthDate date
+  accountSettings jsonb
+  profilePic url
+  coverPic url
   verified bool
   state USER_STATE
-  banned_at timestampz
-  ban_reason text
-  created_at timestampz
-  deleted_at timestampz
+  bannedAt timestampz
+  banReason text
+  createdAt timestampz
+  deletedAt timestampz
 }
 
 Table user_auth {
   id uuid [pk]
-  user_id uuid [not null, ref: > user.id]
+  userId uuid [not null, ref: > user.id]
   provider varchar(30) [not null]  // 'local', 'google', 'discord'
   provider_id varchar(255)// null para 'local', ID externo para OAuth
   password_hash varchar(255) // solo para 'local', null para OAuth
-  created_at timestampz [not null]
+  createdAt timestampz [not null]
 }
 
 // Feed Feature needs: 
@@ -120,11 +120,11 @@ Table post {
   reviewed_game uuid [null, ref: > game.id]
   review_score float
   likes_counter int
-  comments_counter int
+  commentsCounter int
 
-  created_at timestampz
+  createdAt timestampz
   last_modified_at timestampz
-  deleted_at timestampz
+  deletedAt timestampz
 }
 
 
@@ -136,9 +136,9 @@ Table comment {
   content text // .md
   media jsonb
 
-  created_at timestampz
+  createdAt timestampz
   last_modified_at timestampz
-  deleted_at timestampz
+  deletedAt timestampz
 }
 
 Table game {
@@ -150,21 +150,21 @@ Table game {
 
 table game_staff {
   id uuid [pk]
-  user_id uuid [ref: > user.id]
-  game_id uuid [ref: > game.id]
+  userId uuid [ref: > user.id]
+  gameId uuid [ref: > game.id]
   staff_title varchar(30)
   
 }
 
 Table likes {
   id uuid [pk, not null]
-  user_id uuid [ref: > user.id] // user that likes the content
+  userId uuid [ref: > user.id] // user that likes the content
   post_id uuid [ref: > post.id] // post that is being liked
 }
 
 Table favorites {
   id uuid [pk, not null]
-  user_id uuid [ref: > user.id]
+  userId uuid [ref: > user.id]
   item_id uuid
   item_type FAVORITE
 }
@@ -172,50 +172,50 @@ Table favorites {
 // CHAT FEATURE
 Table message {
   id uuid [pk, not null]
-  sent_by uuid [ref: > user.id]
+  sentBy uuid [ref: > user.id]
   conversation uuid [null, ref: > conversation.id]
-  reply_to uuid [null, ref: > message.id]
+  replyTo uuid [null, ref: > message.id]
   type MESSAGE_TYPE
-  message_text text
-  attached_media jsob //urls
-  sent_at timestampz
+  messageText text
+  attachedMedia jsob //urls
+  sentAt timestampz
 
 }
 
 Table conversation {
   id uuid [pk, not null]
   name varchar(30)
-  group_picture text // url
-  created_by uuid [ref: > user.id]
-  created_at timestampz
+  groupPicture text // url
+  createdBy uuid [ref: > user.id]
+  createdAt timestampz
 }
 
 Table group_member {
   id uuid [pk, not null]
-  user_id uuid [ref: < user.id]
+  userId uuid [ref: < user.id]
   conversation uuid [ref: < conversation.id]
   role GROUP_ROLE
-  joined_at timestampz
-  left_at timestampz
+  joinedAt timestampz
+  leftAt timestampz
 }
 
 // IN-APP NOTIFICATIONS FEATURE
 Table notification {
   id uuid [pk]
-  user_id uuid [ref: > user.id]
+  userId uuid [ref: > user.id]
   type EVENT
   payload jsonb
   read bool
-  created_at timestampz
+  createdAt timestampz
 
 }
 
 // expo notification tokens DECOMMENT FOR IMPL
 // Table user_push_notification_token {
 //   id uuid [pk]
-//   user_id uuid [not null, ref: > user.id]
+//   userId uuid [not null, ref: > user.id]
 //   token varchar(255) [not null, unique]
-//   created_at timestampz
+//   createdAt timestampz
 //   last_seen timestampz 
 // }
 
@@ -230,7 +230,7 @@ Table reports {
   status varchar(20) [not null, default: REPORT_STATUS.PENDING] // 'pending' | 'resolved' | 'dismissed'
   resolved_by uuid [ref: > user.id]
   resolved_at timestampz
-  created_at timestampz 
+  createdAt timestampz 
 }
 
 // Table content_flag {
@@ -240,5 +240,5 @@ Table reports {
 //   flag_type MODERATION_FLAG [not null] // 'hidden' | 'removed' | 'nsfw' | 'under_review'
 //   flagged_by uuid [ref: > user.id] // el mod que lo aplicó
 //   reason text
-//   created_at timestampz [not null]
+//   createdAt timestampz [not null]
 // }

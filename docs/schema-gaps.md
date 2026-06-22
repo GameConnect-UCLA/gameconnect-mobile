@@ -12,9 +12,9 @@
 
 | Field | Frontend Type | Purpose | DDL |
 |-------|--------------|---------|-----|
-| `display_name` | `string` | Display name separate from `username`. User everywhere in UI (post headers, chat, profile header). | `ALTER TABLE "user" ADD COLUMN display_name varchar(50);` |
+| `displayName` | `string` | Display name separate from `username`. User everywhere in UI (post headers, chat, profile header). | `ALTER TABLE "user" ADD COLUMN displayName varchar(50);` |
 | `pronouns` | `string?` | Display pronouns on profile (e.g. "he/him", "she/her", "they/them"). | `ALTER TABLE "user" ADD COLUMN pronouns varchar(20);` |
-| `cover_pic` | `string` | Profile cover/header image URL. Stored in Cloudinary like `profile_pic`. | `ALTER TABLE "user" ADD COLUMN cover_pic text;` |
+| `coverPic` | `string` | Profile cover/header image URL. Stored in Cloudinary like `profilePic`. | `ALTER TABLE "user" ADD COLUMN coverPic text;` |
 | `verified` | `boolean` | Verified badge on profile. Staff or manual flag. | `ALTER TABLE "user" ADD COLUMN verified bool DEFAULT false;` |
 
 ### Enum Changes
@@ -22,7 +22,7 @@
 | Issue | Frontend | DB | Fix |
 |-------|----------|----|-----|
 | Missing role | `UserRole.ADMIN` exists | `USER_ROLE` enum has only `USER`, `MODERATOR` | `ALTER TYPE user_role ADD VALUE 'ADMIN';` |
-| Missing state | `UserState.BANNED` exists | `USER_STATE` enum has only `ACTIVE`, `TO_DELETE`; `banned_at` column exists but no state value | `ALTER TYPE user_state ADD VALUE 'BANNED';` |
+| Missing state | `UserState.BANNED` exists | `USER_STATE` enum has only `ACTIVE`, `TO_DELETE`; `bannedAt` column exists but no state value | `ALTER TYPE user_state ADD VALUE 'BANNED';` |
 | Missing state | `UserState.INACTIVE` exists | `USER_STATE` enum missing `INACTIVE` | `ALTER TYPE user_state ADD VALUE 'INACTIVE';` |
 
 ---
@@ -33,7 +33,7 @@
 
 | Field | Frontend Type | Purpose | DDL |
 |-------|--------------|---------|-----|
-| `post_title` | `string` | Post/review title. Currently the frontend `Post` type has a `post_title` field that doesn't exist in the DB. `content` is separate. | `ALTER TABLE "post" ADD COLUMN title varchar(150);` |
+| `postTitle` | `string` | Post/review title. Currently the frontend `Post` type has a `postTitle` field that doesn't exist in the DB. `content` is separate. | `ALTER TABLE "post" ADD COLUMN title varchar(150);` |
 | `review_score` | `number \| null` | Score for review posts. DB `game.score` holds aggregate game score; this is the individual reviewer's score. | `ALTER TABLE "post" ADD COLUMN review_score smallint;` |
 
 ### Column Alignments Needed
@@ -48,7 +48,7 @@
 | Current | Correct | File |
 |---------|---------|------|
 | `autor` | `author` | `src/types/post.types.ts` |
-| `commets_counter` | `comments_counter` | `src/types/post.types.ts` |
+| `commets_counter` | `commentsCounter` | `src/types/post.types.ts` |
 
 ---
 
@@ -58,7 +58,7 @@
 
 | Field | Frontend Type | Purpose | DDL |
 |-------|--------------|---------|-----|
-| `created_at` | `string` (frontend uses `createdAt`) | Notification timestamp. DB `notification` table has no timestamp column. Required for ordering. | `ALTER TABLE "notification" ADD COLUMN created_at timestamptz DEFAULT now();` |
+| `createdAt` | `string` (frontend uses `createdAt`) | Notification timestamp. DB `notification` table has no timestamp column. Required for ordering. | `ALTER TABLE "notification" ADD COLUMN createdAt timestamptz DEFAULT now();` |
 
 ### Enum Expansion
 
@@ -93,7 +93,7 @@ Or align frontend enum names to match DB (recommended — less migration work):
 
 | Field | Frontend | DB | Action |
 |-------|---------|-----|--------|
-| `rating_score` | `string` ("4.9 / 5") | `game.score int` | Keep `score` as int in DB. Fix frontend type to `number`. Format in UI layer. |
+| `ratingScore` | `string` ("4.9 / 5") | `game.score int` | Keep `score` as int in DB. Fix frontend type to `number`. Format in UI layer. |
 | `rating_count` | `string` | No column | `ALTER TABLE "game" ADD COLUMN rating_count int DEFAULT 0;` — or compute from review posts |
 
 ---
@@ -104,11 +104,11 @@ These tables exist in the schema but have NO TypeScript type representation. Not
 
 | Table | Columns | Missing Feature |
 |-------|---------|----------------|
-| `game_staff` | `id`, `user_id`, `game_id`, `staff_title` | Staff/team management on game profiles |
-| `reports` | `id`, `reporter_id`, `target_id`, `target_type`, `reason`, `description`, `status`, `resolved_by`, `resolved_at`, `created_at` | Moderation system |
+| `game_staff` | `id`, `userId`, `gameId`, `staff_title` | Staff/team management on game profiles |
+| `reports` | `id`, `reporter_id`, `target_id`, `target_type`, `reason`, `description`, `status`, `resolved_by`, `resolved_at`, `createdAt` | Moderation system |
 | `follows` | `id`, `follower_id`, `followed_id`, `followed_type` | Has frontend `UserStats.followers/following` (aggregated), but no typed model |
-| `likes` | `id`, `user_id`, `post_id` | Has frontend `likes_counter` on Post, but no typed model |
-| `favorites` | `id`, `user_id`, `item_id`, `item_type` | Has frontend `FavoriteGame[]` on User, but no typed model |
+| `likes` | `id`, `userId`, `post_id` | Has frontend `likes_counter` on Post, but no typed model |
+| `favorites` | `id`, `userId`, `item_id`, `item_type` | Has frontend `FavoriteGame[]` on User, but no typed model |
 
 ---
 
@@ -130,6 +130,6 @@ These represent the same concept but live in different files with incompatible s
 
 | Concept | File 1 | File 2 | Impact |
 |---------|--------|--------|--------|
-| `Post` | `src/types/post.types.ts` (13 fields, DB-aligned) | `src/types/user.types.ts` (9 fields, card-display) | `user.types.ts` Post used in `User.posts[]`. Field names differ: `title`/`post_title`, `likes`/`likes_counter`, `comments`/`commets_counter`, `commentsList`/`comments`. |
-| `Comment` | `src/types/post.types.ts` (author_id, content, created_at) | `src/types/user.types.ts` (userName, userAvatar, text, date) | Completely different field names for identical semantics. `user.types.ts` Comment used only in `User.Post.commentsList`. |
+| `Post` | `src/types/post.types.ts` (13 fields, DB-aligned) | `src/types/user.types.ts` (9 fields, card-display) | `user.types.ts` Post used in `User.posts[]`. Field names differ: `title`/`postTitle`, `likes`/`likes_counter`, `comments`/`commets_counter`, `commentsList`/`comments`. |
+| `Comment` | `src/types/post.types.ts` (author_id, content, createdAt) | `src/types/user.types.ts` (userName, userAvatar, text, date) | Completely different field names for identical semantics. `user.types.ts` Comment used only in `User.Post.commentsList`. |
 | `User` | `src/types/user.types.ts` (22 fields, full) | `src/features/chat/types/chat.types.ts` (12 fields, subset) | Chat version has different nullability. `username` and `email` are `string \| null` in chat, `string` (required) in user.types. |

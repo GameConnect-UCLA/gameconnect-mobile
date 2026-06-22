@@ -15,11 +15,11 @@ mockRoutes.set('/auth/login', (config) => {
 })
 
 mockRoutes.set('/auth/register', (config) => {
-  const { username, email, birth_date } = parseBody(config)
+  const { username, email, birthDate } = parseBody(config)
   return {
     access_token: 'mock-access-token',
     refresh_token: 'mock-refresh-token',
-    user: { ...mockUser, username, email, birth_date },
+    user: { ...mockUser, username, email, birthDate },
   }
 })
 

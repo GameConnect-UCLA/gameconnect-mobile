@@ -13,7 +13,7 @@ export enum NotificationType {
 interface BaseNotification {
   id: string
   type: NotificationType
-  created_at: string
+  createdAt: string
   read: boolean
 }
 

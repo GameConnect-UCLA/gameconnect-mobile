@@ -1,11 +1,13 @@
 import { ActivityIndicator, Text, TouchableOpacity, View } from 'react-native'
 import ProfileView from '@/src/features/profile/components/ProfileView'
-import { useCurrentUser } from '@/src/features/profile/hooks/useCurrentUser'
+import { useGetMe } from '@/src/features/profile/hooks/useGetMe'
 import { useNavigation } from '@/src/core/hooks/useNavigation'
 
-export default function ProfileScreen() {
+export default function ProfileScreen() { 
   const { push, back } = useNavigation()
-  const { data: user, isLoading, isError, refetch } = useCurrentUser()
+  const { data: user, isLoading, isError, refetch } = useGetMe()
+  console.log(user);
+  
 
   if (isLoading) {
     return (

@@ -15,11 +15,11 @@ export const useLogin = () => {
   const mutation = useMutation({
     mutationFn: async (credentials: LoginCredentials) => {
       try {
-        const { access_token, refresh_token, user } =
-          await authApi.login(credentials);
-        await secureStore.save(secureStore.KEYS.ACCESS_TOKEN, access_token);
-        await secureStore.save(secureStore.KEYS.REFRESH_TOKEN, refresh_token);
-        setAuthenticated(access_token);
+        const { accessToken, refreshToken, user } =
+        await authApi.login(credentials);
+        await secureStore.save(secureStore.KEYS.ACCESS_TOKEN, accessToken);
+        await secureStore.save(secureStore.KEYS.REFRESH_TOKEN, refreshToken);
+        setAuthenticated(accessToken);
         setUser(user);
       } catch (error: any) {
         throw Error(error.message);

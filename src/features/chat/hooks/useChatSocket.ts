@@ -8,9 +8,9 @@ import type { Conversation, Message, Attachment, GameInfoCard } from '../types/c
 /** Manage real-time socket connection for a conversation @param conversationId - Room to join @returns { sendMessage, startTyping, stopTyping, typingUsers, onlineUsers, isConnected } */
 export function useChatSocket(conversationId: string) {
   const queryClient = useQueryClient()
-  const currentUserId = useUserStore((s) => s.user?.id ?? 'current_user')
+  const currentUserId = useUserStore((s) => s.user?.id ?? 'currentUser')
   const socketRef = useRef<any>(null)
-  const cleanupRef = useRef<() => void>(() => {})
+  const cleanupRef = useRef<() => void>(() => { })
 
   const [isConnected, setIsConnected] = useState(false)
   const [typingUsers, setTypingUsers] = useState<string[]>([])
@@ -22,14 +22,9 @@ export function useChatSocket(conversationId: string) {
     async function init() {
       let s: any
 
-      if (USE_MOCKS) {
-        const { createMockSocket } = await import('@/src/core/api/mock-socket')
-        s = createMockSocket(conversationId)
-      } else {
-        const { createSocket } = await import('@/src/core/api/socket')
-        s = await createSocket()
-        s.emit('room:join', { conversation_id: conversationId })
-      }
+      const { createSocket } = await import('@/src/core/api/socket')
+      s = await createSocket()
+      s.emit('room:join', { conversation_id: conversationId })
 
       if (disposed) {
         if (s.disconnect) s.disconnect()
@@ -108,10 +103,10 @@ export function useChatSocket(conversationId: string) {
       if (!socketRef.current) return
       socketRef.current.emit('message:send', {
         conversation_id: conversationId,
-        message_text: text,
+        messageText: text,
         attachments,
-        reply_to: replyToId,
-        game_card: gameCard,
+        replyTo: replyToId,
+        gameCard: gameCard,
         sender_id: currentUserId,
       })
     },

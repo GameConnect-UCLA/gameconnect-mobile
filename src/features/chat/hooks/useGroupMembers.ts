@@ -75,7 +75,7 @@ export function useGroupMembers(conversationId: string) {
         queryClient.setQueryData<Conversation>(queryKey, {
           ...previous,
           members: previous.members.filter((m) => m.id !== memberId),
-          member_count: Math.max(1, (previous.member_count ?? 1) - 1),
+          memberCount: Math.max(1, (previous.memberCount ?? 1) - 1),
         });
       }
       return { previous };
@@ -135,18 +135,18 @@ export function useGroupMembers(conversationId: string) {
       if (previous?.members) {
         const newMember = {
           id: `gm-${Date.now()}`,
-          user_id: userId,
+          userId: userId,
           conversation: "",
           role: GroupRole.MEMBER,
-          joined_at: new Date().toISOString(),
-          left_at: null,
+          joinedAt: new Date().toISOString(),
+          leftAt: null,
           username: `User ${userId}`,
-          profile_pic: null,
+          profilePic: null,
         };
         queryClient.setQueryData<Conversation>(queryKey, {
           ...previous,
           members: [...previous.members, newMember],
-          member_count: (previous.member_count ?? 0) + 1,
+          memberCount: (previous.memberCount ?? 0) + 1,
         });
       }
       return { previous };

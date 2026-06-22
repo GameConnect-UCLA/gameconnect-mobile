@@ -15,11 +15,12 @@ import { SafeAreaView } from "react-native-safe-area-context";
 import PostCard from "@/src/features/feed/components/PostCard";
 import { Colors, Spacing, Radii, Typography } from "@/src/core/theme";
 import { useNavigation } from "@/src/core/hooks/useNavigation";
+import { User } from "../types/user.types";
 
 const BG_IMAGE = require("@/assets/images/bgbody.png");
 
 interface ProfileViewProps {
-  user: any;
+  user: User;
   isSelf?: boolean;
   onEditPress?: () => void;
   onAddPeoplePress?: () => void;
@@ -37,7 +38,6 @@ const ProfileView: React.FC<ProfileViewProps> = ({
   onEditPress,
   onAddPeoplePress,
   onAddGamePress,
-  onViewAllGamesPress,
   onBackPress,
   onSettingsPress,
   onFollowPress,
@@ -47,10 +47,10 @@ const ProfileView: React.FC<ProfileViewProps> = ({
   const allPosts = usePostStore((state) => state.posts);
 
   const userPosts = allPosts.filter(
-    (post) => post.author_username === user.username,
+    (post) => post.authorUsername === user.username,
   );
 
-  const displayName = user.display_name.toUpperCase();
+  const displayName = user.displayName ? user.displayName : "";
   const bioLine = user.bio?.split("\n").filter(Boolean).join(" | ") || "";
 
   const renderBioWithIcon = () => {
@@ -87,7 +87,7 @@ const ProfileView: React.FC<ProfileViewProps> = ({
         >
           <View style={styles.coverContainer}>
             <ImageBackground
-              source={{ uri: user.cover_pic }}
+              source={{ uri: user.coverPic }}
               style={styles.coverImage}
               resizeMode="cover"
             >
@@ -115,7 +115,7 @@ const ProfileView: React.FC<ProfileViewProps> = ({
               </View>
               <View style={styles.avatarWrapper}>
                 <Image
-                  source={{ uri: user.profile_pic }}
+                  source={{ uri: user.profilePic }}
                   style={styles.avatar}
                 />
               </View>
@@ -175,21 +175,21 @@ const ProfileView: React.FC<ProfileViewProps> = ({
                 <Ionicons name="calendar-outline" size={16} color="#666" />
                 <Text style={styles.joinDate}>
                   {" "}
-                  Se unió en {user.created_at}
+                  Se unió en {user.createdAt}
                 </Text>
               </View>
 
               <View style={styles.statsContainer}>
                 <View style={styles.statItem}>
-                  <Text style={styles.statNumber}>{userPosts.length}</Text>
+                  <Text style={styles.statNumber}>{userPosts.length || 0}</Text>
                   <Text style={styles.statLabel}>Posts</Text>
                 </View>
                 <View style={styles.statItem}>
-                  <Text style={styles.statNumber}>{user.stats.followers}</Text>
+                  <Text style={styles.statNumber}>{user.stats?.followers || 0}</Text>
                   <Text style={styles.statLabel}>Seguidores</Text>
                 </View>
                 <View style={styles.statItem}>
-                  <Text style={styles.statNumber}>{user.stats.following}</Text>
+                  <Text style={styles.statNumber}>{user.stats?.following || 0}</Text>
                   <Text style={styles.statLabel}>Siguiendo</Text>
                 </View>
               </View>
@@ -225,11 +225,11 @@ const ProfileView: React.FC<ProfileViewProps> = ({
                   showsHorizontalScrollIndicator={false}
                   contentContainerStyle={styles.gamesScrollContent}
                 >
-                  {user.favorite_games &&
-                    user.favorite_games.map((game: any) => (
+                  {user.favoriteGames &&
+                    user.favoriteGames.map((game: any) => (
                       <View key={game.id} style={styles.gameCard}>
                         <Image
-                          source={{ uri: game.image_url }}
+                          source={{ uri: game.imageUrl }}
                           style={styles.gameImage}
                         />
                         <Text style={styles.gameNameLabel} numberOfLines={1}>
@@ -248,14 +248,14 @@ const ProfileView: React.FC<ProfileViewProps> = ({
                     key={post.id}
                     variant="item"
                     id={post.id}
-                    userName={post.author_display_name}
+                    userName={post.authorDisplayName}
                     userTag="FPS"
-                    userAvatar={post.author_profile_pic}
-                    title={post.post_title}
+                    userAvatar={post.author_profilePic}
+                    title={post.postTitle}
                     content={post.content}
-                    imageUrl={post.media.images[0]}
+                    imageUrl={post.media?.images?.[0] ?? ''}
                     likes={post.likes_counter}
-                    comments={post.comments_counter}
+                    comments={post.commentsCounter}
                   />
                 ))}
               </View>

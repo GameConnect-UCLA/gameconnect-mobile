@@ -26,7 +26,7 @@ interface ConversationActionsSheetProps {
 function isOwner(conversation: Conversation): boolean {
   const currentUserId = getCurrentUserId();
   return conversation.members?.some(
-    (m: GroupMember) => m.user_id === currentUserId && m.role === GroupRole.OWNER,
+    (m: GroupMember) => m.userId === currentUserId && m.role === GroupRole.OWNER,
   ) ?? false;
 }
 
@@ -42,7 +42,7 @@ export default function ConversationActionsSheet({
 }: ConversationActionsSheetProps) {
   if (!conversation) return null;
 
-  const group = conversation.is_group;
+  const group = conversation.isGroup;
   const owner = group && isOwner(conversation);
   const deleteLabel = group ? (owner ? "Delete Group" : "Leave Group") : "Delete Chat";
 

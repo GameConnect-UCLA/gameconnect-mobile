@@ -15,8 +15,8 @@ export default function ReplyPreview({
   message,
   isOwnMessage,
 }: ReplyPreviewProps) {
-  const hasMedia = message.attached_media && message.attached_media.length > 0;
-  const firstMedia = hasMedia ? message.attached_media![0] : null;
+  const hasMedia = message.attachedMedia && message.attachedMedia.length > 0;
+  const firstMedia = hasMedia ? message.attachedMedia![0] : null;
 
   return (
     <View
@@ -41,9 +41,9 @@ export default function ReplyPreview({
           ]}
           numberOfLines={1}
         >
-          {message.sender_username ?? "Unknown"}
+          {message.senderUsername ?? "Unknown"}
         </Text>
-        {message.message_text ? (
+        {message.messageText ? (
           <Text
             style={[
               styles.replyText,
@@ -51,7 +51,7 @@ export default function ReplyPreview({
             ]}
             numberOfLines={2}
           >
-            {message.message_text}
+            {message.messageText}
           </Text>
         ) : hasMedia ? (
           <View style={styles.replyMediaRow}>
@@ -75,7 +75,7 @@ export default function ReplyPreview({
         (firstMedia.type === AttachmentType.IMAGE ||
           firstMedia.type === AttachmentType.GIF) && (
           <Image
-            source={{ uri: firstMedia.thumbnail_url ?? firstMedia.url }}
+            source={{ uri: firstMedia.thumbnailUrl ?? firstMedia.url }}
             style={styles.replyThumbnail}
             resizeMode="cover"
           />

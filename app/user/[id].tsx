@@ -3,12 +3,18 @@ import { mockUsersList } from '@/src/mocks/mock-users-list'
 import { useLocalSearchParams } from 'expo-router'
 import { StyleSheet, Text, View } from 'react-native'
 import { useNavigation } from '@/src/core/hooks/useNavigation'
+import { useUserStore } from '@/src/core/store/user.store'
+import { useGetUser } from '@/src/features/profile/hooks/useGetUser'
+import { useGetMe } from '@/src/features/profile/hooks/useGetMe'
 
 export default function UserProfileScreen() {
   const { push, back } = useNavigation()
   const { id } = useLocalSearchParams()
+  const { user} = useUserStore();
+  const isLoggedUser = id == user?.id
+  const { data: userFound } = isLoggedUser ? useGetMe() : useGetUser(id as string);
 
-  const userFound = mockUsersList.find((u) => String(u.id) === String(id))
+  // userFound = mockUsersList.find((u) => String(u.id) === String(id))
 
   if (!userFound) {
     return (
@@ -21,7 +27,7 @@ export default function UserProfileScreen() {
   return (
     <ProfileView
       user={userFound}
-      isSelf={id === 'jorge-id'}
+      isSelf={isLoggedUser}
       onEditPress={() => push('/user/edit-profile')}
       onSettingsPress={() => push('/user/settings')}
       onAddGamePress={() => push('/user/favorite-games')}

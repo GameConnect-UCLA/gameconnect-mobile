@@ -25,7 +25,7 @@ export default function ActiveAvatar({ user, onPress }: { user: ActiveUser, onPr
     >
       <Animated.View style={{ transform: [{ scale }] }}>
         <View style={styles.activeAvatarRing}>
-          <Image source={user.profile_pic ? { uri: user.profile_pic } : DEFAULT_AVATAR} style={styles.activeAvatarImg} />
+          <Image source={user.profilePic ? { uri: user.profilePic } : DEFAULT_AVATAR} style={styles.activeAvatarImg} />
         </View>
         <View style={styles.onlineDot} />
         <Text style={styles.activeAvatarName} numberOfLines={1}>

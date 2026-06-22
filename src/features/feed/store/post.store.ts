@@ -16,14 +16,15 @@ type PostState = {
 
 const clonePost = (post: Post): Post => ({
   ...post,
-  media: {
+  media: post.media ? {
     images: [...post.media.images],
     hashtags: [...post.media.hashtags],
-  },
+  } : null,
   comments: post.comments ? post.comments.map((c) => ({ ...c })) : [],
 })
 
-const getInitialPosts = () => mockPosts.map(clonePost)
+// const getInitialPosts = () => mockPosts.map(clonePost)
+const getInitialPosts = () => []
 
 /** Hook returning post store state and actions. @returns PostState with posts, favoriteIds, and mutation methods */
 export const usePostStore = create<PostState>((set) => ({

@@ -67,19 +67,19 @@ export default function ChatInfoScreen() {
   const [addMemberVisible, setAddMemberVisible] = useState(false);
   const [addMemberSelected, setAddMemberSelected] = useState<string[]>([]);
 
-  const isGroup = conversation?.is_group ?? false;
+  const isGroup = conversation?.isGroup ?? false;
   const displayName = conversation?.name ?? "Unknown";
-  const avatarSource = conversation?.group_picture
-    ? { uri: conversation.group_picture }
+  const avatarSource = conversation?.groupPicture
+    ? { uri: conversation.groupPicture }
     : DEFAULT_AVATAR;
 
   const blockedUserIds = useChatStore((s) => s.blockedUserIds);
   const isContactBlocked = contactUserId
     ? blockedUserIds.includes(contactUserId)
     : false;
-  const currentUserId = useUserStore((s) => s.user?.id ?? "current_user");
+  const currentUserId = useUserStore((s) => s.user?.id ?? "currentUser");
   const currentMember = conversation?.members?.find(
-    (m) => m.user_id === currentUserId,
+    (m) => m.userId === currentUserId,
   );
   const isCurrentUserOwner = currentMember?.role === GroupRole.OWNER;
   const isCurrentUserAdmin =
@@ -151,7 +151,7 @@ export default function ChatInfoScreen() {
     setAddMemberVisible(false);
   }, [addMemberSelected, addMember, showToast]);
 
-  const existingMemberIds = conversation?.members?.map((m) => m.user_id) ?? [];
+  const existingMemberIds = conversation?.members?.map((m) => m.userId) ?? [];
   const availableUsers = ACTIVE_USERS.filter(
     (u) => !existingMemberIds.includes(u.id),
   );
@@ -263,7 +263,7 @@ export default function ChatInfoScreen() {
             <Text style={styles.profileName}>{displayName}</Text>
             {isGroup ? (
               <Text style={styles.profileStatus}>
-                {strings.chat.info.members.replace('{count}', String(conversation?.member_count ?? 1))}
+                {strings.chat.info.members.replace('{count}', String(conversation?.memberCount ?? 1))}
               </Text>
             ) : (
               <Text style={styles.profileStatus}>{strings.chat.header.lastSeen}</Text>
@@ -356,7 +356,7 @@ export default function ChatInfoScreen() {
                     key={member.id}
                     member={member}
                     onLongPress={
-                      member.user_id !== currentUserId
+                      member.userId !== currentUserId
                         ? handleMemberPress
                         : undefined
                     }
@@ -452,7 +452,7 @@ export default function ChatInfoScreen() {
               )}
 
               {isCurrentUserAdmin &&
-                selectedMember?.user_id !== currentUserId && (
+                selectedMember?.userId !== currentUserId && (
                   <TouchableOpacity
                     style={styles.actionSheetButton}
                     onPress={handleRemoveMember}
@@ -537,8 +537,8 @@ export default function ChatInfoScreen() {
                       >
                         <Image
                           source={
-                            user.profile_pic
-                              ? { uri: user.profile_pic }
+                            user.profilePic
+                              ? { uri: user.profilePic }
                               : DEFAULT_AVATAR
                           }
                           style={{ width: 32, height: 32, borderRadius: 16 }}

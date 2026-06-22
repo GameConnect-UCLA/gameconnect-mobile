@@ -28,14 +28,14 @@ export const PostComments: React.FC<Props> = ({ comments }) => {
               onPress={() => push(`/user/${comment.author_id}`)}
               style={styles.commentRow}
             >
-              <Image source={{ uri: comment.author_profile_pic }} style={styles.avatar} />
+              <Image source={{ uri: comment.author_profilePic }} style={styles.avatar} />
               <View style={styles.bubble}>
-                <Text style={styles.authorName}>{comment.author_display_name}</Text>
+                <Text style={styles.authorName}>{comment.authorDisplayName}</Text>
                 <Text style={styles.commentContent}>{comment.content}</Text>
               </View>
             </TouchableOpacity>
 
-            <Text style={styles.timeText}>{comment.created_at}</Text>
+            <Text style={styles.timeText}>{comment.createdAt}</Text>
             <View style={styles.itemSeparator} />
           </View>
         ))

@@ -129,7 +129,7 @@ export default function NewGroupScreen() {
                   style={styles.memberRow}
                   onPress={() => toggleMember(user.id)}
                 >
-                  <Image source={{ uri: user.profile_pic ?? undefined }} style={styles.memberAvatar} />
+                  <Image source={{ uri: user.profilePic ?? undefined }} style={styles.memberAvatar} />
                   <Text style={styles.memberName}>{user.username}</Text>
                   <Ionicons
                     name={isSelected ? 'checkbox' : 'square-outline'}

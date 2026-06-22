@@ -170,7 +170,7 @@ documentation cleanup:
 | normalizeText was duplicated | `explore.utils.ts` (removed) | Now only lives in `core/utils/string.ts` |
 | Contracts aspirational | `core/api/contracts/` | Interface shapes will change as backend implements them |
 | Mocks temporary | `src/mocks/` + `core/api/mocks/` | Will be removed as backend ships |
-| Mock ID mismatch | `mock-chat.ts` | `ACTIVE_USERS.id "1"` vs `CONVERSATIONS.members.user_id "user1"` — known, non-blocking for dev |
+| Mock ID mismatch | `mock-chat.ts` | `ACTIVE_USERS.id "1"` vs `CONVERSATIONS.members.userId "user1"` — known, non-blocking for dev |
 
 ---
 

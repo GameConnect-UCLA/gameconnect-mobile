@@ -78,8 +78,8 @@ export default function NewConversationModal({
     >
       <Image
         source={
-          item.profile_pic
-            ? { uri: item.profile_pic }
+          item.profilePic
+            ? { uri: item.profilePic }
             : require("@/assets/images/default-avatar.jpg")
         }
         style={styles.avatar}

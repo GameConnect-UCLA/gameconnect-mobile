@@ -117,7 +117,7 @@ export const useNotifications = () => {
   return {
     notifications,
     isLoading,
-    isRefreshing: isFetching,
+    isFetching,
     error: error ? 'Error al cargar notificaciones.' : null,
     refreshNotifications: () => refetch(),
     markAsRead,

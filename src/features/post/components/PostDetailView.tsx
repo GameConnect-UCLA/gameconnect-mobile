@@ -49,10 +49,10 @@ export const PostDetailView = ({
     const newComment = {
       id: Math.random().toString(),
       author_id: "jorge-id",
-      author_display_name: "Jorge Silva",
-      author_profile_pic: FOTO_JORGE,
+      authorDisplayName: "Jorge Silva",
+      author_profilePic: FOTO_JORGE,
       content: commentText,
-      created_at: "Ahora mismo",
+      createdAt: "Ahora mismo",
     };
     setLocalComments([...localComments, newComment]);
     setCommentText("");

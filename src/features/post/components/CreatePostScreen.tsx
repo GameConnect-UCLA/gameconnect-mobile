@@ -280,10 +280,10 @@ export default function CreatePostScreen() {
     const newPost: Post = {
       id: `${Date.now()}`,
       author: currentUserProfile.id,
-      author_display_name: currentUserProfile.display_name,
-      author_username: currentUserProfile.username,
-      author_profile_pic: currentUserProfile.profile_pic,
-      post_title: finalGameTitle,
+      authorDisplayName: currentUserProfile.displayName,
+      authorUsername: currentUserProfile.username,
+      author_profilePic: currentUserProfile.profilePic,
+      postTitle: finalGameTitle,
       content: description.trim(),
       media: {
         images: [...selectedImages],
@@ -293,11 +293,11 @@ export default function CreatePostScreen() {
       review_score: isReview ? reviewScore : null,
       reviewed_game: finalGameTitle,
       likes_counter: 0,
-      comments_counter: 0,
+      commentsCounter: 0,
       comments: [],
-      created_at: now,
+      createdAt: now,
       last_modified_at: now,
-      deleted_at: null,
+      deletedAt: null,
     };
 
     try {

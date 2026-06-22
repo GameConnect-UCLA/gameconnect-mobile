@@ -28,7 +28,7 @@ export default function GameInfoCard({
       onPress={onPress}
       activeOpacity={0.8}
     >
-      <Image source={{ uri: game.cover_url }} style={styles.cover} />
+      <Image source={{ uri: game.coverUrl }} style={styles.cover} />
       <View style={styles.body}>
         <Text style={styles.title} numberOfLines={1}>
           {game.title}
@@ -38,7 +38,7 @@ export default function GameInfoCard({
         </Text>
         <View style={styles.tagsRow}>
           <View style={styles.ratingBadge}>
-            <Text style={styles.ratingText}>{game.rating_score}</Text>
+            <Text style={styles.ratingText}>{game.ratingScore}</Text>
           </View>
           {game.tags.slice(0, 3).map((tag) => (
             <View key={tag} style={styles.tag}>

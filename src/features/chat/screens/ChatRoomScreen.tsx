@@ -88,7 +88,7 @@ export default function ChatDirectScreen() {
     const lower = searchQuery.toLowerCase();
     const indices: number[] = [];
     messages.forEach((msg, i) => {
-      if (msg.message_text?.toLowerCase().includes(lower)) {
+      if (msg.messageText?.toLowerCase().includes(lower)) {
         indices.push(i);
       }
     });
@@ -149,22 +149,22 @@ export default function ChatDirectScreen() {
     if (!conversation?.members) return new Map<string, { name: string; avatar: string | null }>();
     const map = new Map<string, { name: string; avatar: string | null }>();
     for (const m of conversation.members) {
-      map.set(m.user_id, { name: m.username ?? "Unknown", avatar: m.profile_pic ?? null });
+      map.set(m.userId, { name: m.username ?? "Unknown", avatar: m.profilePic ?? null });
     }
     return map;
   }, [conversation?.members]);
 
   const contact = conversation?.members?.[0];
-  const isGroupChat = conversation?.is_group ?? false;
+  const isGroupChat = conversation?.isGroup ?? false;
   const displayName = conversation?.name ?? contact?.username ?? "Unknown";
   const avatarSource = isGroupChat
-    ? (conversation?.group_picture ? { uri: conversation.group_picture } : DEFAULT_AVATAR)
-    : (contact?.profile_pic ? { uri: contact.profile_pic } : DEFAULT_AVATAR);
+    ? (conversation?.groupPicture ? { uri: conversation.groupPicture } : DEFAULT_AVATAR)
+    : (contact?.profilePic ? { uri: contact.profilePic } : DEFAULT_AVATAR);
 
-  const currentUserId = useUserStore((s) => s.user?.id ?? "current_user");
+  const currentUserId = useUserStore((s) => s.user?.id ?? "currentUser");
   const blockedUserIds = useChatStore((s) => s.blockedUserIds);
-  const isBlocked = !isGroupChat && contact?.user_id
-    ? blockedUserIds.includes(contact.user_id)
+  const isBlocked = !isGroupChat && contact?.userId
+    ? blockedUserIds.includes(contact.userId)
     : false;
 
   const navigateToInfo = () => {
@@ -201,8 +201,8 @@ export default function ChatDirectScreen() {
       const member = conversation?.members?.find(
         (m) => m.username === username,
       );
-      if (member?.user_id) {
-        push(`/user/${member.user_id}`);
+      if (member?.userId) {
+        push(`/user/${member.userId}`);
       }
     },
     [conversation?.members, push],
@@ -305,7 +305,7 @@ export default function ChatDirectScreen() {
             onSearchPress={searchVisible ? closeSearch : openSearch}
             insetsTop={insets.top}
             isGroup={isGroupChat}
-            memberCount={conversation?.member_count}
+            memberCount={conversation?.memberCount}
           />
 
           <ChatSearchBar
@@ -350,13 +350,13 @@ export default function ChatDirectScreen() {
               >
                 <ChatMessageBubble
                   message={msg}
-                  isOwnMessage={msg.sent_by === currentUserId}
+                  isOwnMessage={msg.sentBy === currentUserId}
                   onLongPress={handleLongPress}
                   onSwipeToReply={handleSwipeToReply}
                   highlightText={searchVisible ? searchQuery : null}
                   isGroup={isGroupChat}
-                  senderName={senderMap.get(msg.sent_by)?.name ?? msg.sender_username}
-                  senderAvatar={senderMap.get(msg.sent_by)?.avatar ?? msg.sender_profile_pic}
+                  senderName={senderMap.get(msg.sentBy)?.name ?? msg.senderUsername}
+                  senderAvatar={senderMap.get(msg.sentBy)?.avatar ?? msg.senderProfilePic}
                   onMentionPress={handleMentionPress}
                   onGameCardPress={handleGameCardPress}
                 />
@@ -398,7 +398,7 @@ export default function ChatDirectScreen() {
             }
           }}
           onDelete={handleDeleteMessage}
-          isOwnMessage={menuMessage?.sent_by === currentUserId}
+          isOwnMessage={menuMessage?.sentBy === currentUserId}
           pageY={actionSheetPageY}
         />
       </View>

@@ -14,9 +14,9 @@ import {
 /** Fetch shared media, links, and contact info (currently mock data) @param conversation - The conversation object @returns { sharedMedia, sharedLinks, contactInfo, contactUserId, mediaCount, linkCount } */
 export function useChatInfo(conversation: Conversation | undefined) {
   const conversationId = conversation?.id ?? "";
-  const isGroup = conversation?.is_group ?? false;
+  const isGroup = conversation?.isGroup ?? false;
   const contact = conversation?.members?.[0];
-  const contactUserId = contact?.user_id;
+  const contactUserId = contact?.userId;
 
   const sharedMedia: SharedMediaItem[] =
     MOCK_SHARED_MEDIA[conversationId] ?? [];

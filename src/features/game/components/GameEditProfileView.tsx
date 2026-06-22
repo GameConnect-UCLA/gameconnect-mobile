@@ -33,7 +33,7 @@ export default function GameEditProfileView({ game }: Props) {
       <SafeAreaView style={styles.safeArea} edges={['top']}>
         <ScrollView contentContainerStyle={styles.content} showsVerticalScrollIndicator={false}>
           <View style={styles.heroWrap}>
-            <Image source={{ uri: game.cover_url }} style={styles.heroImage} />
+            <Image source={{ uri: game.coverUrl }} style={styles.heroImage} />
             <View style={styles.heroOverlay}>
               <TouchableOpacity onPress={() => back()} style={styles.backButton}>
                 <Ionicons name="chevron-back" size={28} color="#fff" />
@@ -52,7 +52,7 @@ export default function GameEditProfileView({ game }: Props) {
             <View style={styles.section}>
               <Text style={styles.sectionLabel}>Portada del juego</Text>
               <View style={styles.coverEditor}>
-                <Image source={{ uri: game.cover_url }} style={styles.coverPreview} />
+                <Image source={{ uri: game.coverUrl }} style={styles.coverPreview} />
                 <View style={styles.coverMeta}>
                   <Text style={styles.coverTitle}>{game.title}</Text>
                   <Text style={styles.coverHint}>{game.developer}</Text>

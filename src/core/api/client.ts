@@ -1,9 +1,17 @@
 /** Axios HTTP client with JWT interceptor and mock setup. */
-import axios, { AxiosError, type InternalAxiosRequestConfig } from 'axios'
-import { secureStore } from '@/src/core/lib/secure-store'
+import axios, { AxiosError, AxiosInstance, InternalAxiosRequestConfig } from 'axios'
 import { useAuthStore } from '@/src/core/store/auth.store'
-import { useUserStore } from '@/src/core/store/user.store'
-import { ApiError } from './ApiError'
+import { secureStore } from '../lib/secure-store'
+
+interface CustomAxiosRequestConfig extends InternalAxiosRequestConfig {
+  _retry?: boolean
+}
+
+// 2. Definimos el tipo de los elementos que guardaremos en la cola de espera
+interface FailedRequest {
+  resolve: (token: string) => void
+  reject: (error: any) => void
+}
 
 const API_BASE_URL = process.env.EXPO_PUBLIC_API_URL || 'http://localhost:3000'
 export const USE_MOCKS = process.env.EXPO_PUBLIC_USE_MOCKS !== 'false'
@@ -15,10 +23,22 @@ const apiClient = axios.create({
   headers: { 'Content-Type': 'application/json' },
 })
 
-interface RetryConfig extends InternalAxiosRequestConfig {
-  _retry?: boolean
+// Variables de control para la cola de refresco (Mantener fuera de los interceptores)
+let isRefreshing = false
+let failedQueue: FailedRequest[] = []
+
+const processQueue = (error: any, token: string | null = null) => {
+  failedQueue.forEach((prom) => {
+    if (error) {
+      prom.reject(error)
+    } else if (token) {
+      prom.resolve(token)
+    }
+  })
+  failedQueue = []
 }
 
+// para enviar el token en el header
 apiClient.interceptors.request.use((config) => {
   const token = useAuthStore.getState().accessToken
   if (token) {
@@ -27,85 +47,67 @@ apiClient.interceptors.request.use((config) => {
   return config
 })
 
-let isRefreshing = false
-let failedQueue: {
-  resolve: (token: string) => void
-  reject: (error: unknown) => void
-}[] = []
-
-function processQueue(error: unknown, token: string | null = null) {
-  failedQueue.forEach(({ resolve, reject }) => {
-    if (error) reject(error)
-    else resolve(token!)
-  })
-  failedQueue = []
-}
-
+// Interceptor de Response
 apiClient.interceptors.response.use(
   (response) => response,
-  async (error) => {
-    const originalRequest = error.config as RetryConfig | undefined
-    if (!originalRequest) return Promise.reject(normalizeError(error))
-    if (error.response?.status !== 401 || originalRequest._retry) {
-      return Promise.reject(normalizeError(error))
-    }
+  async (error: AxiosError) => {
+    // Casteamos el config a nuestra interfaz personalizada
+    const originalRequest = error.config as CustomAxiosRequestConfig
 
-    if (isRefreshing) {
-      return new Promise<string>((resolve, reject) => {
-        failedQueue.push({ resolve, reject })
-      }).then((token) => {
-        originalRequest.headers.Authorization = `Bearer ${token}`
+    // Verificamos que originalRequest exista para evitar errores si la petición falló drásticamente
+    if (error.response?.status === 401 && originalRequest && !originalRequest._retry) {
+      
+      if (isRefreshing) {
+        return new Promise<string>((resolve, reject) => {
+          failedQueue.push({ resolve, reject })
+        })
+          .then((token) => {
+            if (originalRequest.headers) {
+              originalRequest.headers.Authorization = `Bearer ${token}`
+            }
+            return apiClient(originalRequest)
+          })
+          .catch((err) => Promise.reject(err))
+      }
+
+      originalRequest._retry = true
+      isRefreshing = true
+
+      try {
+        const currentRefreshToken = await secureStore.get(secureStore.KEYS.REFRESH_TOKEN)
+
+        // Tipamos la respuesta esperada del backend de forma genérica
+        const { data } = await axios.post<{ accessToken: string; refreshToken: string }>(
+          `${API_BASE_URL}/auth/refresh`, 
+          { refreshToken: currentRefreshToken }
+        )
+
+        const newToken = data.accessToken
+        const newRefreshToken = data.refreshToken
+
+        secureStore.save(secureStore.KEYS.REFRESH_TOKEN, newRefreshToken);
+        secureStore.save(secureStore.KEYS.ACCESS_TOKEN, newToken);
+
+        useAuthStore.getState().setAuthenticated(newToken)
+
+        if (originalRequest.headers) {
+          originalRequest.headers.Authorization = `Bearer ${newToken}`
+        }
+
+        processQueue(null, newToken)
         return apiClient(originalRequest)
-      })
+      } catch (refreshError) {
+        processQueue(refreshError, null)
+        secureStore.clearAll()
+        return Promise.reject(refreshError)
+      } finally {
+        isRefreshing = false
+      }
     }
 
-    originalRequest._retry = true
-    isRefreshing = true
-
-    try {
-      const refreshToken = await secureStore.get(secureStore.KEYS.REFRESH_TOKEN)
-      if (!refreshToken) throw new Error('No refresh token')
-
-      const { data } = await axios.post(`${API_BASE_URL}/auth/refresh`, {
-        refresh_token: refreshToken,
-      })
-
-      await secureStore.save(secureStore.KEYS.ACCESS_TOKEN, data.access_token)
-      await secureStore.save(secureStore.KEYS.REFRESH_TOKEN, data.refresh_token)
-      useAuthStore.getState().setAuthenticated(data.access_token)
-      processQueue(null, data.access_token)
-
-      originalRequest.headers.Authorization = `Bearer ${data.access_token}`
-      return apiClient(originalRequest)
-    } catch (refreshError) {
-      processQueue(refreshError, null)
-      await secureStore.clearAll()
-      useAuthStore.getState().reset()
-      useUserStore.getState().clearUser()
-      return Promise.reject(
-        refreshError instanceof ApiError
-          ? refreshError
-          : ApiError.unauthorized('Session expired'),
-      )
-    } finally {
-      isRefreshing = false
-    }
-  },
-)
-
-function normalizeError(error: unknown): Error {
-  if (error instanceof AxiosError) {
-    if (error.code === 'ERR_NETWORK') return ApiError.network()
-    const status = error.response?.status ?? 0
-    const message =
-      (error.response?.data as { message?: string })?.message ??
-      error.message ??
-      'Unknown error'
-    return new ApiError(status, message)
+    return Promise.reject(error)
   }
-  if (error instanceof Error) return error
-  return new Error('Unknown error')
-}
+)
 
 if (USE_MOCKS) {
   // eslint-disable-next-line @typescript-eslint/no-require-imports

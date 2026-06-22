@@ -1,5 +1,4 @@
 import { apiClient } from '@/src/core/api/client'
-import { normalizeUser } from '@/src/core/api/user-normalizer'
 import type { User } from '@/src/core/types/user.types'
 
 export interface UpdateProfilePayload {
@@ -11,14 +10,22 @@ export interface UpdateProfilePayload {
   coverPic?: string
 }
 
-export const getProfile = async (): Promise<User> => {
+export const getMe = async (): Promise<User> => {
   const { data } = await apiClient.get('/users/profile')
-  return normalizeUser(data)
+  console.log(data);
+  return data
+}
+
+export const getUser = async (userId: string): Promise<User> => {
+  const { data } = await apiClient.get('users', {
+    params: new URLSearchParams(userId)
+  })
+  return data
 }
 
 export const updateProfile = async (payload: UpdateProfilePayload): Promise<User> => {
   const { data } = await apiClient.patch('/users/profile', payload)
-  return normalizeUser(data)
+  return data
 }
 
-export const profileApi = { getProfile, updateProfile }
+export const profileApi = { getMe, getUser, updateProfile }

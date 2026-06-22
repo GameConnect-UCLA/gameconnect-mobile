@@ -39,7 +39,7 @@
 | 14 | `chat.store.ts` tiene `activeReplyMessage` y `activeMenuMessage` sin uso | BAJA | `chat.store.ts` | 0.25h |
 | 15 | Mocks viven dentro de `hooks/` en vez de `mocks/` | BAJA | 9 archivos en `hooks/mock-data/` | 1h |
 | 16 | `socket.io-client` instalado, cero imports | BAJA | `package.json` | 0.1h |
-| 17 | Mock ID mismatch — `ACTIVE_USERS.id "1"` ≠ `CONVERSATIONS.members.user_id "user1"` | BAJA | `mock-chat.ts` | 0.25h |
+| 17 | Mock ID mismatch — `ACTIVE_USERS.id "1"` ≠ `CONVERSATIONS.members.userId "user1"` | BAJA | `mock-chat.ts` | 0.25h |
 | 18 | `game.api.ts` existe pero es mínima, perfil de juego sin TanStack Query | BAJA | `game.api.ts`, `useMockGameProfile.ts` | 1h |
 
 ---
@@ -692,7 +692,7 @@ Esto aplica también a:
 | `activeMenuMessage` | `src/store/chat.store.ts` | Remover del store |
 | `ConversationUI` / `GroupMemberUI` | `src/types/chat.types.ts` | Remover (legacy) |
 | `favorities/` (typo) | `src/components/favorities/` | Renombrar a `favorites/` o migrar contenido |
-| `Mock ID mismatch` | `src/hooks/mock-data/mock-chat.ts` | Alinear `ACTIVE_USERS.id` con `CONVERSATIONS.members.user_id` |
+| `Mock ID mismatch` | `src/hooks/mock-data/mock-chat.ts` | Alinear `ACTIVE_USERS.id` con `CONVERSATIONS.members.userId` |
 
 ---
 

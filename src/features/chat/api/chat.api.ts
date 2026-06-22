@@ -7,7 +7,7 @@ import type { Attachment, Conversation, Message, GameInfoCard } from '../types/c
 /** Get the current user ID from the user store @returns Current user ID string */
 export const getCurrentUserId = (): string => {
   const user = useUserStore.getState().user
-  return user?.id ?? 'current_user'
+  return user?.id ?? 'me'
 }
 
 /** Fetch all conversations for the current user @returns List of conversations */

@@ -74,21 +74,21 @@ enum ReportReason {
 model User {
   id               String    @id @default(uuid()) @db.Uuid
   username         String?   @db.VarChar(30)
-  displayName      String?   @map("display_name") @db.VarChar(30)
+  displayName      String?   @map("displayName") @db.VarChar(30)
   pronouns         String?   @db.VarChar(30)
   role             UserRole?
   email            String?   @unique @db.VarChar(30)
   bio              String?   @db.VarChar(120)
-  birthDate        DateTime? @map("birth_date") @db.Date
-  accountSettings  Json?     @map("account_settings")
-  profilePic       String?   @map("profile_pic")
-  coverPic         String?   @map("cover_pic")
+  birthDate        DateTime? @map("birthDate") @db.Date
+  accountSettings  Json?     @map("accountSettings")
+  profilePic       String?   @map("profilePic")
+  coverPic         String?   @map("coverPic")
   verified         Boolean?
   state            UserState?
-  bannedAt         DateTime? @map("banned_at") @db.Timestamptz
-  banReason        String?   @map("ban_reason")
-  createdAt        DateTime? @map("created_at") @db.Timestamptz
-  deletedAt        DateTime? @map("deleted_at") @db.Timestamptz
+  bannedAt         DateTime? @map("bannedAt") @db.Timestamptz
+  banReason        String?   @map("banReason")
+  createdAt        DateTime? @map("createdAt") @db.Timestamptz
+  deletedAt        DateTime? @map("deletedAt") @db.Timestamptz
 
   // Relations
   auth             UserAuth[]
@@ -110,11 +110,11 @@ model User {
 
 model UserAuth {
   id           String   @id @default(uuid()) @db.Uuid
-  userId       String   @map("user_id") @db.Uuid
+  userId       String   @map("userId") @db.Uuid
   provider     String   @db.VarChar(30) // 'local' | 'google' | 'discord'
   providerId   String?  @map("provider_id") @db.VarChar(255) // null for 'local', external ID for OAuth
   passwordHash String?  @map("password_hash") @db.VarChar(255) // only for 'local', null for OAuth
-  createdAt    DateTime @map("created_at") @db.Timestamptz
+  createdAt    DateTime @map("createdAt") @db.Timestamptz
 
   user User @relation(fields: [userId], references: [id])
 
@@ -145,10 +145,10 @@ model Post {
   reviewedGame   String?   @map("reviewed_game") @db.Uuid
   reviewScore    Float?    @map("review_score")
   likesCounter   Int?      @map("likes_counter")
-  commentsCounter Int?     @map("comments_counter")
-  createdAt      DateTime? @map("created_at") @db.Timestamptz
+  commentsCounter Int?     @map("commentsCounter")
+  createdAt      DateTime? @map("createdAt") @db.Timestamptz
   lastModifiedAt DateTime? @map("last_modified_at") @db.Timestamptz
-  deletedAt      DateTime? @map("deleted_at") @db.Timestamptz
+  deletedAt      DateTime? @map("deletedAt") @db.Timestamptz
 
   // Self-relation for reposts
   originalPost Post?    @relation("PostRepost", fields: [originalPostId], references: [id])
@@ -171,9 +171,9 @@ model Comment {
   author          String    @db.Uuid
   content         String?   // markdown
   media           Json?
-  createdAt       DateTime? @map("created_at") @db.Timestamptz
+  createdAt       DateTime? @map("createdAt") @db.Timestamptz
   lastModifiedAt  DateTime? @map("last_modified_at") @db.Timestamptz
-  deletedAt       DateTime? @map("deleted_at") @db.Timestamptz
+  deletedAt       DateTime? @map("deletedAt") @db.Timestamptz
 
   // Self-relation for subcomments
   parentComment   Comment?  @relation("CommentThread", fields: [commentParentId], references: [id])
@@ -201,8 +201,8 @@ model Game {
 
 model GameStaff {
   id         String  @id @default(uuid()) @db.Uuid
-  userId     String  @map("user_id") @db.Uuid
-  gameId     String  @map("game_id") @db.Uuid
+  userId     String  @map("userId") @db.Uuid
+  gameId     String  @map("gameId") @db.Uuid
   staffTitle String? @map("staff_title") @db.VarChar(30)
 
   user User @relation(fields: [userId], references: [id])
@@ -213,7 +213,7 @@ model GameStaff {
 
 model Like {
   id     String @id @default(uuid()) @db.Uuid
-  userId String @map("user_id") @db.Uuid
+  userId String @map("userId") @db.Uuid
   postId String @map("post_id") @db.Uuid
 
   user User @relation(fields: [userId], references: [id])
@@ -224,7 +224,7 @@ model Like {
 
 model Favorite {
   id       String       @id @default(uuid()) @db.Uuid
-  userId   String       @map("user_id") @db.Uuid
+  userId   String       @map("userId") @db.Uuid
   itemId   String       @map("item_id") @db.Uuid
   itemType FavoriteType @map("item_type")
 
@@ -238,13 +238,13 @@ model Favorite {
 
 model Message {
   id             String      @id @default(uuid()) @db.Uuid
-  sentBy         String      @map("sent_by") @db.Uuid
+  sentBy         String      @map("sentBy") @db.Uuid
   conversationId String?     @map("conversation") @db.Uuid
-  replyToId      String?     @map("reply_to") @db.Uuid
+  replyToId      String?     @map("replyTo") @db.Uuid
   type           MessageType
-  messageText    String?     @map("message_text")
-  attachedMedia  Json?       @map("attached_media") // urls
-  sentAt         DateTime?   @map("sent_at") @db.Timestamptz
+  messageText    String?     @map("messageText")
+  attachedMedia  Json?       @map("attachedMedia") // urls
+  sentAt         DateTime?   @map("sentAt") @db.Timestamptz
 
   // Self-relation for replies
   replyTo   Message?  @relation("MessageReply", fields: [replyToId], references: [id])
@@ -260,9 +260,9 @@ model Message {
 model Conversation {
   id           String    @id @default(uuid()) @db.Uuid
   name         String?   @db.VarChar(30)
-  groupPicture String?   @map("group_picture")
-  createdBy    String    @map("created_by") @db.Uuid
-  createdAt    DateTime? @map("created_at") @db.Timestamptz
+  groupPicture String?   @map("groupPicture")
+  createdBy    String    @map("createdBy") @db.Uuid
+  createdAt    DateTime? @map("createdAt") @db.Timestamptz
 
   // Relations
   creator  User          @relation("ConversationCreator", fields: [createdBy], references: [id])
@@ -274,11 +274,11 @@ model Conversation {
 
 model GroupMember {
   id             String    @id @default(uuid()) @db.Uuid
-  userId         String    @map("user_id") @db.Uuid
+  userId         String    @map("userId") @db.Uuid
   conversationId String    @map("conversation") @db.Uuid
   role           GroupRole
-  joinedAt       DateTime? @map("joined_at") @db.Timestamptz
-  leftAt         DateTime? @map("left_at") @db.Timestamptz
+  joinedAt       DateTime? @map("joinedAt") @db.Timestamptz
+  leftAt         DateTime? @map("leftAt") @db.Timestamptz
 
   user         User         @relation(fields: [userId], references: [id])
   conversation Conversation @relation(fields: [conversationId], references: [id])
@@ -290,11 +290,11 @@ model GroupMember {
 
 model Notification {
   id        String    @id @default(uuid()) @db.Uuid
-  userId    String    @map("user_id") @db.Uuid
+  userId    String    @map("userId") @db.Uuid
   type      EventType
   payload   Json?
   read      Boolean?
-  createdAt DateTime? @map("created_at") @db.Timestamptz
+  createdAt DateTime? @map("createdAt") @db.Timestamptz
 
   user User @relation(fields: [userId], references: [id])
 
@@ -313,7 +313,7 @@ model Report {
   status      ReportStatus @default(PENDING)
   resolvedBy  String?      @map("resolved_by") @db.Uuid
   resolvedAt  DateTime?    @map("resolved_at") @db.Timestamptz
-  createdAt   DateTime?    @map("created_at") @db.Timestamptz
+  createdAt   DateTime?    @map("createdAt") @db.Timestamptz
 
   reporter User  @relation("Reporter", fields: [reporterId], references: [id])
   resolver User? @relation("ReportResolver", fields: [resolvedBy], references: [id])

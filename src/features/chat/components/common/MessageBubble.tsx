@@ -101,7 +101,7 @@ export default function ChatMessageBubble({
   }));
 
   const textSegments = useMemo((): TextSegment[] | null => {
-    if (!message.message_text) return null;
+    if (!message.messageText) return null;
 
     const escaped = highlightText
       ? highlightText.replace(/[.*+?^${}()|[\]\\]/g, "\\$&")
@@ -113,19 +113,19 @@ export default function ChatMessageBubble({
     let lastUrlIndex = 0;
     let urlMatch: RegExpExecArray | null;
     const urlRegex = new RegExp(URL_REGEX.source, "g");
-    while ((urlMatch = urlRegex.exec(message.message_text)) !== null) {
+    while ((urlMatch = urlRegex.exec(message.messageText)) !== null) {
       if (urlMatch.index > lastUrlIndex) {
         urlParts.push({
-          text: message.message_text.slice(lastUrlIndex, urlMatch.index),
+          text: message.messageText.slice(lastUrlIndex, urlMatch.index),
           isLink: false,
         });
       }
       urlParts.push({ text: urlMatch[0], isLink: true });
       lastUrlIndex = urlRegex.lastIndex;
     }
-    if (lastUrlIndex < message.message_text.length) {
+    if (lastUrlIndex < message.messageText.length) {
       urlParts.push({
-        text: message.message_text.slice(lastUrlIndex),
+        text: message.messageText.slice(lastUrlIndex),
         isLink: false,
       });
     }
@@ -206,13 +206,13 @@ export default function ChatMessageBubble({
     }
 
     return segments;
-  }, [message.message_text, highlightText]);
+  }, [message.messageText, highlightText]);
 
   const isGroupOther = isGroup && !isOwnMessage;
 
-  const attachments = message.attached_media ?? [];
-  const hasText = !!message.message_text?.length;
-  const hasReply = !!message.reply_to_message;
+  const attachments = message.attachedMedia ?? [];
+  const hasText = !!message.messageText?.length;
+  const hasReply = !!message.replyToMessage;
 
   const imageAttachments = attachments.filter(
     (a) => a.type === AttachmentType.IMAGE || a.type === AttachmentType.GIF,
@@ -220,14 +220,14 @@ export default function ChatMessageBubble({
   const mediaOnly = attachments.length > 0 && !hasText && !hasReply;
 
   const avatarUri = isGroupOther
-    ? senderAvatar ?? message.sender_profile_pic ?? null
+    ? senderAvatar ?? message.senderProfilePic ?? null
     : null;
 
   const bubbleContent = (
     <>
       {hasReply && (
         <ReplyPreview
-          message={message.reply_to_message!}
+          message={message.replyToMessage!}
           isOwnMessage={isOwnMessage}
         />
       )}
@@ -246,11 +246,11 @@ export default function ChatMessageBubble({
         </View>
       ))}
 
-      {message.game_card && (
+      {message.gameCard && (
         <GameInfoCardComponent
-          game={message.game_card}
+          game={message.gameCard}
           maxWidth={maxBubbleWidth - 24}
-          onPress={() => onGameCardPress?.(message.game_card!.game_id)}
+          onPress={() => onGameCardPress?.(message.gameCard!.gameId)}
         />
       )}
 
@@ -315,7 +315,7 @@ export default function ChatMessageBubble({
                 }
                 return <Text key={i}>{part.text}</Text>;
               })
-            : message.message_text}
+            : message.messageText}
         </Text>
       )}
 
@@ -326,7 +326,7 @@ export default function ChatMessageBubble({
             isOwnMessage ? styles.timestampOwn : styles.timestampOther,
           ]}
         >
-          {formatMessageTime(message.sent_at)}
+          {formatMessageTime(message.sentAt)}
         </Text>
         {isOwnMessage && message.status && (
           <Text

@@ -10,7 +10,7 @@ export const uploadFile = async (fileUri: string, fileName: string, mimeType: st
     uri: fileUri,
     name: fileName,
     type: mimeType,
-  } as unknown as Blob)
+  } as any)
 
   const { data } = await apiClient.post<UploadResult>('/media', formData, {
     headers: { 'Content-Type': 'multipart/form-data' },

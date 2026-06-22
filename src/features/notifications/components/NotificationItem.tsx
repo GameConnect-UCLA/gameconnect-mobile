@@ -220,7 +220,7 @@ export const NotificationItem: React.FC<NotificationItemProps> = ({
 
       <View style={styles.content}>
         {renderNotificationContent()}
-        <Text style={styles.timeText}>{formatTimeAgo(notification.created_at)}</Text>
+        <Text style={styles.timeText}>{formatTimeAgo(notification.createdAt)}</Text>
         {renderActionButtons()}
       </View>
 

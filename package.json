@@ -27,7 +27,8 @@
     "doctor": "expo doctor",
     "typecheck": "tsc --noEmit",
     "docs": "typedoc",
-    "docs:check": "typedoc"
+    "docs:check": "typedoc",
+    "ios": "expo run:ios"
   },
   "dependencies": {
     "@expo/vector-icons": "^15.0.3",

@@ -1,29 +1,24 @@
 /** Auth-related type definitions shared between API, hooks, and stores. */
-import { User } from '@/src/core/types/user.types'
+import { User } from "@/src/core/types/user.types";
 
 export type LoginCredentials = {
-  email: string
-  password: string
-}
+  email: string;
+  password: string;
+};
 
 export type AuthTokens = {
-  access_token: string
-  refresh_token: string
-}
+  accessToken: string;
+  refreshToken: string;
+};
 
 export type AuthResponse = AuthTokens & {
-  user: User
-}
+  user: User;
+};
 
 export type SignUpInfo = {
-  email: string, 
-  username: string,
-  password: string, 
-  birth_date: string
-}
+  email: string;
+  username: string;
+  password: string;
+  birthDate: string;
+};
 
-export type AuthError =
-  | 'INVALID_CREDENTIALS'
-  | 'NETWORK_ERROR'
-  | 'SERVER_ERROR'
-  | 'SESSION_EXPIRED'

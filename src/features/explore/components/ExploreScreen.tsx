@@ -57,7 +57,7 @@ export default function ExploreScreen() {
   const trendTags = useMemo(() => {
     const counts = new Map<string, number>()
     mockPosts.forEach((post) => {
-      const sources = [post.reviewed_game, ...post.media.hashtags].filter(Boolean)
+      const sources = [post.reviewed_game, ...(post.media?.hashtags ?? [])].filter(Boolean)
       sources.forEach((source) => {
         const label = buildTrendLabel(source)
         counts.set(label, (counts.get(label) ?? 0) + 1)
@@ -72,11 +72,11 @@ export default function ExploreScreen() {
   const featuredPlayers = useMemo<FeaturedPlayer[]>(() => {
     const authors = new Map<string, { name: string; handle: string; avatar: string; posts: number; likes: number }>()
     mockPosts.forEach((post) => {
-      const current = authors.get(post.author_username)
-      authors.set(post.author_username, {
-        name: post.author_display_name,
-        handle: post.author_username,
-        avatar: post.author_profile_pic,
+      const current = authors.get(post.authorUsername)
+      authors.set(post.authorUsername, {
+        name: post.authorDisplayName,
+        handle: post.authorUsername,
+        avatar: post.author_profilePic,
         posts: (current?.posts ?? 0) + 1,
         likes: (current?.likes ?? 0) + post.likes_counter,
       })
@@ -96,16 +96,16 @@ export default function ExploreScreen() {
   const filteredPosts = useMemo(() => {
     const query = normalizeText(searchQuery.trim())
     return [...mockPosts]
-      .sort((left, right) => new Date(right.created_at).getTime() - new Date(left.created_at).getTime())
+      .sort((left, right) => new Date(right.createdAt).getTime() - new Date(left.createdAt).getTime())
       .filter((post) => {
         const searchableText = normalizeText(
           [
-            post.author_display_name,
-            post.author_username,
-            post.post_title,
+            post.authorDisplayName,
+            post.authorUsername,
+            post.postTitle,
             post.reviewed_game,
             post.content,
-            ...post.media.hashtags,
+            ...(post.media?.hashtags ?? []),
           ].join(' '),
         )
         return (query.length === 0 || searchableText.includes(query)) && matchesActiveFilter(post, activeFilter)

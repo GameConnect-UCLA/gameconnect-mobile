@@ -12,14 +12,14 @@ interface ReplyBarProps {
 
 /** Show the message being replied to with a cancel button @param props.message - The message being replied to @param props.onCancel - Cancel reply handler */
 export default function ReplyBar({ message, onCancel }: ReplyBarProps) {
-  const replyPreview = message.message_text ?? (message.attached_media?.[0]?.url ?? "Media");
+  const replyPreview = message.messageText ?? (message.attachedMedia?.[0]?.url ?? "Media");
 
   return (
     <View style={styles.container}>
       <View style={styles.indicator} />
       <View style={styles.content}>
         <Text style={styles.username} numberOfLines={1}>
-          {message.sender_username ?? "Unknown"}
+          {message.senderUsername ?? "Unknown"}
         </Text>
         <Text style={styles.preview} numberOfLines={1}>
           {replyPreview}

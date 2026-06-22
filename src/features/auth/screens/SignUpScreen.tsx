@@ -23,7 +23,7 @@ export default function SignUpView() {
     username: "",
     password: "",
     repeatPassword: "",
-    birth_date: "",
+    birthDate: "",
   });
   const [showPassword, setShowPassword] = useState(false);
   const [showRepeatPassword, setShowRepeatPassword] = useState(false);
@@ -37,7 +37,7 @@ export default function SignUpView() {
       !form.username ||
       !form.password ||
       !form.repeatPassword ||
-      !form.birth_date
+      !form.birthDate
     )
       return showToast("Por favor, rellena todos los campos", "warning");
     if (!/\S+@\S+\.\S+/.test(form.email))
@@ -61,7 +61,9 @@ export default function SignUpView() {
       );
     if (form.password !== form.repeatPassword)
       return showToast("Las contraseñas no coinciden", "warning");
-    mutate(form, {
+
+    const {repeatPassword, ...userData} = form
+    mutate(userData, {
       onSuccess: () => {
         setSuccessMessage("¡Registro Exitoso!");
         router.replace("/(tabs)");
@@ -127,8 +129,8 @@ export default function SignUpView() {
           </TouchableOpacity>
         </View>
         <DateOfBirthPicker
-          value={form.birth_date}
-          onChange={(val) => setForm({ ...form, birth_date: val })}
+          value={form.birthDate}
+          onChange={(val) => setForm({ ...form, birthDate: val })}
         />
         <Pressable
           style={styles.btn}

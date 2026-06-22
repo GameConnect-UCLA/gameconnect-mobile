@@ -25,7 +25,7 @@ export default function GroupMemberRow({ member, onPress, onLongPress, disabled 
       activeOpacity={0.6}
     >
       <Image
-        source={member.profile_pic ? { uri: member.profile_pic } : DEFAULT_AVATAR}
+        source={member.profilePic ? { uri: member.profilePic } : DEFAULT_AVATAR}
         style={styles.avatar}
       />
       <View style={styles.info}>

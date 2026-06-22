@@ -68,10 +68,10 @@ export default function ChatListScreen() {
 
   const handleDelete = async () => {
     if (!selectedConvo) return
-    const isGroup = selectedConvo.is_group
+    const isGroup = selectedConvo.isGroup
     const currentUserId = getCurrentUserId()
     const isOwner = selectedConvo.members?.some(
-      (m) => m.user_id === currentUserId && m.role === GroupRole.OWNER,
+      (m) => m.userId === currentUserId && m.role === GroupRole.OWNER,
     )
     const label = isGroup ? (isOwner ? 'Delete Group' : 'Leave Group') : 'Delete Chat'
     const message = isGroup

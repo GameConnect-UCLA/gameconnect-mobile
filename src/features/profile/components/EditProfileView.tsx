@@ -21,13 +21,13 @@ const BG_IMAGE = require('@/assets/images/bgbody.png')
 
 interface EditProfileViewProps {
   user: {
-    display_name: string
+    displayName: string
     username: string
     email: string
     bio?: string | null
     pronouns?: string | null
-    profile_pic: string
-    cover_pic: string
+    profilePic: string
+    coverPic: string
   }
   onBack: () => void
   onSave: (data: {
@@ -42,7 +42,7 @@ interface EditProfileViewProps {
 }
 
 const EditProfileView: React.FC<EditProfileViewProps> = ({ user, onBack, onSave, isSaving }) => {
-  const [name, setName] = useState(user.display_name)
+  const [name, setName] = useState(user.displayName)
   const [username, setUsername] = useState(user.username)
   const [pronouns, setPronouns] = useState(user.pronouns ?? '')
   const [bio, setBio] = useState(user.bio ?? '')
@@ -96,7 +96,7 @@ const EditProfileView: React.FC<EditProfileViewProps> = ({ user, onBack, onSave,
         <ScrollView showsVerticalScrollIndicator={false} contentContainerStyle={styles.scrollContent}>
           <View style={styles.headerContainer}>
             <ImageBackground
-              source={{ uri: coverPic || user.cover_pic }}
+              source={{ uri: coverPic || user.coverPic }}
               style={styles.coverImage}
               resizeMode="cover"
             >
@@ -120,7 +120,7 @@ const EditProfileView: React.FC<EditProfileViewProps> = ({ user, onBack, onSave,
           <View style={styles.bigCard}>
             <View style={styles.avatarWrapper}>
               <View style={styles.avatarContainer}>
-                <Image source={{ uri: profilePic || user.profile_pic }} style={styles.avatar} />
+                <Image source={{ uri: profilePic || user.profilePic }} style={styles.avatar} />
               </View>
               <TouchableOpacity
                 style={styles.editAvatarLabel}

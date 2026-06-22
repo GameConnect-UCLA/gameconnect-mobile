@@ -76,7 +76,7 @@ const FavoriteGamesView: React.FC<FavoriteGamesViewProps> = ({ onBack }) => {
                   onPress={() => push(`/game/${game.id}`)}
                 >
                   <Image
-                    source={{ uri: game.image_url }}
+                    source={{ uri: game.imageUrl }}
                     style={styles.gameImage}
                   />
                   <Text style={styles.gameTitle} numberOfLines={1}>

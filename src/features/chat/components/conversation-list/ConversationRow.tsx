@@ -54,12 +54,12 @@ export default function ConversationRow({ item, onPress, onLongPress }: { item: 
   const onPressOut = () =>
     Animated.spring(scale, { toValue: 1, useNativeDriver: true }).start();
 
-  const senderName = item.last_message_sender === "current_user"
+  const senderName = item.lastMessageSender === "currentUser"
     ? "You"
-    : item.last_message_sender;
-  const preview = item.is_group && senderName
-    ? `${senderName}: ${item.last_message ?? ""}`
-    : (item.last_message ?? "");
+    : item.lastMessageSender;
+  const preview = item.isGroup && senderName
+    ? `${senderName}: ${item.lastMessage ?? ""}`
+    : (item.lastMessage ?? "");
 
   return (
     <TouchableOpacity
@@ -72,7 +72,7 @@ export default function ConversationRow({ item, onPress, onLongPress }: { item: 
       <Animated.View style={[styles.convoRow, { transform: [{ scale }] }]}>
         <View style={styles.avatarContainer}>
           <Image 
-            source={item.group_picture ? { uri: item.group_picture } : require("@/assets/images/default-avatar.jpg")} 
+            source={item.groupPicture ? { uri: item.groupPicture } : require("@/assets/images/default-avatar.jpg")} 
             style={styles.convoAvatar} 
           />
         </View>
@@ -82,11 +82,11 @@ export default function ConversationRow({ item, onPress, onLongPress }: { item: 
             <Text style={styles.convoName} numberOfLines={1}>
               {item.name ?? "Unnamed Chat"}
             </Text>
-            <Text style={styles.convoTime}>{formatTime(item.last_message_time)}</Text>
+            <Text style={styles.convoTime}>{formatTime(item.lastMessageTime)}</Text>
           </View>
 
-          {item.is_group && item.member_count && (
-            <Text style={styles.memberCount}>{item.member_count} miembros</Text>
+          {item.isGroup && item.memberCount && (
+            <Text style={styles.memberCount}>{item.memberCount} miembros</Text>
           )}
 
           <Text style={styles.convoPreview} numberOfLines={1}>
