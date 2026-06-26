@@ -51,11 +51,11 @@ export function getLevelFromPosts(authorPosts: number, totalLikes: number) {
 export function matchesActiveFilter(post: Post, activeFilter: FilterKey) {
   switch (activeFilter) {
     case 'gamers':
-      return post.is_review
+      return post.isReview
     case 'posts':
-      return !post.is_review
+      return !post.isReview
     case 'juegos':
-      return post.reviewed_game.length > 0
+      return post.reviewedGame.length > 0
     case 'tags':
       return (post.media?.hashtags?.length ?? 0) > 0
     default:

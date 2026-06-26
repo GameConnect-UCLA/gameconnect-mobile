@@ -57,7 +57,7 @@ export default function ExploreScreen() {
   const trendTags = useMemo(() => {
     const counts = new Map<string, number>()
     mockPosts.forEach((post) => {
-      const sources = [post.reviewed_game, ...(post.media?.hashtags ?? [])].filter(Boolean)
+      const sources = [post.reviewedGame, ...(post.media?.hashtags ?? [])].filter(Boolean)
       sources.forEach((source) => {
         const label = buildTrendLabel(source)
         counts.set(label, (counts.get(label) ?? 0) + 1)
@@ -76,9 +76,9 @@ export default function ExploreScreen() {
       authors.set(post.authorUsername, {
         name: post.authorDisplayName,
         handle: post.authorUsername,
-        avatar: post.author_profilePic,
+        avatar: post.authorProfilePic,
         posts: (current?.posts ?? 0) + 1,
-        likes: (current?.likes ?? 0) + post.likes_counter,
+        likes: (current?.likes ?? 0) + post.likesCounter,
       })
     })
     return [...authors.values()]
@@ -103,7 +103,7 @@ export default function ExploreScreen() {
             post.authorDisplayName,
             post.authorUsername,
             post.postTitle,
-            post.reviewed_game,
+            post.reviewedGame,
             post.content,
             ...(post.media?.hashtags ?? []),
           ].join(' '),

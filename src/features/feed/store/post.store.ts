@@ -16,9 +16,9 @@ type PostState = {
 
 const clonePost = (post: Post): Post => ({
   ...post,
+  hashtags: [...post.hashtags],
   media: post.media ? {
-    images: [...post.media.images],
-    hashtags: [...post.media.hashtags],
+    urls: [...post.media.urls],
   } : null,
   comments: post.comments ? post.comments.map((c) => ({ ...c })) : [],
 })

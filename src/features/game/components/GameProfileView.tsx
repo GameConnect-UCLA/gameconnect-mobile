@@ -29,8 +29,8 @@ export default function GameProfileView({ game }: Props) {
   const [activeTab, setActiveTab] = useState('Reseñas')
   const { height } = useWindowDimensions()
   const relatedPosts = mockPosts.filter((post) => {
-    const matchesGame = post.reviewed_game.toLowerCase() === game.title.toLowerCase()
-    const matchesTab = activeTab === 'Reseñas' ? post.is_review : !post.is_review
+    const matchesGame = post.reviewedGame.toLowerCase() === game.title.toLowerCase()
+    const matchesTab = activeTab === 'Reseñas' ? post.isReview : !post.isReview
     return matchesGame && matchesTab
   })
 

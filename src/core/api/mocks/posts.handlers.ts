@@ -7,10 +7,10 @@ mockRoutes.set('/posts', (config) => {
   return {
     id: `post-${Date.now()}`,
     ...body,
-    likes_counter: 0,
+    likesCounter: 0,
     commentsCounter: 0,
     createdAt: new Date().toISOString(),
-    last_modified_at: new Date().toISOString(),
+    lastModifiedAt: new Date().toISOString(),
     deletedAt: null,
   }
 })
@@ -25,7 +25,7 @@ mockRoutes.set('/posts/', (config) => {
 
 mockRoutes.set('/posts/like', (config) => {
   const { postId } = JSON.parse(config.data || '{}')
-  return { postId, liked: true, likes_counter: 42 }
+  return { postId, liked: true, likesCounter: 42 }
 })
 
 mockRoutes.set('/posts/bookmark', (config) => {

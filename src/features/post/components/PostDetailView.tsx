@@ -50,7 +50,7 @@ export const PostDetailView = ({
       id: Math.random().toString(),
       author_id: "jorge-id",
       authorDisplayName: "Jorge Silva",
-      author_profilePic: FOTO_JORGE,
+      authorProfilePic: FOTO_JORGE,
       content: commentText,
       createdAt: "Ahora mismo",
     };
@@ -85,10 +85,10 @@ export const PostDetailView = ({
                   onImagePress={handleOpenImage}
                   initialImageIndex={initialImageIndex}
                 />
-                {post.is_review && (
+                {post.isReview && (
                   <View style={styles.reviewInfo}>
                     <Text style={styles.reviewLabel}>Reseña de:</Text>
-                    <Text style={styles.reviewGame}>{post.reviewed_game}</Text>
+                    <Text style={styles.reviewGame}>{post.reviewedGame}</Text>
                   </View>
                 )}
               </View>

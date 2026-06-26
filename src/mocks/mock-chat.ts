@@ -14,9 +14,9 @@ const gameAsset = require("@/assets/images/chat/person-2.png");
 const rpgAsset = require("@/assets/images/chat/group-1.png");
 
 const CHAT_IMAGES = {
-  luna: Image.resolveAssetSource(lunaAsset).uri,
-  game: Image.resolveAssetSource(gameAsset).uri,
-  rpg: Image.resolveAssetSource(rpgAsset).uri,
+  luna: lunaAsset,
+  game: gameAsset,
+  rpg: rpgAsset,
 } as const;
 
 export const ACTIVE_USERS: ActiveUser[] = [

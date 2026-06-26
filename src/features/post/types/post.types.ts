@@ -2,8 +2,7 @@
 
 /** Post media containing images and hashtags */
 export interface PostMedia {
-  images: string[];
-  hashtags: string[];
+  urls: string[];
 }
 
 /** Comment on a post */
@@ -11,7 +10,7 @@ export interface Comment {
   id: string;
   author_id: string;
   authorDisplayName: string;
-  author_profilePic: string;
+  authorProfilePic: string;
   content: string;
   createdAt: string;
 }
@@ -20,21 +19,26 @@ export interface Comment {
 export interface Post {
   id: string;
   author: string;
-  authorDisplayName: string;
-  authorUsername: string;
-  author_profilePic: string;
+  authorUser: {
+    displayName: string;
+    username: string;
+    profilePic: string;
+  }
   postTitle: string;
   content: string;
+  hashtags: string[];
   media: PostMedia | null;
-  is_review: boolean;
-  review_score: number | null;
-  reviewed_game: string;
-  likes_counter: number;
+  isReview: boolean;
+  reviewScore?: number;
+  reviewedGame?: string; 
+  likesCounter: number;
   commentsCounter: number;
   comments: Comment[];
-  is_liked?: boolean;
-  is_saved?: boolean;
+  isLiked?: boolean;
+  isSaved?: boolean;
   createdAt: string;
-  last_modified_at: string;
+  lastModifiedAt: string;
   deletedAt: string | null;
+  isRepost: boolean, 
+  originalPostId: string
 }

@@ -250,11 +250,11 @@ const ProfileView: React.FC<ProfileViewProps> = ({
                     id={post.id}
                     userName={post.authorDisplayName}
                     userTag="FPS"
-                    userAvatar={post.author_profilePic}
+                    userAvatar={post.authorProfilePic}
                     title={post.postTitle}
                     content={post.content}
                     imageUrl={post.media?.images?.[0] ?? ''}
-                    likes={post.likes_counter}
+                    likes={post.likesCounter}
                     comments={post.commentsCounter}
                   />
                 ))}

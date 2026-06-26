@@ -28,7 +28,7 @@ export const PostComments: React.FC<Props> = ({ comments }) => {
               onPress={() => push(`/user/${comment.author_id}`)}
               style={styles.commentRow}
             >
-              <Image source={{ uri: comment.author_profilePic }} style={styles.avatar} />
+              <Image source={{ uri: comment.authorProfilePic }} style={styles.avatar} />
               <View style={styles.bubble}>
                 <Text style={styles.authorName}>{comment.authorDisplayName}</Text>
                 <Text style={styles.commentContent}>{comment.content}</Text>

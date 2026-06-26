@@ -96,11 +96,11 @@ export default function PostCard({
 
   // ---- derived values ----
   const isSaved = favoriteIds.includes(post?.id ?? itemId ?? '')
-  const displayedTitle = post?.is_review ? post?.reviewed_game : post?.postTitle
+  const displayedTitle = post?.isReview ? post?.reviewedGame : post?.postTitle
   const contentPreview = post?.content?.slice(0, 160) ?? ''
-  const displayLikes = isLiked ? (post?.likes_counter ?? 0) + 1 : (post?.likes_counter ?? 0)
+  const displayLikes = isLiked ? (post?.likesCounter ?? 0) + 1 : (post?.likesCounter ?? 0)
 
-  const imageCount = post?.media?.images?.length ?? 1
+  const imageCount = post?.media?.urls?.length ?? 1
   const mediaWidth = cardWidth > 0 ? cardWidth : undefined
   const hasMultipleImages = imageCount > 1
 
@@ -155,14 +155,16 @@ export default function PostCard({
       if (hideComment) return
       push(`/post/${resolvedId}` as any)
     }
-
+    /*
+     {"author": "dcdfc7b4-715d-409f-ab72-24382d4901f0", "authorUser": {"displayName": null, "profilePic": null, "username": "Test"}, "commentsCounter": 0, "content": "Prueba", "createdAt": "2026-06-23T14:05:27.678Z", "deletedAt": null, "hashtags": ["Prueba"], "id": "bb66e7b0-d702-4349-a785-74ae72b84e6f", "isRepost": null, "isReview": false, "lastModifiedAt": "2026-06-23T14:05:27.678Z", "likesCounter": 0, "media": {"urls": [Array]}, "originalPostId": null, "reviewScore": null, "reviewedGame": null, "title": "PRUEBA"} 
+     */
     return (
       <View style={styles.itemContainer}>
         <View style={styles.itemHeader}>
-          <Image source={{ uri: itemUserAvatar || post?.author_profilePic || '' }} style={styles.itemAvatar} />
+          <Image source={{ uri: itemUserAvatar || post?.authorUser.profilePic || '' }} style={styles.itemAvatar} />
           <View>
-            <Text style={styles.itemUserName}>{itemUserName || post?.authorDisplayName || ''}</Text>
-            <Text style={styles.itemUserTag}>{itemUserTag || `@${post?.authorUsername || ''}`}</Text>
+            <Text style={styles.itemUserName}>{itemUserName || post?.authorUser.username || ''}</Text>
+            <Text style={styles.itemUserTag}>{itemUserTag || `@${post?.authorUser.username || ''}`}</Text>
           </View>
         </View>
 
@@ -171,8 +173,8 @@ export default function PostCard({
           <Text style={styles.itemPostContent}>{itemContent || post?.content || ''}</Text>
         </View>
 
-        {(itemImageUrl || post?.media?.images?.[0]) ? (
-          <Image source={{ uri: itemImageUrl || post?.media?.images?.[0] || '' }} style={styles.itemPostImage} />
+        {(itemImageUrl || post?.media?.urls?.[0]) ? (
+          <Image source={{ uri: itemImageUrl || post?.media?.urls?.[0] || '' }} style={styles.itemPostImage} />
         ) : null}
 
         <View style={styles.itemFooterRow}>
@@ -218,7 +220,7 @@ export default function PostCard({
   }
 
   const handleScrollToImage = (index: number) => {
-    if (!hasMultipleImages || !mediaWidth || index < 0 || index >= (post.media?.images?.length ?? 0)) return
+    if (!hasMultipleImages || !mediaWidth || index < 0 || index >= (post.media?.urls?.length ?? 0)) return
     const boundedIndex = clampImageIndex(index)
     setActiveImageIndex(boundedIndex)
     scrollToImageIndex(boundedIndex, true)
@@ -235,20 +237,20 @@ export default function PostCard({
           onPress={() => push(`/user/${post.author}` as any)}
           activeOpacity={0.7}
         >
-          <Image source={{ uri: post.author_profilePic }} style={styles.avatar} />
+          <Image source={{ uri: post.authorUser.profilePic }} style={styles.avatar} />
           <View style={styles.authorTextContainer}>
             <View style={styles.authorMetaRow}>
-              <Text style={styles.authorName}>{post.authorDisplayName}</Text>
+              <Text style={styles.authorName}>{post.authorUser.displayName || post.authorUser.username}</Text>
               <Text style={styles.date}>{formatDate(post.createdAt)}</Text>
             </View>
-            <Text style={styles.handle}>{`@${post.authorUsername}`}</Text>
-            {post.is_review && (
+            <Text style={styles.handle}>{`@${post.authorUser.username}`}</Text>
+            {post.isReview && (
               <View style={styles.reviewMetaRow}>
                 <View style={styles.starsRow}>
                   {Array.from({ length: 5 }).map((_, index) => (
                     <Ionicons
                       key={index}
-                      name={index < (post.review_score ?? 0) ? 'star' : 'star-outline'}
+                      name={index < (post.reviewScore ?? 0) ? 'star' : 'star-outline'}
                       size={16}
                       color="#C48200"
                       style={styles.starIcon}
@@ -266,11 +268,11 @@ export default function PostCard({
         onPress={hideComment ? undefined : () => handleGoToDetail()}
         style={styles.contentTouchArea}
       >
-        <Text style={[styles.title, post.is_review && styles.reviewTitle]}>{displayedTitle}</Text>
+        <Text style={[styles.title, post.isReview && styles.reviewTitle]}>{displayedTitle}</Text>
         <Text style={styles.content}>{contentPreview}{post.content.length > 160 ? '...' : ''}</Text>
       </TouchableOpacity>
 
-      {(post.media?.images?.length ?? 0) > 0 ? (
+      {(post.media?.urls?.length ?? 0) > 0 ? (
         <View style={styles.galleryWrapper}>
           {hasMultipleImages ? (
             <>
@@ -288,7 +290,7 @@ export default function PostCard({
                   setActiveImageIndex(nextIndex)
                 }}
               >
-                {post.media?.images?.map((image, index) => (
+                {post.media?.urls?.map((image, index) => (
                   <TouchableOpacity
                     key={index}
                     style={mediaWidth ? { width: mediaWidth } : undefined}
@@ -311,8 +313,8 @@ export default function PostCard({
               </TouchableOpacity>
               <TouchableOpacity
                 onPress={() => handleScrollToImage(activeImageIndex + 1)}
-                disabled={activeImageIndex >= (post.media?.images?.length ?? 1) - 1}
-                style={[styles.arrowButton, styles.rightArrow, activeImageIndex >= (post.media?.images?.length ?? 1) - 1 && styles.arrowDisabled]}
+                disabled={activeImageIndex >= (post.media?.urls?.length ?? 1) - 1}
+                style={[styles.arrowButton, styles.rightArrow, activeImageIndex >= (post.media?.urls?.length ?? 1) - 1 && styles.arrowDisabled]}
               >
                 <Ionicons name="chevron-forward" size={22} color="#FFFFFF" />
               </TouchableOpacity>
@@ -320,19 +322,19 @@ export default function PostCard({
           ) : (
             <TouchableOpacity
               activeOpacity={0.9}
-              onPress={() => handleImagePress(post.media?.images?.[0] ?? '', 0)}
+              onPress={() => handleImagePress(post.media?.urls?.[0] ?? '', 0)}
             >
               <View style={[styles.mediaFrame, styles.singleMediaFrame, { width: mediaWidth }]}>
-                <Image source={{ uri: post.media?.images?.[0] ?? '' }} style={styles.mediaImage} />
+                <Image source={{ uri: `${post.media?.urls?.[0]}?t=${new Date().getTime()}`}} style={styles.mediaImage} />
               </View>
             </TouchableOpacity>
           )}
         </View>
       ) : null}
 
-      {(post.media?.hashtags?.length ?? 0) > 0 && (
+      {(post.hashtags?.length ?? 0) > 0 && (
         <View style={styles.hashtagRow}>
-          {post.media?.hashtags?.map((tag) => (
+          {post.hashtags?.map((tag) => (
             <TouchableOpacity key={tag} style={styles.hashtagPill} onPress={() => onHashtagPress ? onHashtagPress(tag) : push(`/explore?q=%23${tag}`)}>
               <Text style={styles.hashtagText}>{`#${tag}`}</Text>
             </TouchableOpacity>

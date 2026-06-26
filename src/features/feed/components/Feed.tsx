@@ -27,7 +27,6 @@ export default function Feed() {
   const { data, refetch, fetchNextPage, hasNextPage, isFetchingNextPage, isRefetching} = useFetchFeed(); 
 
   const posts = data?.pages.flat() ?? [];
-  console.log(posts)
   const lastAddedId = usePostStore((state) => state.lastAddedId)
   const flatListRef = useRef<FlatList<Post> | null>(null)
   const { push } = useNavigation()

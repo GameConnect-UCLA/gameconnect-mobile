@@ -27,8 +27,8 @@ export const FavoritesScreen = () => {
   const allFavorites = posts.filter((post) => favoriteIds.includes(post.id));
 
   const filteredFavorites = allFavorites.filter((post) => {
-    if (activeTab === "Juegos") return post.is_review === true;
-    if (activeTab === "Posts") return post.is_review === false;
+    if (activeTab === "Juegos") return post.isReview === true;
+    if (activeTab === "Posts") return post.isReview === false;
     return true;
   });
 
