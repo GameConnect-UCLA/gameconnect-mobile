@@ -1,13 +1,13 @@
 import { Alert, View, ActivityIndicator, Text } from 'react-native'
 import EditProfileView from '@/src/features/profile/components/EditProfileView'
-import { useCurrentUser } from '@/src/features/profile/hooks/useGetUser'
+import { useGetMe } from '@/src/features/profile/hooks/useGetMe'
 import { useProfile } from '@/src/features/profile/hooks/useUpdateProfile'
 import { mediaApi } from '@/src/core/api/media'
 import { useNavigation } from '@/src/core/hooks/useNavigation'
 
 export default function EditProfileScreen() {
   const { back } = useNavigation()
-  const { data: user, isLoading, isError } = useCurrentUser()
+  const { data: user, isLoading, isError } = useGetMe()
   const { updateProfile, isPending } = useProfile()
 
   const handleSave = async (data: {

@@ -11,15 +11,14 @@ export interface UpdateProfilePayload {
 }
 
 export const getMe = async (): Promise<User> => {
-  const { data } = await apiClient.get('/users/profile')
-  console.log(data);
+  console.log("Entering getMe func")
+  const { data } = await apiClient.get('/users/me')
+  console.log("api response", data)
   return data
 }
 
 export const getUser = async (userId: string): Promise<User> => {
-  const { data } = await apiClient.get('users', {
-    params: new URLSearchParams(userId)
-  })
+  const { data } = await apiClient.get(`users/${userId}`)
   return data
 }
 

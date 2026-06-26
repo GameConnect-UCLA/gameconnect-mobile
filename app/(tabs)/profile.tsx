@@ -6,9 +6,8 @@ import { useNavigation } from '@/src/core/hooks/useNavigation'
 export default function ProfileScreen() { 
   const { push, back } = useNavigation()
   const { data: user, isLoading, isError, refetch } = useGetMe()
-  console.log(user);
-  
 
+  
   if (isLoading) {
     return (
       <View style={{ flex: 1, justifyContent: 'center', alignItems: 'center' }}>
