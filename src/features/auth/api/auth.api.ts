@@ -14,7 +14,6 @@ const login = async (credentials: LoginCredentials): Promise<AuthResponse> => {
 
 const register = async (newUser: SignUpInfo): Promise<AuthResponse> => {
   const res = await apiClient.post("/register", newUser);
-  console.log(res)
   return res.data;
 };
 

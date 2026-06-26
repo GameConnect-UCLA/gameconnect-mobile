@@ -78,7 +78,7 @@ apiClient.interceptors.response.use(
 
         // Tipamos la respuesta esperada del backend de forma genérica
         const { data } = await axios.post<{ accessToken: string; refreshToken: string }>(
-          `${API_BASE_URL}/auth/refresh`, 
+          `${API_BASE_URL}/refresh`, 
           { refreshToken: currentRefreshToken }
         )
 
@@ -99,6 +99,7 @@ apiClient.interceptors.response.use(
       } catch (refreshError) {
         processQueue(refreshError, null)
         secureStore.clearAll()
+        useAuthStore.getState().reset()
         return Promise.reject(refreshError)
       } finally {
         isRefreshing = false

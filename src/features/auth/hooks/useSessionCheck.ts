@@ -13,6 +13,7 @@ export const useSessionCheck = () => {
     queryKey: ['sessionCheck'],
     queryFn: async () => {
       const token = await secureStore.get(secureStore.KEYS.ACCESS_TOKEN)
+      console.log(token)
       if (token) {
         setAuthenticated(token)
         return true
