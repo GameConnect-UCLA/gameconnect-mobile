@@ -25,6 +25,8 @@ import { useToastStore } from '@/src/core/store/toast.store';
 import type { Post } from '@/src/core/types/post.types';
 import { Colors, Spacing, Radii, Typography } from '@/src/core/theme';
 import { useNavigation } from '@/src/core/hooks/useNavigation';
+import { useGetMe } from '../../profile/hooks/useGetMe';
+import { useCreatePost } from '../hooks/useCreatePost';
 
 type FieldError = {
   title: boolean;
@@ -54,7 +56,7 @@ const normalFieldLabels = {
   tags: 'Etiquetas *',
 };
 
-const REVIEW_SCORE_MAX = 5;
+const reviewScore_MAX = 5;
 
 const scoreMatch = (title: string, query: string) => {
   const normalizedTitle = title.toLowerCase();
@@ -77,7 +79,8 @@ const scoreMatch = (title: string, query: string) => {
 
 /** Create post/review screen with form, image picker, and validation @returns CreatePostScreen component */
 export default function CreatePostScreen() {
-    const scrollRef = useRef<ScrollView>(null);
+  const { mutateAsync } = useCreatePost();
+  const scrollRef = useRef<ScrollView>(null);
   const frameScrollRef = useRef<ScrollView>(null);
   const { back, replace } = useNavigation();
   const [isReview, setIsReview] = useState(false);
@@ -98,9 +101,9 @@ export default function CreatePostScreen() {
     rating: 0,
   });
 
-  const addPost = usePostStore((state) => state.addPost);
   const showToast = useToastStore((state) => state.showToast);
-  const currentUserProfile = mockUsersList.find((user) => user.username === mockUser.username) ?? mockUser;
+  const { data: user } = useGetMe();
+  const currentUserProfile = user ?? mockUser;
 
   const activeLabels = isReview ? reviewFieldLabels : normalFieldLabels;
 
@@ -200,7 +203,7 @@ export default function CreatePostScreen() {
 
     try {
       const result = await ImagePicker.launchImageLibraryAsync({
-        mediaTypes: ImagePicker.MediaTypeOptions.Images,
+        mediaTypes: ['images', 'videos'],
         allowsMultipleSelection: true,
         quality: 0.9,
       });
@@ -256,7 +259,6 @@ export default function CreatePostScreen() {
     };
 
     setErrors(nextErrors);
-
     const firstInvalidField = (Object.entries(nextErrors) as [FieldKey, boolean][]).find(
       ([, hasError]) => hasError,
     )?.[0];
@@ -266,7 +268,7 @@ export default function CreatePostScreen() {
       showToast('Completa los campos obligatorios para continuar.', 'error');
       return;
     }
-
+    // TODO: implement db search for reviews
     if (isReview && !selectedGameTitle && !matchingGames.length) {
       setErrors((currentErrors) => ({ ...currentErrors, title: true }));
       scrollToField('title');
@@ -274,38 +276,35 @@ export default function CreatePostScreen() {
       return;
     }
 
-    const now = new Date().toISOString();
     const finalGameTitle = isReview ? selectedGameTitle ?? matchingGames[0]?.title ?? resolvedTitle : resolvedTitle;
 
-    const newPost: Post = {
-      id: `${Date.now()}`,
+    const newPost: Partial<Post> = {
       author: currentUserProfile.id,
-      authorDisplayName: currentUserProfile.displayName,
-      authorUsername: currentUserProfile.username,
-      author_profilePic: currentUserProfile.profilePic,
       postTitle: finalGameTitle,
       content: description.trim(),
+      hashtags: [...tags],
       media: {
-        images: [...selectedImages],
-        hashtags: [...tags],
+        urls: [...selectedImages],
       },
-      is_review: isReview,
-      review_score: isReview ? reviewScore : null,
-      reviewed_game: finalGameTitle,
-      likes_counter: 0,
+      isReview: isReview,
+      reviewScore: reviewScore,
+      reviewedGame:  'd701435c-5bb5-4dfb-bdc7-cf14ee45ad51',
+      likesCounter: 0,
       commentsCounter: 0,
       comments: [],
-      createdAt: now,
-      last_modified_at: now,
-      deletedAt: null,
     };
 
     try {
-      addPost(newPost);
+      await mutateAsync(newPost)
       showToast('Se ha creado el post correctamente', 'success');
       resetForm();
       replace('/(tabs)');
-    } catch {
+    } catch (error: any) {
+      console.error(error.message)
+      if (error.response) {
+        console.error('Response data:', error.response.data);
+        console.error('Status:', error.response.status);
+      }
       showToast('No se pudo crear el post.', 'error');
     }
   };
@@ -420,7 +419,7 @@ export default function CreatePostScreen() {
                 >
                   <Text style={styles.fieldLabel}>Calificación *</Text>
                   <View style={styles.starsRow}>
-                    {Array.from({ length: REVIEW_SCORE_MAX }).map((_, index) => {
+                    {Array.from({ length: reviewScore_MAX }).map((_, index) => {
                       const score = index + 1;
 
                       return (

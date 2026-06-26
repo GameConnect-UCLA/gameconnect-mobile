@@ -7,12 +7,10 @@ import type { Post } from '@/src/core/types/post.types'
 /** Hook to create a post, adds to store and invalidates cache @returns Mutation object */
 export const useCreatePost = () => {
   const queryClient = useQueryClient()
-  const addPost = usePostStore((s) => s.addPost)
 
   return useMutation({
     mutationFn: (post: Partial<Post>) => createPost(post),
-    onSuccess: (newPost) => {
-      addPost(newPost)
+    onSuccess: () => {
       queryClient.invalidateQueries({ queryKey: ['posts'] })
     },
   })
