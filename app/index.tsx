@@ -1,9 +1,11 @@
 import { Redirect } from 'expo-router'
 import { useSessionCheck } from '@/src/features/auth/hooks';
 import { ActivityIndicator, View } from 'react-native';
+import 'react-native-get-random-values'
 
 export default function Index() {
   const { data, isLoading } = useSessionCheck();
+  console.info("Is Authenticated: ",data); 
 
   if (isLoading) {
     return (
