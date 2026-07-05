@@ -1,7 +1,7 @@
 /** Post detail view component */
 import type { Post } from "@/src/core/types/post.types";
 import { Ionicons } from "@expo/vector-icons";
-import React, { useState } from "react";
+import React, { useMemo, useState } from "react";
 import {
   ActivityIndicator,
   Image,
@@ -40,10 +40,12 @@ export const PostDetailView = ({
   const [isImageModalVisible, setIsImageModalVisible] = useState(false);
   const [selectedImageUrl, setSelectedImageUrl] = useState("");
 
+  const postId = useMemo(() => post.id, [post.id]);
+
   const { data: remoteComments = [], isLoading: isCommentsLoading } =
-    usePostComments(post.id);
+    usePostComments(postId);
   const { mutate: createCommentMutate, isPending: isCommentPending } =
-    useCreateComment(post.id);
+    useCreateComment(postId);
   const showToast = useToastStore((s) => s.showToast);
 
   const handleOpenImage = (url: string) => {
