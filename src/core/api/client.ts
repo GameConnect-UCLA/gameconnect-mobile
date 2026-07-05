@@ -110,7 +110,7 @@ apiClient.interceptors.response.use(
   }
 )
 
-if (USE_MOCKS) {
+if (false && USE_MOCKS) {
   // eslint-disable-next-line @typescript-eslint/no-require-imports
   const { setupMocks } = require('./mocks')
   setupMocks(apiClient, API_BASE_URL)

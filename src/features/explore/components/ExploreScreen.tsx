@@ -17,7 +17,6 @@ import {
   type FilterKey,
 } from '../utils/explore.utils'
 import PostCard from '@/src/features/feed/components/PostCard'
-import { mockPosts } from '@/src/mocks/mock-posts'
 import { useNavigation } from '@/src/core/hooks/useNavigation'
 import { useRouter } from 'expo-router'
 
@@ -55,62 +54,12 @@ export default function ExploreScreen() {
   }, [searchQuery, activeFilter])
 
   const trendTags = useMemo(() => {
-    const counts = new Map<string, number>()
-    mockPosts.forEach((post) => {
-      const sources = [post.reviewedGame, ...(post.media?.hashtags ?? [])].filter(Boolean)
-      sources.forEach((source) => {
-        const label = buildTrendLabel(source)
-        counts.set(label, (counts.get(label) ?? 0) + 1)
-      })
-    })
-    return [...counts.entries()]
-      .sort((left, right) => right[1] - left[1])
-      .slice(0, 5)
-      .map(([label]) => label)
+    return []
   }, [])
 
-  const featuredPlayers = useMemo<FeaturedPlayer[]>(() => {
-    const authors = new Map<string, { name: string; handle: string; avatar: string; posts: number; likes: number }>()
-    mockPosts.forEach((post) => {
-      const current = authors.get(post.authorUsername)
-      authors.set(post.authorUsername, {
-        name: post.authorDisplayName,
-        handle: post.authorUsername,
-        avatar: post.authorProfilePic,
-        posts: (current?.posts ?? 0) + 1,
-        likes: (current?.likes ?? 0) + post.likesCounter,
-      })
-    })
-    return [...authors.values()]
-      .sort((left, right) => right.posts - left.posts || right.likes - left.likes)
-      .slice(0, 2)
-      .map((author) => ({
-        id: author.handle,
-        name: author.name,
-        handle: author.handle,
-        avatar: author.avatar,
-        level: getLevelFromPosts(author.posts, author.likes),
-      }))
-  }, [])
+  const featuredPlayers: FeaturedPlayer[] = []
 
-  const filteredPosts = useMemo(() => {
-    const query = normalizeText(searchQuery.trim())
-    return [...mockPosts]
-      .sort((left, right) => new Date(right.createdAt).getTime() - new Date(left.createdAt).getTime())
-      .filter((post) => {
-        const searchableText = normalizeText(
-          [
-            post.authorDisplayName,
-            post.authorUsername,
-            post.postTitle,
-            post.reviewedGame,
-            post.content,
-            ...(post.media?.hashtags ?? []),
-          ].join(' '),
-        )
-        return (query.length === 0 || searchableText.includes(query)) && matchesActiveFilter(post, activeFilter)
-      })
-  }, [activeFilter, searchQuery])
+  const filteredPosts: any[] = []
 
   const visiblePosts = filteredPosts.slice(0, visibleCount)
   const featuredPosts = visiblePosts.slice(0, 2)

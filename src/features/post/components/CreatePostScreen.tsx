@@ -17,9 +17,6 @@ import {
 } from 'react-native';
 import { SafeAreaView } from 'react-native-safe-area-context';
 
-import { mockGameProfiles } from '@/src/mocks/mock-game';
-import { mockUser } from '@/src/mocks/mock-user';
-import { mockUsersList } from '@/src/mocks/mock-users-list';
 import { usePostStore } from '@/src/features/feed/store/post.store';
 import { useToastStore } from '@/src/core/store/toast.store';
 import type { Post } from '@/src/core/types/post.types';
@@ -103,7 +100,7 @@ export default function CreatePostScreen() {
 
   const showToast = useToastStore((state) => state.showToast);
   const { data: user } = useGetMe();
-  const currentUserProfile = user ?? mockUser;
+  const currentUserProfile = user;
 
   const activeLabels = isReview ? reviewFieldLabels : normalFieldLabels;
 
@@ -134,28 +131,15 @@ export default function CreatePostScreen() {
     }, [resetForm]),
   );
 
-  const matchingGames = useMemo(() => {
+  const matchingGames: any[] = useMemo(() => {
     const query = reviewQuery.trim();
 
     if (!query) {
       return [];
     }
 
-    return mockGameProfiles
-      .map((game) => ({
-        game,
-        score: scoreMatch(game.title, query),
-      }))
-      .filter((item) => item.score > 0)
-      .sort((left, right) => {
-        if (right.score !== left.score) {
-          return right.score - left.score;
-        }
-
-        return left.game.title.localeCompare(right.game.title);
-      })
-      .map((item) => item.game)
-      .slice(0, 5);
+    showToast('Búsqueda de juegos próximamente', 'info');
+    return [];
   }, [reviewQuery]);
 
   const tags = useMemo(
@@ -279,7 +263,7 @@ export default function CreatePostScreen() {
     const finalGameTitle = isReview ? selectedGameTitle ?? matchingGames[0]?.title ?? resolvedTitle : resolvedTitle;
 
     const newPost: Partial<Post> = {
-      author: currentUserProfile.id,
+      author: currentUserProfile?.id,
       postTitle: finalGameTitle,
       content: description.trim(),
       hashtags: [...tags],

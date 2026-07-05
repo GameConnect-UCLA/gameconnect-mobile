@@ -26,7 +26,6 @@ import ChatLinkList from '../components/chat-room/ChatLinkList';
 import GroupMemberRow from '../components/chat-info/GroupMemberRow';
 import { GroupRole } from '../types/chat.types';
 import type { GroupMember } from '../types/chat.types';
-import { ACTIVE_USERS } from '@/src/mocks/mock-chat';
 import { useConfirmDialog } from "@/src/core/hooks/useConfirmDialog";
 import { useToastStore } from '@/src/core/store/toast.store';
 import { useNavigation } from '@/src/core/hooks/useNavigation';
@@ -152,9 +151,7 @@ export default function ChatInfoScreen() {
   }, [addMemberSelected, addMember, showToast]);
 
   const existingMemberIds = conversation?.members?.map((m) => m.userId) ?? [];
-  const availableUsers = ACTIVE_USERS.filter(
-    (u) => !existingMemberIds.includes(u.id),
-  );
+  const availableUsers: any[] = [];
 
   const handleBlockToggle = async () => {
     if (!contactUserId) return;

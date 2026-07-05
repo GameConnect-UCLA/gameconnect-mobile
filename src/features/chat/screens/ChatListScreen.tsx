@@ -17,7 +17,6 @@ import ConversationRow from '../components/conversation-list/ConversationRow'
 import ConversationActionsSheet from '../components/chat-info/ConversationActionsSheet'
 import NewConversationModal from '../components/conversation-list/NewConversationModal'
 import SearchBar from '@/src/core/components/SearchBar'
-import { ACTIVE_USERS } from '@/src/mocks/mock-chat'
 import { useChatSearch } from '../hooks/useChatSearch'
 import { useConversations } from '../hooks/useConversations'
 import { useChatStore } from '../store/chat.store'
@@ -35,9 +34,7 @@ export default function ChatListScreen() {
   const { conversations } = useConversations()
   const hideConversation = useChatStore((s) => s.hideConversation)
   const hiddenConversationIds = useChatStore((s) => s.hiddenConversationIds)
-  const visibleActiveUsers = ACTIVE_USERS.filter(
-    (u) => !hiddenConversationIds.includes(u.conversationId ?? ''),
-  )
+  const visibleActiveUsers: any[] = []
   const { push, back } = useNavigation()
   const [selectedConvo, setSelectedConvo] = useState<Conversation | null>(null)
   const [showActions, setShowActions] = useState(false)

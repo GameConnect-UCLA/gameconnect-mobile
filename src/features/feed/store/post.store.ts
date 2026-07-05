@@ -1,7 +1,6 @@
 /** Zustand store for posts, favorites, and mutations. */
 
 import { create } from 'zustand'
-import { mockPosts } from '@/src/mocks/mock-posts'
 import type { Post } from '@/src/core/types/post.types'
 
 /** Post list, favorite IDs, and actions to add/reload/toggle favorites. */
@@ -23,7 +22,6 @@ const clonePost = (post: Post): Post => ({
   comments: post.comments ? post.comments.map((c) => ({ ...c })) : [],
 })
 
-// const getInitialPosts = () => mockPosts.map(clonePost)
 const getInitialPosts = () => []
 
 /** Hook returning post store state and actions. @returns PostState with posts, favoriteIds, and mutation methods */

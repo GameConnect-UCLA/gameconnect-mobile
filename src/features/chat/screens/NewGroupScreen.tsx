@@ -14,7 +14,6 @@ import {
 import { Ionicons } from '@expo/vector-icons'
 import { SafeAreaView, useSafeAreaInsets } from 'react-native-safe-area-context'
 import * as ImagePicker from 'expo-image-picker'
-import { ACTIVE_USERS } from '@/src/mocks/mock-chat'
 import { createGroup } from '../api/chat.api'
 import { useQueryClient } from '@tanstack/react-query'
 import { useToastStore } from '@/src/core/store/toast.store'
@@ -121,7 +120,7 @@ export default function NewGroupScreen() {
 
           <Text style={styles.sectionTitle}>Members ({selectedIds.length}/2+)</Text>
           <View style={styles.glassCard}>
-            {ACTIVE_USERS.map((user) => {
+            {([] as any[]).map((user) => {
               const isSelected = selectedIds.includes(user.id)
               return (
                 <TouchableOpacity

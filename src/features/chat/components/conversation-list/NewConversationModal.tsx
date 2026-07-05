@@ -16,7 +16,6 @@ import { KeyboardAvoidingView } from "react-native-keyboard-controller";
 import { Ionicons } from "@expo/vector-icons";
 import { useQueryClient } from "@tanstack/react-query";
 import { startConversation } from '../../api/chat.api';
-import { ACTIVE_USERS } from "@/src/mocks/mock-chat";
 import { useChatStore } from '../../store/chat.store';
 import type { ActiveUser } from '../../types/chat.types';
 import { Colors, Spacing, Typography } from '@/src/core/theme';
@@ -47,12 +46,7 @@ export default function NewConversationModal({
   }, [visible]);
 
   const filteredUsers = useMemo(() => {
-    const lower = query.toLowerCase().trim();
-    return ACTIVE_USERS.filter(
-      (u) =>
-        !blockedUserIds.includes(u.id) &&
-        (lower === "" || u.username.toLowerCase().includes(lower)),
-    );
+    return [];
   }, [query, blockedUserIds]);
 
   const handleSelect = async (user: ActiveUser) => {

@@ -13,7 +13,6 @@ import {
   View,
 } from 'react-native'
 import { SafeAreaView } from 'react-native-safe-area-context'
-import { mockPosts } from '@/src/mocks/mock-posts'
 import type { GameProfile } from '../types/game.types'
 import PostCard from '@/src/features/feed/components/PostCard'
 import { Colors, Spacing, Radii, Typography } from '@/src/core/theme'
@@ -28,11 +27,7 @@ export default function GameProfileView({ game }: Props) {
   const { push, back } = useNavigation()
   const [activeTab, setActiveTab] = useState('Reseñas')
   const { height } = useWindowDimensions()
-  const relatedPosts = mockPosts.filter((post) => {
-    const matchesGame = post.reviewedGame.toLowerCase() === game.title.toLowerCase()
-    const matchesTab = activeTab === 'Reseñas' ? post.isReview : !post.isReview
-    return matchesGame && matchesTab
-  })
+  const relatedPosts: any[] = [];
 
   return (
     <ImageBackground source={require('@/assets/images/bgbody.png')} style={{ flex: 1 }}>

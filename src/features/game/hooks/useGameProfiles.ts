@@ -2,7 +2,6 @@
 import { useQuery } from '@tanstack/react-query'
 import { fetchGameProfiles, fetchGameProfileById } from '../api/game.api'
 import type { FavoriteGame } from '@/src/core/types/user.types'
-import { mockFavoriteGames } from '@/src/mocks/mock-favorite-games'
 
 /** Hook to fetch all game profiles @returns Query result */
 export const useGameProfiles = () => {
@@ -25,5 +24,5 @@ export const useGameProfile = (id: string) => {
 
 /** Hook returning mock favorite games @returns FavoriteGame array */
 export const useMockGameProfile = (): FavoriteGame[] => {
-  return mockFavoriteGames
+  return []
 }
