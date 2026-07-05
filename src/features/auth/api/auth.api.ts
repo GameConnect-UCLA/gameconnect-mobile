@@ -52,4 +52,7 @@ export const authApi = {
   forgotPassword,
   resetPassword,
   changePassword,
+  logout: async (refreshToken: string): Promise<void> => {
+    await apiClient.post('/logout', { refreshToken })
+  },
 };

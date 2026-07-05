@@ -1,7 +1,7 @@
 /** Post API functions */
 import { apiClient } from '@/src/core/api/client'
 import { mediaApi } from '@/src/core/api/media'
-import type { Post } from '@/src/core/types/post.types'
+import type { Post, Comment } from '@/src/core/types/post.types'
 
 /** Fetch all posts @returns Post list */
 export const fetchFeed = async (offset: number = 0, limit: number = 10): Promise<Post[]> => {
@@ -83,5 +83,23 @@ export const toggleLike = async (postId: string): Promise<{ post_id: string; lik
 /** Toggle bookmark on a post @param postId Post ID @returns Bookmark state */
 export const toggleBookmark = async (postId: string): Promise<{ post_id: string; bookmarked: boolean }> => {
   const { data } = await apiClient.post('/posts/bookmark', { postId })
+  return data
+}
+
+/** Fetch comments for a post @param postId Post ID @returns Comment list */
+export const getPostComments = async (postId: string, params?: { limit?: number; offset?: number }): Promise<Comment[]> => {
+  const { data } = await apiClient.get(`/posts/${postId}/comments`, { params })
+  return data
+}
+
+/** Create a comment on a post @param postId Post ID @param content Comment content @returns Created comment */
+export const createComment = async (postId: string, content: string): Promise<Comment> => {
+  const { data } = await apiClient.post(`/posts/${postId}/comment`, { content })
+  return data
+}
+
+/** Fetch bookmarked posts @param params Pagination @returns Post list */
+export const getBookmarkedPosts = async (params?: { limit?: number; offset?: number }): Promise<Post[]> => {
+  const { data } = await apiClient.get('/posts/bookmarks', { params })
   return data
 }
