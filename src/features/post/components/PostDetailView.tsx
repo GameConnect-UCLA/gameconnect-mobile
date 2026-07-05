@@ -3,6 +3,7 @@ import type { Post } from "@/src/core/types/post.types";
 import { Ionicons } from "@expo/vector-icons";
 import React, { useState } from "react";
 import {
+  ActivityIndicator,
   Image,
   ImageBackground,
   KeyboardAvoidingView,
@@ -19,10 +20,11 @@ import PostCard from "@/src/features/feed/components/PostCard";
 import { PostComments } from "./PostComments";
 import { Colors, Spacing, Radii, Typography } from "@/src/core/theme";
 import { useNavigation } from "@/src/core/hooks/useNavigation";
+import { usePostComments } from "@/src/features/post/hooks/usePostComments";
+import { useCreateComment } from "@/src/features/post/hooks/useCreateComment";
+import { useToastStore } from "@/src/core/store/toast.store";
 
 const BG_IMAGE = require("@/assets/images/bgbody.png");
-const FOTO_JORGE =
-  "https://m.media-amazon.com/images/S/aplus-media-library-service-media/94865395-9e45-4e4b-9f4f-fac723fbf713.__CR0,0,362,453_PT0_SX362_V1___.jpg";
 
 /** Full post detail view with comments, image modal, and comment input */
 export const PostDetailView = ({
@@ -34,10 +36,15 @@ export const PostDetailView = ({
 }) => {
   const { back } = useNavigation();
   const [commentText, setCommentText] = useState("");
-  const [localComments, setLocalComments] = useState(post.comments);
   const [showSuccess, setShowSuccess] = useState(false);
   const [isImageModalVisible, setIsImageModalVisible] = useState(false);
   const [selectedImageUrl, setSelectedImageUrl] = useState("");
+
+  const { data: remoteComments = [], isLoading: isCommentsLoading } =
+    usePostComments(post.id);
+  const { mutate: createCommentMutate, isPending: isCommentPending } =
+    useCreateComment(post.id);
+  const showToast = useToastStore((s) => s.showToast);
 
   const handleOpenImage = (url: string) => {
     setSelectedImageUrl(url);
@@ -46,18 +53,16 @@ export const PostDetailView = ({
 
   const handleSendComment = () => {
     if (commentText.trim().length === 0) return;
-    const newComment = {
-      id: Math.random().toString(),
-      author_id: "jorge-id",
-      authorDisplayName: "Jorge Silva",
-      authorProfilePic: FOTO_JORGE,
-      content: commentText,
-      createdAt: "Ahora mismo",
-    };
-    setLocalComments([...localComments, newComment]);
-    setCommentText("");
-    setShowSuccess(true);
-    setTimeout(() => setShowSuccess(false), 2000);
+    createCommentMutate(commentText, {
+      onSuccess: () => {
+        setCommentText("");
+        setShowSuccess(true);
+        setTimeout(() => setShowSuccess(false), 2000);
+      },
+      onError: () => {
+        showToast("Error al enviar comentario", "error");
+      },
+    });
   };
 
   return (
@@ -92,7 +97,15 @@ export const PostDetailView = ({
                   </View>
                 )}
               </View>
-              <PostComments comments={localComments} />
+              {isCommentsLoading ? (
+                <ActivityIndicator
+                  size="small"
+                  color={Colors.primary}
+                  style={{ marginTop: 30 }}
+                />
+              ) : (
+                <PostComments comments={remoteComments} />
+              )}
             </ScrollView>
           </View>
 
@@ -103,7 +116,10 @@ export const PostDetailView = ({
           )}
 
           <View style={styles.inputBar}>
-            <Image source={{ uri: FOTO_JORGE }} style={styles.inputAvatar} />
+            <Image
+              source={require("@/assets/images/default-avatar.png")}
+              style={styles.inputAvatar}
+            />
             <View style={styles.inputBubble}>
               <TextInput
                 style={styles.textInput}
@@ -116,8 +132,13 @@ export const PostDetailView = ({
             <TouchableOpacity
               onPress={handleSendComment}
               style={styles.sendIcon}
+              disabled={isCommentPending}
             >
-              <Ionicons name="send" size={26} color={Colors.primary} />
+              <Ionicons
+                name="send"
+                size={26}
+                color={isCommentPending ? "#AAA" : Colors.primary}
+              />
             </TouchableOpacity>
           </View>
 

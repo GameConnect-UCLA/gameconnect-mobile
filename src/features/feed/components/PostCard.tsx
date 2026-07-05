@@ -2,6 +2,7 @@
 
 import { usePostStore } from '../store/post.store'
 import { useToastStore } from '@/src/core/store/toast.store'
+import { useLikePost } from '@/src/features/post/hooks/useLikePost'
 import { Ionicons } from '@expo/vector-icons'
 import React, { useEffect, useRef, useState } from 'react'
 import {
@@ -83,9 +84,10 @@ export default function PostCard({
   const toggleFavorite = usePostStore((state) => state.toggleFavorite)
   const favoriteIds = usePostStore((state) => state.favoriteIds)
   const showToast = useToastStore((state) => state.showToast)
+  const { mutate: likePostMutate, isPending: isLikePending } = useLikePost()
 
   const { push } = useNavigation()
-  const [isLiked, setIsLiked] = useState(false)
+  const [isLiked, setIsLiked] = useState(post?.isLiked ?? false)
   const [cardWidth, setCardWidth] = useState(0)
   const [activeImageIndex, setActiveImageIndex] = useState(0)
   const galleryRef = useRef<ScrollView>(null)
@@ -98,7 +100,7 @@ export default function PostCard({
   const isSaved = favoriteIds.includes(post?.id ?? itemId ?? '')
   const displayedTitle = post?.isReview ? post?.reviewedGame : post?.postTitle
   const contentPreview = post?.content?.slice(0, 160) ?? ''
-  const displayLikes = isLiked ? (post?.likesCounter ?? 0) + 1 : (post?.likesCounter ?? 0)
+  const displayLikes = post?.likesCounter ?? 0
 
   const imageCount = post?.media?.urls?.length ?? 1
   const mediaWidth = cardWidth > 0 ? cardWidth : undefined
@@ -145,6 +147,7 @@ export default function PostCard({
         setItemLikesCount((c) => (prev ? c - 1 : c + 1))
         return !prev
       })
+      if (post?.id) likePostMutate(post.id)
     }
 
     const handleItemShare = async () => {
@@ -345,7 +348,13 @@ export default function PostCard({
       <View style={styles.actionsRow}>
         <View style={styles.actionsLeft}>
           <View style={styles.counterBlock}>
-            <TouchableOpacity onPress={() => setIsLiked((current) => !current)}>
+            <TouchableOpacity
+              onPress={() => {
+                setIsLiked((current) => !current)
+                likePostMutate(post.id)
+              }}
+              disabled={isLikePending}
+            >
               <Ionicons
                 name={isLiked ? 'heart' : 'heart-outline'}
                 size={28}

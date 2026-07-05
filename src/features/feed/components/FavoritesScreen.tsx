@@ -1,9 +1,11 @@
 /** Favorites screen with tabbed filter by Todo/Juegos/Posts. */
 
 import { usePostStore } from "@/src/features/feed/store/post.store";
+import { useFetchBookmarks } from "@/src/features/post/hooks/useFetchBookmarks";
 import { Ionicons } from "@expo/vector-icons";
 import React, { useState } from "react";
 import {
+  ActivityIndicator,
   FlatList,
   ImageBackground,
   StyleSheet,
@@ -22,9 +24,11 @@ const BG_IMAGE = require("@/assets/images/bgbody.png");
 export const FavoritesScreen = () => {
   const { back } = useNavigation();
   const [activeTab, setActiveTab] = useState("Todo");
-  const { posts, favoriteIds } = usePostStore();
+  const { toggleFavorite, favoriteIds } = usePostStore();
+  const { data, isLoading, fetchNextPage, hasNextPage, isFetchingNextPage } =
+    useFetchBookmarks();
 
-  const allFavorites = posts.filter((post) => favoriteIds.includes(post.id));
+  const allFavorites = data?.pages.flat() ?? [];
 
   const filteredFavorites = allFavorites.filter((post) => {
     if (activeTab === "Juegos") return post.isReview === true;
@@ -82,13 +86,34 @@ export const FavoritesScreen = () => {
           )}
           contentContainerStyle={styles.listContent}
           showsVerticalScrollIndicator={false}
+          onEndReached={() => {
+            if (hasNextPage && !isFetchingNextPage) fetchNextPage();
+          }}
+          onEndReachedThreshold={0.5}
+          ListFooterComponent={
+            isFetchingNextPage ? (
+              <ActivityIndicator
+                size="small"
+                color="#999"
+                style={{ paddingVertical: 20 }}
+              />
+            ) : null
+          }
           ListEmptyComponent={
-            <View style={styles.emptyContainer}>
-              <Ionicons name="bookmark-outline" size={60} color="#999" />
-              <Text style={styles.emptyText}>
-                No tienes favoritos en esta categoría
-              </Text>
-            </View>
+            isLoading ? (
+              <ActivityIndicator
+                size="large"
+                color="#999"
+                style={{ marginTop: 100 }}
+              />
+            ) : (
+              <View style={styles.emptyContainer}>
+                <Ionicons name="bookmark-outline" size={60} color="#999" />
+                <Text style={styles.emptyText}>
+                  No tienes favoritos en esta categoría
+                </Text>
+              </View>
+            )
           }
         />
       </SafeAreaView>

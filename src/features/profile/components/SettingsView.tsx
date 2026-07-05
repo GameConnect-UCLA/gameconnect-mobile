@@ -2,6 +2,7 @@
 import { Ionicons } from "@expo/vector-icons";
 import React, { useState } from "react";
 import {
+  ActivityIndicator,
   ImageBackground,
   ScrollView,
   StyleSheet,
@@ -15,6 +16,7 @@ import { Colors, Spacing, Typography } from "@/src/core/theme";
 import { useConfirmDialog } from "@/src/core/hooks/useConfirmDialog";
 import { useToastStore } from "@/src/core/store/toast.store";
 import { useNavigation } from "@/src/core/hooks/useNavigation";
+import { useLogout } from "@/src/features/auth/hooks/useLogout";
 
 const BG_IMAGE = require("@/assets/images/bgbody.png");
 
@@ -74,6 +76,7 @@ export const SettingsView = () => {
   const { confirm } = useConfirmDialog();
   const showToast = useToastStore((s) => s.showToast);
   const { push, back, replace } = useNavigation();
+  const { mutate: logoutMutate, isPending: isLoggingOut } = useLogout();
   const [birthVisible, setBirthVisible] = useState(false);
   const [notifEnabled, setNotifEnabled] = useState(true);
   const [privacyEnabled, setPrivacyEnabled] = useState(false);
@@ -95,7 +98,11 @@ export const SettingsView = () => {
       message: "¿Estas seguro de que quieres salir de tu cuenta?",
       confirmText: "Salir",
     });
-    if (ok) replace("/(auth)/login");
+    if (ok) {
+      logoutMutate(undefined, {
+        onSuccess: () => replace("/(auth)/login"),
+      });
+    }
   };
 
   const handleDeleteAccount = async () => {
@@ -226,8 +233,16 @@ export const SettingsView = () => {
               />
             </View>
 
-            <TouchableOpacity style={styles.logoutBtn} onPress={handleLogout}>
-              <Text style={styles.logoutText}>Cerrar Sesión</Text>
+            <TouchableOpacity
+              style={styles.logoutBtn}
+              onPress={handleLogout}
+              disabled={isLoggingOut}
+            >
+              {isLoggingOut ? (
+                <ActivityIndicator color="#FFF" size="small" />
+              ) : (
+                <Text style={styles.logoutText}>Cerrar Sesión</Text>
+              )}
             </TouchableOpacity>
           </View>
         </ScrollView>
