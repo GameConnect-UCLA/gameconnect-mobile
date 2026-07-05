@@ -1,6 +1,7 @@
 /** Hook to create a comment with optimistic update and toast feedback. */
 
 import { useMutation, useQueryClient } from '@tanstack/react-query'
+import type { AxiosError } from 'axios'
 import { createComment } from '../api/post.api'
 import { useToastStore } from '@/src/core/store/toast.store'
 import { postKeys } from '../api/queryKeys'
@@ -32,15 +33,20 @@ export const useCreateComment = (postId: string) => {
 
       return { previous }
     },
-    onError: (error: any, _, context) => {
+    onError: (error: AxiosError<{ message?: string }>, _, context) => {
       if (context?.previous) {
         queryClient.setQueryData(queryKey, context.previous)
       }
       const msg = error?.response?.data?.message || 'Error al comentar'
       showToast(msg, 'error')
     },
-    onSuccess: () => {
-      queryClient.invalidateQueries({ queryKey })
+    onSuccess: (realComment) => {
+      queryClient.setQueryData<Comment[]>(queryKey, (old) => {
+        if (!old) return [realComment]
+        return old.map((c) =>
+          c.id.startsWith('temp-') ? realComment : c
+        )
+      })
     },
   })
 }
