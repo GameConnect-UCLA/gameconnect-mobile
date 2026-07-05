@@ -1,6 +1,7 @@
 /** Hook to toggle like on a post with optimistic update and toast feedback. */
 
 import { useMutation, useQueryClient } from '@tanstack/react-query'
+import type { AxiosError } from 'axios'
 import { toggleLike } from '../api/post.api'
 import { useToastStore } from '@/src/core/store/toast.store'
 import { postKeys } from '../api/queryKeys'
@@ -28,7 +29,7 @@ export const useLikePost = () => {
 
       return { previous, postId }
     },
-    onError: (error: any, _, context) => {
+    onError: (error: AxiosError<{ message?: string }>, _, context) => {
       if (context?.previous) {
         queryClient.setQueryData(postKeys.details(context.postId), context.previous)
       }

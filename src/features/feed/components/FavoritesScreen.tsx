@@ -1,6 +1,5 @@
 /** Favorites screen with tabbed filter by Todo/Juegos/Posts. */
 
-import { usePostStore } from "@/src/features/feed/store/post.store";
 import { useFetchBookmarks } from "@/src/features/post/hooks/useFetchBookmarks";
 import { Ionicons } from "@expo/vector-icons";
 import React, { useState } from "react";
@@ -24,7 +23,6 @@ const BG_IMAGE = require("@/assets/images/bgbody.png");
 export const FavoritesScreen = () => {
   const { back } = useNavigation();
   const [activeTab, setActiveTab] = useState("Todo");
-  const { toggleFavorite, favoriteIds } = usePostStore();
   const { data, isLoading, fetchNextPage, hasNextPage, isFetchingNextPage } =
     useFetchBookmarks();
 
