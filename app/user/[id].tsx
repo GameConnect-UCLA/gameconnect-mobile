@@ -1,5 +1,4 @@
 import ProfileView from '@/src/features/profile/components/ProfileView'
-import { mockUsersList } from '@/src/mocks/mock-users-list'
 import { useLocalSearchParams } from 'expo-router'
 import { StyleSheet, Text, View } from 'react-native'
 import { useNavigation } from '@/src/core/hooks/useNavigation'
@@ -10,9 +9,11 @@ import { useGetMe } from '@/src/features/profile/hooks/useGetMe'
 export default function UserProfileScreen() {
   const { push, back } = useNavigation()
   const { id } = useLocalSearchParams()
-  const { user} = useUserStore();
-  const isLoggedUser = id == user?.id
-  const { data: userFound } = isLoggedUser ? useGetMe() : useGetUser(id as string);
+  const { user } = useUserStore()
+  const isLoggedUser = id === user?.id
+  const { data: meData } = useGetMe()
+  const { data: userData } = useGetUser(id as string, { enabled: !isLoggedUser && !!id })
+  const userFound = isLoggedUser ? meData : userData
 
   // userFound = mockUsersList.find((u) => String(u.id) === String(id))
 
