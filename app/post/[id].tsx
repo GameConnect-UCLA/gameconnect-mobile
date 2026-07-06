@@ -1,5 +1,6 @@
 import { PostDetailView } from '@/src/features/post/components/PostDetailView'
 import { fetchPostById } from '@/src/features/post/api/post.api'
+import { postKeys } from '@/src/features/post/api/queryKeys'
 import { useQuery } from '@tanstack/react-query'
 import { Stack, useLocalSearchParams } from 'expo-router'
 import { ActivityIndicator, Text, View } from 'react-native'
@@ -10,7 +11,7 @@ export default function PostDetailRoute() {
   const initialImageIndex = Number.isNaN(parsedImageIndex) ? 0 : parsedImageIndex
 
   const { data: post, isLoading, isError } = useQuery({
-    queryKey: ['post', id],
+    queryKey: postKeys.details(id!),
     queryFn: () => fetchPostById(id!),
     enabled: !!id,
   })

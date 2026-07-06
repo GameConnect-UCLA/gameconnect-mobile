@@ -148,5 +148,6 @@ Auto-generate query keys from endpoint URLs or use ESLint plugin to validate.
 - Active/friends users API
 
 - **Feed queries missing `game` relation** — `reviewedGame` returns raw UUID instead of game name. Feed posts with `isReview: true` display UUID string as title. Fix: add `include: { game: { select: { title: true } } }` to all feed queries (`feed.service.ts`).
+- **`toggleLike` missing `likesCounter` in response** — `POST /posts/like` returns `{postId, userId, username, liked}` but omits the updated `likesCounter`. Frontend `useLikePost` must compute counter optimistically instead of reading from server response. Fix: include `likesCounter` in the return object of `posts.service.ts > toggleLike()` (both like and unlike branches).
 
 See `docs/backend-gaps.md` for full priority list.
