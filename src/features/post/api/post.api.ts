@@ -21,6 +21,12 @@ export const fetchPostById = async (id: string): Promise<Post> => {
   return data
 }
 
+/** Fetch posts published by a user @returns Post list */
+export const fetchUserPosts = async (userId: string, offset: number = 0, limit: number = 10): Promise<Post[]> => {
+  const { data } = await apiClient.get<Post[]>('/posts/user', { params: { userId, limit, offset } })
+  return data
+}
+
 /** Create a new post @param post Partial post data @returns Created post */
 // post.api.ts - createPost
 export const createPost = async (post: Partial<Post>): Promise<Partial<Post>> => {

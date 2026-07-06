@@ -1,5 +1,4 @@
 /** Profile view component */
-import { usePostStore } from "@/src/features/feed/store/post.store";
 import { Ionicons } from "@expo/vector-icons";
 import React from "react";
 import {
@@ -11,8 +10,10 @@ import {
   TouchableOpacity,
   View,
 } from "react-native";
+import { useQuery } from "@tanstack/react-query";
 import { SafeAreaView } from "react-native-safe-area-context";
 import PostCard from "@/src/features/feed/components/PostCard";
+import { fetchUserPosts } from "@/src/features/post/api/post.api";
 import { Colors, Spacing, Radii, Typography } from "@/src/core/theme";
 import { useNavigation } from "@/src/core/hooks/useNavigation";
 import { User } from "../types/user.types";
@@ -44,11 +45,11 @@ const ProfileView: React.FC<ProfileViewProps> = ({
 }) => {
   const { back } = useNavigation();
 
-  const allPosts = usePostStore((state) => state.posts);
-
-  const userPosts = allPosts.filter(
-    (post) => post.authorUser?.username === user.username,
-  );
+  const { data: userPosts = [] } = useQuery({
+    queryKey: ['posts', 'user', user.id],
+    queryFn: () => fetchUserPosts(user.id),
+    enabled: !!user.id,
+  });
 
   const displayName = user.displayName ? user.displayName : "";
   const bioLine = user.bio?.split("\n").filter(Boolean).join(" | ") || "";
