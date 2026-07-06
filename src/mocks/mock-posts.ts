@@ -9,7 +9,7 @@ export const mockPosts: Post[] = [
     authorDisplayName: 'JORGE SILVA',
     authorUsername: 'jorgetech',
     authorProfilePic: FOTO_JORGE,
-    postTitle: 'DEAD SPACE',
+    title: 'DEAD SPACE',
     content: 'La tensión y el ambiente opresivo del USG Ishimura te mantendrán al borde del asiento. Cada disparo cuenta, cada sombra es una amenaza.',
     media: {
       images: ['https://cdn.wccftech.com/wp-content/uploads/2022/12/WCCFdeadspaceremake8.jpg'],
@@ -48,7 +48,7 @@ export const mockPosts: Post[] = [
     authorDisplayName: 'Mariangel Perez',
     authorUsername: 'maripferres',
     authorProfilePic: 'https://i.pravatar.cc/150?img=32',
-    postTitle: '¡Cyberpunk 2077 es increíble ahora!',
+    title: '¡Cyberpunk 2077 es increíble ahora!',
     content:
       'Después de todas las actualizaciones, este juego se siente completamente diferente. La historia es absorbente y Night City luce mejor que nunca.',
     media: {
@@ -88,7 +88,7 @@ export const mockPosts: Post[] = [
     authorDisplayName: 'JORGE SILVA',
     authorUsername: 'jorgetech',
     authorProfilePic: FOTO_JORGE,
-    postTitle: 'RESIDENT EVIL 4',
+    title: 'RESIDENT EVIL 4',
     content: 'Leon S. Kennedy se enfrenta a una pesadilla en la España rural. El equilibrio perfecto entre terror y acción.',
     media: {
       images: ['https://images7.alphacoders.com/130/thumb-1920-1306926.jpeg'],
@@ -127,7 +127,7 @@ export const mockPosts: Post[] = [
     authorDisplayName: 'Carlos Mendoza',
     authorUsername: 'carlosgamer',
     authorProfilePic: 'https://i.pravatar.cc/150?img=12',
-    postTitle: 'Elden Ring: Un desafío épico',
+    title: 'Elden Ring: Un desafío épico',
     content:
       'FromSoftware lo hizo de nuevo. Este juego es difícil pero justo, y cada victoria se siente increíble.',
     media: {
@@ -163,7 +163,7 @@ export const mockPosts: Post[] = [
     authorDisplayName: 'JORGE SILVA',
     authorUsername: 'jorgetech',
     authorProfilePic: FOTO_JORGE,
-    postTitle: 'GEARS OF WAR 3',
+    title: 'GEARS OF WAR 3',
     content: 'Acción frenética, coberturas y un modo horda que engancha. La historia de Marcus Fenix y su equipo llega a su mejor momento.',
     media: {
       images: ['http://images.gamersyde.com/image_gears_of_war_3-14855-2017_0001.jpg'],
@@ -202,7 +202,7 @@ export const mockPosts: Post[] = [
     authorDisplayName: 'Douriann',
     authorUsername: 'douriann',
     authorProfilePic: 'https://i.pravatar.cc/150?u=douriann',
-    postTitle: 'La mejor forma de volver a jugarlo',
+    title: 'La mejor forma de volver a jugarlo',
     content:
       'Obra maestra. Estos sí son remakes, no como el proyecto vago de Naughty Dog.',
     media: {
@@ -234,7 +234,7 @@ export const mockPosts: Post[] = [
     authorDisplayName: 'JORGE SILVA',
     authorUsername: 'jorgetech',
     authorProfilePic: FOTO_JORGE,
-    postTitle: 'ELDEN RING',
+    title: 'ELDEN RING',
     content: 'Explorando las Tierras Intermedias. La dificultad es elevada pero la recompensa visual y de descubrimiento no tiene comparación.',
     media: {
       images: ['https://cdn.mos.cms.futurecdn.net/vVYdoxvuFkZMMBweq2iMUD-970-80.jpg'],
@@ -256,7 +256,7 @@ export const mockPosts: Post[] = [
     authorDisplayName: 'MAXY3120',
     authorUsername: 'maxy3120',
     authorProfilePic: 'https://i.pravatar.cc/150?img=56',
-    postTitle: 'Resident Evil 4 se siente impecable',
+    title: 'Resident Evil 4 se siente impecable',
     content:
       'Probablemente de los mejores remakes hasta la fecha y un ejemplo de cómo mejorar la experiencia original con un gameplay más dinámico.',
     media: {
@@ -282,7 +282,7 @@ export const mockPosts: Post[] = [
     authorDisplayName: 'Sofia Vega',
     authorUsername: 'sofiaves',
     authorProfilePic: 'https://i.pravatar.cc/150?img=47',
-    postTitle: 'Hoy solo vengo a decir que amo este soundtrack',
+    title: 'Hoy solo vengo a decir que amo este soundtrack',
     content:
       'No siempre hace falta una review completa. A veces un juego solo te atrapa por su música, su dirección de arte y el ambiente que construye.',
     media: {
@@ -314,7 +314,7 @@ export const mockPosts: Post[] = [
     authorDisplayName: 'Ana Torres',
     authorUsername: 'anatgamer',
     authorProfilePic: 'https://i.pravatar.cc/150?img=21',
-    postTitle: 'El nuevo parche arregló varios detalles del remake',
+    title: 'El nuevo parche arregló varios detalles del remake',
     content:
       'Capcom adjusted the camera and the response of the controls. El juego se siente más fino después de esta actualización.',
     media: {
@@ -337,7 +337,7 @@ export const mockPosts: Post[] = [
     authorDisplayName: 'Javier Rojas',
     authorUsername: 'jvrojas',
     authorProfilePic: 'https://i.pravatar.cc/150?img=15',
-    postTitle: 'Así se ve el remake con varias capturas nuevas',
+    title: 'Así se ve el remake con varias capturas nuevas',
     content:
       'Compartieron más imágenes del parche y los cambios de iluminación se notan muchísimo. El juego quedó más limpio visualmente.',
     media: {

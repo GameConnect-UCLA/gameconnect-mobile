@@ -24,7 +24,7 @@ export interface Post {
     username: string;
     profilePic: string;
   }
-  postTitle: string;
+  title: string;
   content: string;
   hashtags: string[];
   media: PostMedia | null;

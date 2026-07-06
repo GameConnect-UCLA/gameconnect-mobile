@@ -21,6 +21,7 @@ import { useNavigation } from '@/src/core/hooks/useNavigation'
 /** Props for rendering a post in list (item) variant. */
 export interface PostItemProps {
   id: string
+  userId?: string
   userName: string
   userTag: string
   userAvatar: string
@@ -40,6 +41,7 @@ interface Props {
   hideComment?: boolean
   onHashtagPress?: (tag: string) => void
   id?: string
+  userId?: string
   userName?: string
   userTag?: string
   userAvatar?: string
@@ -67,6 +69,7 @@ interface ItemVariantProps {
   post?: Post
   hideComment?: boolean
   id?: string
+  userId?: string
   userName?: string
   userTag?: string
   userAvatar?: string
@@ -82,6 +85,7 @@ const ItemVariant: React.FC<ItemVariantProps> = ({
   post,
   hideComment = false,
   id: itemId,
+  userId: itemUserId,
   userName: itemUserName,
   userTag: itemUserTag,
   userAvatar: itemUserAvatar,
@@ -111,7 +115,7 @@ const ItemVariant: React.FC<ItemVariantProps> = ({
   }
 
   const handleItemShare = async () => {
-    await Share.share({ message: `Mira este post sobre ${itemTitle || post?.postTitle || ''}` })
+    await Share.share({ message: `Mira este post sobre ${itemTitle || post?.title || ''}` })
   }
 
   const goToDetail = () => {
@@ -121,16 +125,20 @@ const ItemVariant: React.FC<ItemVariantProps> = ({
 
   return (
     <View style={styles.itemContainer}>
-      <View style={styles.itemHeader}>
+      <TouchableOpacity
+        style={styles.itemHeader}
+        onPress={() => push(`/user/${itemUserId || post?.author}` as any)}
+        activeOpacity={0.7}
+      >
         <Image source={{ uri: itemUserAvatar || post?.authorUser.profilePic || '' }} style={styles.itemAvatar} />
         <View>
           <Text style={styles.itemUserName}>{itemUserName || post?.authorUser.username || ''}</Text>
           <Text style={styles.itemUserTag}>{itemUserTag || `@${post?.authorUser.username || ''}`}</Text>
         </View>
-      </View>
+      </TouchableOpacity>
 
       <View>
-        <Text style={styles.itemPostTitle}>{itemTitle || post?.postTitle || ''}</Text>
+        <Text style={styles.itemPostTitle}>{itemTitle || post?.title || ''}</Text>
         <Text style={styles.itemPostContent}>{itemContent || post?.content || ''}</Text>
       </View>
 
@@ -168,7 +176,7 @@ const ItemVariant: React.FC<ItemVariantProps> = ({
 export default function PostCard({
   post, separatorColor = 'transparent', onImagePress, initialImageIndex = 0,
   variant = 'card', hideComment = false, onHashtagPress,
-  id: itemId, userName: itemUserName, userTag: itemUserTag,
+  id: itemId, userId: itemUserId, userName: itemUserName, userTag: itemUserTag,
   userAvatar: itemUserAvatar, title: itemTitle, content: itemContent,
   imageUrl: itemImageUrl, likes: itemLikes = 0, comments: itemComments = 0,
 }: Props) {
@@ -184,7 +192,7 @@ export default function PostCard({
   const galleryRef = useRef<ScrollView>(null)
 
   const isSaved = favoriteIds.includes(post?.id ?? itemId ?? '')
-  const displayedTitle = post?.isReview ? post?.reviewedGame : post?.postTitle
+  const displayedTitle = post?.isReview ? post?.reviewedGame : post?.title
   const contentPreview = post?.content?.slice(0, 160) ?? ''
   const displayLikes = post?.likesCounter ?? 0
 
@@ -225,6 +233,7 @@ export default function PostCard({
         post={post}
         hideComment={hideComment}
         id={itemId}
+        userId={itemUserId}
         userName={itemUserName}
         userTag={itemUserTag}
         userAvatar={itemUserAvatar}
@@ -282,7 +291,7 @@ export default function PostCard({
       </View>
 
       <TouchableOpacity activeOpacity={0.9} onPress={hideComment ? undefined : () => handleGoToDetail()} style={styles.contentTouchArea}>
-        <Text style={[styles.title, post.isReview && styles.reviewTitle]}>{displayedTitle}</Text>
+        <Text style={[styles.title, post.isReview && styles.reviewTitle]}>{displayedTitle || ''}</Text>
         <Text style={styles.content}>{contentPreview}{post.content.length > 160 ? '...' : ''}</Text>
       </TouchableOpacity>
 

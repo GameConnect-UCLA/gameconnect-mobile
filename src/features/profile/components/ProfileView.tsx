@@ -47,7 +47,7 @@ const ProfileView: React.FC<ProfileViewProps> = ({
   const allPosts = usePostStore((state) => state.posts);
 
   const userPosts = allPosts.filter(
-    (post) => post.authorUsername === user.username,
+    (post) => post.authorUser?.username === user.username,
   );
 
   const displayName = user.displayName ? user.displayName : "";
@@ -248,12 +248,12 @@ const ProfileView: React.FC<ProfileViewProps> = ({
                     key={post.id}
                     variant="item"
                     id={post.id}
-                    userName={post.authorDisplayName}
+                    userName={post.authorUser?.displayName}
                     userTag="FPS"
-                    userAvatar={post.authorProfilePic}
-                    title={post.postTitle}
+                    userAvatar={post.authorUser?.profilePic}
+                    title={post.title}
                     content={post.content}
-                    imageUrl={post.media?.images?.[0] ?? ''}
+                    imageUrl={post.media?.urls?.[0] ?? ''}
                     likes={post.likesCounter}
                     comments={post.commentsCounter}
                   />

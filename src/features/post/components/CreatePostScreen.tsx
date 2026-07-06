@@ -264,7 +264,7 @@ export default function CreatePostScreen() {
 
     const newPost: Partial<Post> = {
       author: currentUserProfile?.id,
-      postTitle: finalGameTitle,
+      title: finalGameTitle,
       content: description.trim(),
       hashtags: [...tags],
       media: {

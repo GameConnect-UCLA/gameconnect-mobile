@@ -30,7 +30,7 @@ export const createPost = async (post: Partial<Post>): Promise<Partial<Post>> =>
   if (media?.urls?.length) {
     try {
       const uploadPromises = media.urls.map(async (localImg) => {
-        const fileName = `${post.postTitle}`;
+        const fileName = `${post.title}`;
         const mimeType = "image/" + (localImg.split('.').pop() ?? 'jpg');
         console.log(`Uploading: ${localImg} as ${fileName} (${mimeType})`);
         const data = await mediaApi.uploadFile(localImg, fileName, mimeType);
@@ -47,7 +47,7 @@ export const createPost = async (post: Partial<Post>): Promise<Partial<Post>> =>
   // imageUrls.forEach(img => console.info(img))
 
   const request = {
-  title: post.postTitle,
+  title: post.title,
   content: post.content,
   media: {
     urls: imageUrls

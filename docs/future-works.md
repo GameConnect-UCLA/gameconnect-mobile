@@ -147,4 +147,6 @@ Auto-generate query keys from endpoint URLs or use ESLint plugin to validate.
 - Chat search API
 - Active/friends users API
 
+- **Feed queries missing `game` relation** — `reviewedGame` returns raw UUID instead of game name. Feed posts with `isReview: true` display UUID string as title. Fix: add `include: { game: { select: { title: true } } }` to all feed queries (`feed.service.ts`).
+
 See `docs/backend-gaps.md` for full priority list.
