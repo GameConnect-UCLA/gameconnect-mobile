@@ -1,16 +1,18 @@
 /** Hook to logout user, clean auth state and secure store. */
 
-import { useMutation, useQueryClient } from '@tanstack/react-query'
+import { useMutation } from '@tanstack/react-query'
 import type { AxiosError } from 'axios'
-import { useAuthStore } from '@/src/core/store/auth.store'
 import { useToastStore } from '@/src/core/store/toast.store'
 import { secureStore } from '@/src/core/lib/secure-store'
+import { handleLogout } from '@/src/core/api/client'
 import { authApi } from '../api/auth.api'
 
 export const useLogout = () => {
-  const queryClient = useQueryClient()
-  const authReset = useAuthStore((s) => s.reset)
   const showToast = useToastStore((s) => s.showToast)
+
+  const performLogout = () => {
+    handleLogout('Sesión cerrada')
+  }
 
   return useMutation({
     mutationFn: async () => {
@@ -19,15 +21,14 @@ export const useLogout = () => {
         await authApi.logout(refreshToken)
       }
     },
-    onError: (error: AxiosError<{ message?: string }>) => {
+    onError: async (error: AxiosError<{ message?: string }>) => {
       const msg = error?.response?.data?.message || 'Error al cerrar sesión'
       showToast(msg, 'error')
+      performLogout()
     },
-    onSuccess: async () => {
-      await secureStore.clearAll()
-      authReset()
-      queryClient.clear()
+    onSuccess: () => {
       showToast('Sesión cerrada', 'success')
+      performLogout()
     },
   })
 }
