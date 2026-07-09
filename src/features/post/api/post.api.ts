@@ -29,7 +29,7 @@ export const fetchUserPosts = async (userId: string, offset: number = 0, limit: 
 
 /** Create a new post @param post Partial post data @returns Created post */
 // post.api.ts - createPost
-export const createPost = async (post: Partial<Post>): Promise<Partial<Post>> => {
+export const createPost = async (post: Partial<Post>): Promise<Post> => {
   const { media } = post;
   let imageUrls: string[] = [];
 
@@ -65,13 +65,13 @@ export const createPost = async (post: Partial<Post>): Promise<Partial<Post>> =>
   isRepost: post.isRepost,
 } 
 
-  const { data } = await apiClient.post<Partial<Post>>('/posts', request);
+  const { data } = await apiClient.post<Post>('/posts', request);
   return data;
 };
 
-/** Update a post @param id Post ID @param post Partial post data @returns Updated post */
-export const updatePost = async (id: string, post: Partial<Post>): Promise<Post> => {
-  const { data } = await apiClient.put<Post>(`/posts/${id}`, post)
+/** Update post content @param id Post ID @param content New content @returns Updated post */
+export const updatePost = async (id: string, content: string): Promise<Post> => {
+  const { data } = await apiClient.patch<Post>(`/posts/${id}`, { content })
   return data
 }
 
@@ -81,14 +81,14 @@ export const deletePost = async (id: string): Promise<void> => {
 }
 
 /** Toggle like on a post @param postId Post ID @returns Like state */
-export const toggleLike = async (postId: string): Promise<{ post_id: string; liked: boolean; likesCounter: number }> => {
+export const toggleLike = async (postId: string): Promise<{ postId: string; liked: boolean; likesCounter: number }> => {
   const { data } = await apiClient.post('/posts/like', { postId })
   return data
 }
 
 /** Toggle bookmark on a post @param postId Post ID @returns Bookmark state */
-export const toggleBookmark = async (postId: string): Promise<{ post_id: string; bookmarked: boolean }> => {
-  const { data } = await apiClient.post('/posts/bookmark', { postId })
+export const toggleBookmark = async (postId: string): Promise<{ postId: string; bookmarked: boolean }> => {
+  const { data } = await apiClient.post(`/posts/${postId}/bookmark`)
   return data
 }
 
