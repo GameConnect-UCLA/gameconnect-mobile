@@ -20,9 +20,11 @@ export const useCreateComment = (postId: string) => {
       const previous = queryClient.getQueryData<Comment[]>(queryKey)
       const optimisticComment: Comment = {
         id: `temp-${Date.now()}`,
-        author_id: '',
-        authorDisplayName: '...',
-        authorProfilePic: '',
+        authorUser: {
+          displayName: '...',
+          username: '',
+          profilePic: '',
+        },
         content,
         createdAt: new Date().toISOString(),
       }
