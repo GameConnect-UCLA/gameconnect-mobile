@@ -4,15 +4,14 @@ import { useMutation, useQueryClient } from '@tanstack/react-query'
 import { updatePost } from '../api/post.api'
 import { useToastStore } from '@/src/core/store/toast.store'
 import { postKeys } from '../api/queryKeys'
-import type { Post } from '@/src/core/types/post.types'
 
 export const useUpdatePost = () => {
   const queryClient = useQueryClient()
   const showToast = useToastStore((s) => s.showToast)
 
   return useMutation({
-    mutationFn: ({ id, body }: { id: string; body: Partial<Post> }) =>
-      updatePost(id, body),
+    mutationFn: ({ id, content }: { id: string; content: string }) =>
+      updatePost(id, content),
     onError: (error: any) => {
       const msg = error?.response?.data?.message || 'Error al actualizar'
       showToast(msg, 'error')
