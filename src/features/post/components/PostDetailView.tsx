@@ -119,8 +119,8 @@ export const PostDetailView = ({
 
           <View style={styles.inputBar}>
             <Image
-              source={require("@/assets/images/default-avatar.png")}
-              style={styles.inputAvatar}
+              source={require("@/assets/images/default-avatar.jpg")}
+              style={styles.inputAvatar}  
             />
             <View style={styles.inputBubble}>
               <TextInput
