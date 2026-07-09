@@ -8,9 +8,11 @@ export interface PostMedia {
 /** Comment on a post */
 export interface Comment {
   id: string;
-  author_id: string;
-  authorDisplayName: string;
-  authorProfilePic: string;
+  authorUser: {
+    displayName: string;
+    username: string;
+    profilePic: string;
+  };
   content: string;
   createdAt: string;
 }
@@ -28,7 +30,7 @@ export interface Post {
   content: string;
   hashtags: string[];
   media: PostMedia | null;
-  isReview: boolean;
+  isReview?: boolean | null;
   reviewScore?: number;
   reviewedGame?: string; 
   likesCounter: number;
@@ -39,6 +41,6 @@ export interface Post {
   createdAt: string;
   lastModifiedAt: string;
   deletedAt: string | null;
-  isRepost: boolean, 
+  isRepost?: boolean | null,
   originalPostId: string
 }
