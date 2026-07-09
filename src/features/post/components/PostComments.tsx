@@ -25,12 +25,12 @@ export const PostComments: React.FC<Props> = ({ comments }) => {
           <View key={comment.id} style={styles.commentWrapper}>
             <TouchableOpacity
               activeOpacity={0.7}
-              onPress={() => push(`/user/${comment.author_id}`)}
+              onPress={() => push(`/user/${comment.authorUser.username}`)}
               style={styles.commentRow}
             >
-              <Image source={{ uri: comment.authorProfilePic }} style={styles.avatar} />
+              <Image source={{ uri: comment.authorUser.profilePic }} style={styles.avatar} />
               <View style={styles.bubble}>
-                <Text style={styles.authorName}>{comment.authorDisplayName}</Text>
+                <Text style={styles.authorName}>{comment.authorUser.displayName}</Text>
                 <Text style={styles.commentContent}>{comment.content}</Text>
               </View>
             </TouchableOpacity>
