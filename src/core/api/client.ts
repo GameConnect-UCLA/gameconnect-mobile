@@ -1,6 +1,8 @@
 /** Axios HTTP client with JWT interceptor and mock setup. */
 import axios, { AxiosError, AxiosInstance, InternalAxiosRequestConfig } from 'axios'
 import { useAuthStore } from '@/src/core/store/auth.store'
+import { useToastStore } from '@/src/core/store/toast.store'
+import { queryClient } from '../lib/query-client'
 import { secureStore } from '../lib/secure-store'
 
 interface CustomAxiosRequestConfig extends InternalAxiosRequestConfig {
@@ -36,6 +38,13 @@ const processQueue = (error: any, token: string | null = null) => {
     }
   })
   failedQueue = []
+}
+
+export const handleLogout = (message: string = 'Sesión expirada. Inicia sesión de nuevo.') => {
+  secureStore.clearAll()
+  useAuthStore.getState().reset()
+  queryClient.clear()
+  useToastStore.getState().showToast(message, 'error')
 }
 
 // para enviar el token en el header
@@ -98,12 +107,16 @@ apiClient.interceptors.response.use(
         return apiClient(originalRequest)
       } catch (refreshError) {
         processQueue(refreshError, null)
-        secureStore.clearAll()
-        useAuthStore.getState().reset()
+        handleLogout()
         return Promise.reject(refreshError)
       } finally {
         isRefreshing = false
       }
+    }
+
+    if (error.response?.status === 403) {
+      const msg = (error.response.data as any)?.message || 'Acceso denegado'
+      handleLogout(msg)
     }
 
     return Promise.reject(error)
