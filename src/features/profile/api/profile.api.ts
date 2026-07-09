@@ -18,12 +18,12 @@ export const getMe = async (): Promise<User> => {
 }
 
 export const getUser = async (userId: string): Promise<User> => {
-  const { data } = await apiClient.get(`users/${userId}`)
+  const { data } = await apiClient.get(`/users/${userId}`)
   return data
 }
 
 export const updateProfile = async (payload: UpdateProfilePayload): Promise<User> => {
-  const { data } = await apiClient.patch('/users/profile', payload)
+  const { data } = await apiClient.patch('/users/me', payload)
   return data
 }
 
