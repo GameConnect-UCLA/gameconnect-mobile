@@ -36,7 +36,7 @@ export const createPost = async (post: Partial<Post>): Promise<Post> => {
   if (media?.urls?.length) {
     try {
       const uploadPromises = media.urls.map(async (localImg) => {
-        const fileName = `${post.title}`.trim();
+        const fileName = `${post.title}`.split(" ").join("").toLowerCase();
         const mimeType = "image/" + (localImg.split('.').pop() ?? 'jpg');
         console.log(`Uploading: ${localImg} as ${fileName} (${mimeType})`);
         const data = await mediaApi.uploadFile(localImg, fileName, mimeType);
