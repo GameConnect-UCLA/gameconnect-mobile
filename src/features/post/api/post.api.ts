@@ -36,12 +36,12 @@ export const createPost = async (post: Partial<Post>): Promise<Post> => {
   if (media?.urls?.length) {
     try {
       const uploadPromises = media.urls.map(async (localImg) => {
-        const fileName = `${post.title}`;
+        const fileName = `${post.title}`.trim();
         const mimeType = "image/" + (localImg.split('.').pop() ?? 'jpg');
         console.log(`Uploading: ${localImg} as ${fileName} (${mimeType})`);
         const data = await mediaApi.uploadFile(localImg, fileName, mimeType);
         return data.url;
-        
+
       });
       imageUrls = await Promise.all(uploadPromises);
     } catch (error:any) {
@@ -63,7 +63,7 @@ export const createPost = async (post: Partial<Post>): Promise<Post> => {
 /* reviewedGame: post.reviewedGame,
   reviewScore: post.reviewScore, */
   isRepost: post.isRepost,
-} 
+}
 
   const { data } = await apiClient.post<Post>('/posts', request);
   return data;
