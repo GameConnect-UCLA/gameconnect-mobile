@@ -1,5 +1,5 @@
-import { SettingsView } from '@/src/components/user/settings';
+import { SettingsView } from '@/src/features/profile/components/SettingsView'
 
 export default function SettingsScreen() {
-  return <SettingsView />;
+  return <SettingsView />
 }

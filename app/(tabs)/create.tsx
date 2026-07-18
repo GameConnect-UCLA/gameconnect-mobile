@@ -1,4 +1,4 @@
-import CreatePostScreen from '@/src/components/create-post/create-post-screen';
+import CreatePostScreen from '@/src/features/post/components/CreatePostScreen';
 
 export default function CreatePostRoute() {
   return <CreatePostScreen />;
