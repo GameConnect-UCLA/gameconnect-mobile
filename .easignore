@@ -1,0 +1,35 @@
+# AI
+AGENTS.md
+
+# dependencies
+node_modules/
+
+# macOS
+.DS_Store
+
+# debug
+npm-debug.*
+yarn-debug.*
+yarn-error.*
+
+# typescript
+*.tsbuildinfo
+
+# IDE
+.vscode/
+.idea/
+
+# docs (no necesarios para build)
+docs/
+CONVENTIONS.md
+LATEST_DEV_BUILD.md
+LICENSE
+README.md
+
+# generated native (EAS los regenera)
+/android/
+/ios/
+
+# scripts de dev
+scripts/
+.github/

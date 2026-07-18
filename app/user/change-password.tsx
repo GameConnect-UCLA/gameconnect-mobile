@@ -1,5 +1,5 @@
-import { ChangePasswordView } from '@/src/components/user/change-password-view';
+import { ChangePasswordView } from '@/src/features/profile/components/ChangePasswordView'
 
 export default function ChangePasswordScreen() {
-  return <ChangePasswordView />;
+  return <ChangePasswordView />
 }

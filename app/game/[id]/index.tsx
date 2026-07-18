@@ -1,21 +1,27 @@
-import GameProfileView from '@/src/components/games/game-profile';
-import { mockGameProfiles } from '@/src/hooks/mock-data/mock-game';
-import { useLocalSearchParams } from 'expo-router';
-import { Text, View } from 'react-native';
+import GameProfileView from '@/src/features/game/components/GameProfileView'
+import { useGameProfile } from '@/src/features/game/hooks/useGameProfiles'
+import { useLocalSearchParams } from 'expo-router'
+import { ActivityIndicator, Text, View } from 'react-native'
 
 export default function GamePage() {
-  const { id } = useLocalSearchParams<{ id?: string | string[] }>();
-  const gameId = Array.isArray(id) ? id[0] : id;
+  const { id } = useLocalSearchParams<{ id: string }>()
+  const { data: game, isLoading } = useGameProfile(id ?? '')
 
-  const game = mockGameProfiles.find((g) => String(g.id) === String(gameId));
+  if (isLoading) {
+    return (
+      <View style={{ flex: 1, justifyContent: 'center', alignItems: 'center' }}>
+        <ActivityIndicator size="large" color="#8A38F5" />
+      </View>
+    )
+  }
 
   if (!game) {
     return (
       <View style={{ flex: 1, justifyContent: 'center', alignItems: 'center' }}>
         <Text>Juego no encontrado</Text>
       </View>
-    );
+    )
   }
 
-  return <GameProfileView game={game} />;
+  return <GameProfileView game={game} />
 }
