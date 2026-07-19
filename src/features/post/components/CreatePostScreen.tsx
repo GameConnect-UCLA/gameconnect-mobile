@@ -14,16 +14,19 @@ import {
   TextInput,
   TouchableOpacity,
   View,
+  ActivityIndicator,
 } from 'react-native';
 import { SafeAreaView } from 'react-native-safe-area-context';
 
-import { usePostStore } from '@/src/features/feed/store/post.store';
 import { useToastStore } from '@/src/core/store/toast.store';
 import type { Post } from '@/src/core/types/post.types';
 import { Colors, Spacing, Radii, Typography } from '@/src/core/theme';
 import { useNavigation } from '@/src/core/hooks/useNavigation';
 import { useGetMe } from '../../profile/hooks/useGetMe';
 import { useCreatePost } from '../hooks/useCreatePost';
+import { useDebounce } from '@/src/core/hooks/useDebounce';
+import { useQuery } from '@tanstack/react-query';
+import { search } from '@/src/features/explore/api/explore.api';
 
 type FieldError = {
   title: boolean;
@@ -55,25 +58,6 @@ const normalFieldLabels = {
 
 const reviewScore_MAX = 5;
 
-const scoreMatch = (title: string, query: string) => {
-  const normalizedTitle = title.toLowerCase();
-  const normalizedQuery = query.toLowerCase();
-
-  if (normalizedTitle === normalizedQuery) {
-    return 3;
-  }
-
-  if (normalizedTitle.startsWith(normalizedQuery)) {
-    return 2;
-  }
-
-  if (normalizedTitle.includes(normalizedQuery)) {
-    return 1;
-  }
-
-  return 0;
-};
-
 /** Create post/review screen with form, image picker, and validation @returns CreatePostScreen component */
 export default function CreatePostScreen() {
   const { mutateAsync } = useCreatePost();
@@ -84,6 +68,7 @@ export default function CreatePostScreen() {
   const [postTitle, setPostTitle] = useState('');
   const [reviewQuery, setReviewQuery] = useState('');
   const [selectedGameTitle, setSelectedGameTitle] = useState<string | null>(null);
+  const [selectedGameId, setSelectedGameId] = useState<string | null>(null);
   const [description, setDescription] = useState('');
   const [tagsText, setTagsText] = useState('');
   const [reviewScore, setReviewScore] = useState(0);
@@ -109,6 +94,7 @@ export default function CreatePostScreen() {
     setPostTitle('');
     setReviewQuery('');
     setSelectedGameTitle(null);
+    setSelectedGameId(null);
     setDescription('');
     setTagsText('');
     setReviewScore(0);
@@ -131,16 +117,19 @@ export default function CreatePostScreen() {
     }, [resetForm]),
   );
 
-  const matchingGames: any[] = useMemo(() => {
-    const query = reviewQuery.trim();
+  const debouncedReviewQuery = useDebounce(reviewQuery, 400);
 
-    if (!query) {
-      return [];
-    }
+  const { data: searchResults, isLoading: isSearchingGames, isFetching } = useQuery({
+    queryKey: ['game-search', debouncedReviewQuery],
+    queryFn: () => search({ q: debouncedReviewQuery, type: 'game', limit: 5 }),
+    enabled: debouncedReviewQuery.trim().length > 0 && isReview,
+  });
 
-    showToast('Búsqueda de juegos próximamente', 'info');
-    return [];
-  }, [reviewQuery]);
+  const isSearching = isSearchingGames || isFetching || reviewQuery.trim() !== debouncedReviewQuery.trim();
+
+  const matchingGames = useMemo(() => {
+    return (searchResults?.hits || []) as any[];
+  }, [searchResults]);
 
   const tags = useMemo(
     () =>
@@ -152,7 +141,7 @@ export default function CreatePostScreen() {
   );
 
   const resolvedTitle = isReview
-    ? selectedGameTitle ?? matchingGames[0]?.title ?? reviewQuery.trim()
+    ? selectedGameTitle ?? (matchingGames[0]?.type === 'game' ? (matchingGames[0] as any).name : undefined) ?? reviewQuery.trim()
     : postTitle.trim();
 
   const scrollToField = (field: FieldKey) => {
@@ -260,7 +249,13 @@ export default function CreatePostScreen() {
       return;
     }
 
-    const finalGameTitle = isReview ? selectedGameTitle ?? matchingGames[0]?.title ?? resolvedTitle : resolvedTitle;
+    const finalGameTitle = isReview
+      ? selectedGameTitle ?? (matchingGames[0]?.type === 'game' ? (matchingGames[0] as any).name : undefined) ?? resolvedTitle
+      : resolvedTitle;
+
+    const finalGameId = isReview
+      ? selectedGameId ?? (matchingGames[0]?.type === 'game' ? matchingGames[0].id : undefined)
+      : undefined;
 
     const newPost: Partial<Post> = {
       author: currentUserProfile?.id,
@@ -272,7 +267,8 @@ export default function CreatePostScreen() {
       },
       isReview: isReview,
       reviewScore: reviewScore,
-      reviewedGame:  'd701435c-5bb5-4dfb-bdc7-cf14ee45ad51',
+      reviewedGame: finalGameId || undefined,
+      isRepost: false,
       likesCounter: 0,
       commentsCounter: 0,
       comments: [],
@@ -353,6 +349,7 @@ export default function CreatePostScreen() {
                       if (isReview) {
                         setReviewQuery(text);
                         setSelectedGameTitle(null);
+                        setSelectedGameId(null);
                       } else {
                         setPostTitle(text);
                       }
@@ -366,28 +363,34 @@ export default function CreatePostScreen() {
 
                 {isReview && reviewQuery.trim().length > 0 ? (
                   <View style={styles.suggestionsBox}>
-                    {matchingGames.length > 0 ? (
+                    {isSearching ? (
+                      <View style={styles.loadingSuggestions}>
+                        <ActivityIndicator size="small" color={Colors.primaryDark} />
+                        <Text style={styles.loadingSuggestionsText}>Buscando juegos...</Text>
+                      </View>
+                    ) : matchingGames.length > 0 ? (
                       matchingGames.map((game) => {
-                        const isSelected = selectedGameTitle === game.title;
+                        const isSelected = selectedGameTitle === game.name;
 
                         return (
                           <TouchableOpacity
                             key={game.id}
                             onPress={() => {
-                              setReviewQuery(game.title);
-                              setSelectedGameTitle(game.title);
+                              setReviewQuery(game.name);
+                              setSelectedGameTitle(game.name);
+                              setSelectedGameId(game.id);
                               setErrors((currentErrors) => ({ ...currentErrors, title: false }));
                             }}
                             style={[styles.suggestionItem, isSelected && styles.suggestionItemSelected]}
                           >
                             <Ionicons name="game-controller-outline" size={18} color={Colors.primaryDark} />
-                            <Text style={styles.suggestionText}>{game.title}</Text>
+                            <Text style={styles.suggestionText}>{game.name}</Text>
                             {isSelected ? <Ionicons name="checkmark-circle" size={18} color={Colors.primaryDark} /> : null}
                           </TouchableOpacity>
                         );
                       })
                     ) : (
-                      <Text style={styles.noMatchesText}>no hay coincidencias</Text>
+                      <Text style={styles.noMatchesText}>No hay coincidencias</Text>
                     )}
                   </View>
                 ) : null}
@@ -883,6 +886,18 @@ const styles = StyleSheet.create({
     justifyContent: 'center',
     backgroundColor: 'rgba(17,17,17,0.62)',
     zIndex: 5,
+  },
+  loadingSuggestions: {
+    flexDirection: 'row',
+    alignItems: 'center',
+    justifyContent: 'center',
+    gap: 8,
+    paddingVertical: 10,
+  },
+  loadingSuggestionsText: {
+    fontSize: Typography.sizes.sm,
+    fontWeight: '600',
+    color: Colors.text.secondary,
   },
   submitButton: {
     marginTop: Spacing.sm,

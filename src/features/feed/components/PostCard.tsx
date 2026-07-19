@@ -192,7 +192,7 @@ export default function PostCard({
   const galleryRef = useRef<ScrollView>(null)
 
   const isSaved = favoriteIds.includes(post?.id ?? itemId ?? '')
-  const displayedTitle = post?.isReview ? post?.reviewedGame : post?.title
+  const displayedTitle = post?.title
   const contentPreview = post?.content?.slice(0, 160) ?? ''
   const displayLikes = post?.likesCounter ?? 0
 
