@@ -210,7 +210,11 @@ export default function ChatMessageBubble({
 
   const isGroupOther = isGroup && !isOwnMessage;
 
-  const attachments = message.attachedMedia ?? [];
+  const attachments = Array.isArray(message.attachedMedia)
+    ? message.attachedMedia
+    : (message.attachedMedia && typeof message.attachedMedia === 'object' && 'attachments' in message.attachedMedia && Array.isArray((message.attachedMedia as any).attachments))
+      ? (message.attachedMedia as any).attachments
+      : [];
   const hasText = !!message.messageText?.length;
   const hasReply = !!message.replyToMessage;
 

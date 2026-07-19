@@ -52,14 +52,13 @@ export default function NewConversationModal({
   const { data: searchedUsers = [], isFetching: isSearching } = useQuery({
     queryKey: ["usersSearchRemote", debouncedQuery],
     queryFn: () => searchRemoteUsers(debouncedQuery),
-    enabled: visible && debouncedQuery.trim().length > 0,
+    enabled: visible,
     staleTime: 30_000,
   });
 
   const filteredUsers = useMemo(() => {
-    if (!debouncedQuery.trim()) return [];
     return searchedUsers.filter((user) => !blockedUserIds.includes(user.id));
-  }, [searchedUsers, blockedUserIds, debouncedQuery]);
+  }, [searchedUsers, blockedUserIds]);
 
 
   const handleSelect = async (user: ActiveUser) => {

@@ -34,14 +34,17 @@ export function useChatSocket(conversationId: string) {
       socketRef.current = s
 
       s.on('connect', () => {
+        console.log(`[WS Socket] Connected to Chat room: ${conversationId}`)
         if (!disposed) setIsConnected(true)
       })
 
       s.on('disconnect', () => {
+        console.log(`[WS Socket] Disconnected from Chat room: ${conversationId}`)
         if (!disposed) setIsConnected(false)
       })
 
       s.on('message:new', (msg: Message) => {
+        console.log(`[WS Socket] Received message:new:`, msg.id, `text: "${msg.messageText ?? ''}"`)
         if (disposed) return
         queryClient.setQueryData(['conversation', conversationId], (old: Conversation | undefined) => {
           if (!old) return old
@@ -101,6 +104,7 @@ export function useChatSocket(conversationId: string) {
       gameCard?: GameInfoCard | null,
     ) => {
       if (!socketRef.current) return
+      console.log(`[WS Socket] Sending message:send to room ${conversationId}: "${text ?? ''}"`)
       socketRef.current.emit('message:send', {
         conversation_id: conversationId,
         messageText: text,

@@ -108,13 +108,13 @@ export const transferOwnership = async (conversationId: string, memberId: string
 
 /** Search remote users via Meilisearch @param query Search query string @returns List of active users */
 export const searchRemoteUsers = async (query: string): Promise<ActiveUser[]> => {
-  const { data } = await apiClient.get<{ hits: any[] }>('/search', {
-    params: { q: query, type: 'user' },
+  const { data } = await apiClient.get<any[]>('/chat/users/search', {
+    params: { q: query },
   })
-  return (data.hits ?? []).map((hit: any) => ({
-    id: hit.id,
-    username: hit.username || hit.displayName || 'Unknown',
-    profilePic: hit.profilePic || null,
+  return (data ?? []).map((user: any) => ({
+    id: user.id,
+    username: user.username || user.displayName || 'Unknown',
+    profilePic: user.profilePic || null,
   }))
 }
 
