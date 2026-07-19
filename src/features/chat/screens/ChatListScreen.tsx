@@ -20,7 +20,8 @@ import SearchBar from '@/src/core/components/SearchBar'
 import { useChatSearch } from '../hooks/useChatSearch'
 import { useConversations } from '../hooks/useConversations'
 import { useChatStore } from '../store/chat.store'
-import { leaveGroup, getCurrentUserId } from '../api/chat.api'
+import { leaveGroup, getCurrentUserId, startConversation } from '../api/chat.api'
+
 import { GroupRole } from '../types/chat.types'
 import type { Conversation } from '../types/chat.types'
 import { useConfirmDialog } from '@/src/core/hooks/useConfirmDialog'
@@ -199,9 +200,17 @@ export default function ChatListScreen() {
                   <ConversationRow
                     key={u.id}
                     item={u}
-                    onPress={() => push(`/chat/${u.id}`)}
+                    onPress={async () => {
+                      try {
+                        const conversation = await startConversation(u.id)
+                        push(`/chat/${conversation.id}`)
+                      } catch (err) {
+                        console.error('Failed to start conversation:', err)
+                      }
+                    }}
                   />
                 ))
+
               )}
             </View>
           )}

@@ -1,7 +1,6 @@
 /** Hook for single conversation data with optimistic send-message */
 import { useQuery, useMutation, useQueryClient } from "@tanstack/react-query";
 import { getConversation, sendMessage as apiSendMessage } from '../api/chat.api';
-import { ApiError } from "@/src/features/auth/api/auth.api";
 import { useUserStore } from "@/src/core/store/user.store";
 import type { Attachment, Conversation, GameInfoCard, Message } from '../types/chat.types';
 import { MessageType } from '../types/chat.types';
@@ -12,12 +11,13 @@ export function useConversation(conversationId: string) {
   const queryKey = ["conversation", conversationId];
   const currentUserId = useUserStore((s) => s.user?.id ?? "currentUser");
 
-  const conversationQuery = useQuery<Conversation, ApiError>({
+  const conversationQuery = useQuery<Conversation, Error>({
     queryKey,
     queryFn: () => getConversation(conversationId),
     enabled: !!conversationId,
     retry: false,
   });
+
 
   const sendMessageMutation = useMutation({
     mutationFn: ({

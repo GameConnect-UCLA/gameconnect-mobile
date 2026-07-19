@@ -14,10 +14,12 @@ import {
 } from "react-native";
 import { KeyboardAvoidingView } from "react-native-keyboard-controller";
 import { Ionicons } from "@expo/vector-icons";
-import { useQueryClient } from "@tanstack/react-query";
-import { startConversation } from '../../api/chat.api';
+import { useQueryClient, useQuery } from "@tanstack/react-query";
+import { startConversation, searchRemoteUsers } from '../../api/chat.api';
 import { useChatStore } from '../../store/chat.store';
+import { useDebounce } from "@/src/core/hooks/useDebounce";
 import type { ActiveUser } from '../../types/chat.types';
+
 import { Colors, Spacing, Typography } from '@/src/core/theme';
 import { useNavigation } from '@/src/core/hooks/useNavigation';
 
@@ -45,9 +47,20 @@ export default function NewConversationModal({
     }
   }, [visible]);
 
+  const debouncedQuery = useDebounce(query, 300);
+
+  const { data: searchedUsers = [], isFetching: isSearching } = useQuery({
+    queryKey: ["usersSearchRemote", debouncedQuery],
+    queryFn: () => searchRemoteUsers(debouncedQuery),
+    enabled: visible && debouncedQuery.trim().length > 0,
+    staleTime: 30_000,
+  });
+
   const filteredUsers = useMemo(() => {
-    return [];
-  }, [query, blockedUserIds]);
+    if (!debouncedQuery.trim()) return [];
+    return searchedUsers.filter((user) => !blockedUserIds.includes(user.id));
+  }, [searchedUsers, blockedUserIds, debouncedQuery]);
+
 
   const handleSelect = async (user: ActiveUser) => {
     Keyboard.dismiss();
@@ -137,16 +150,21 @@ export default function NewConversationModal({
               </View>
             </TouchableOpacity>
 
-            {loading ? (
+            {loading || isSearching ? (
               <View style={styles.center}>
                 <ActivityIndicator size="large" color={Colors.primary} />
-                <Text style={styles.loadingText}>Creating conversation...</Text>
+                <Text style={styles.loadingText}>
+                  {loading ? "Creating conversation..." : "Searching users..."}
+                </Text>
               </View>
             ) : filteredUsers.length === 0 ? (
               <View style={styles.center}>
                 <Ionicons name="person-outline" size={48} color="#ccc" />
-                <Text style={styles.emptyText}>No users found</Text>
+                <Text style={styles.emptyText}>
+                  {debouncedQuery.trim() ? "No users found" : "Type to search gamers"}
+                </Text>
               </View>
+
             ) : (
               <FlatList
                 data={filteredUsers}
