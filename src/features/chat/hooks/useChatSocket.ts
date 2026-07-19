@@ -24,7 +24,6 @@ export function useChatSocket(conversationId: string) {
 
       const { createSocket } = await import('@/src/core/api/socket')
       s = await createSocket()
-      s.emit('room:join', { conversation_id: conversationId })
 
       if (disposed) {
         if (s.disconnect) s.disconnect()
@@ -83,7 +82,6 @@ export function useChatSocket(conversationId: string) {
           s.off('typing:update')
           s.off('user:online')
           s.off('user:offline')
-          s.emit('room:leave', { conversation_id: conversationId })
         }
       }
     }
