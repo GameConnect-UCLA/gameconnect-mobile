@@ -2,12 +2,26 @@
 import { useState, useMemo } from "react";
 import { useQuery } from "@tanstack/react-query";
 import { useDebounce } from "@/src/core/hooks/useDebounce";
-import { Conversation } from '../types/chat.types';
+import { searchRemoteUsers } from "../api/chat.api";
+import type { Conversation } from "../types/chat.types";
 
 async function searchUsers(query: string): Promise<Conversation[]> {
-  // TODO: return await apiClient.get(`/users/search?q=${query}`)
-  return [];
+  try {
+    const users = await searchRemoteUsers(query);
+    return users.map((u) => ({
+      id: u.id,
+      name: u.username,
+      groupPicture: u.profilePic,
+      createdBy: u.id,
+      createdAt: new Date().toISOString(),
+      isGroup: false,
+    }));
+  } catch (err) {
+    console.error("Failed to search remote users:", err);
+    return [];
+  }
 }
+
 
 /** Filter conversation list locally and fall back to remote search stub @param conversations - Full conversation list @returns Query, search results, and filtering state */
 export function useChatSearch(conversations: Conversation[]) {

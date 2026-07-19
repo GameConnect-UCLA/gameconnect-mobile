@@ -19,5 +19,15 @@ export function useNavigation() {
     [router],
   );
 
-  return { push, back: router.back, replace: router.replace };
+  const navigate = useCallback(
+    (href: Href) => {
+      const now = Date.now();
+      if (now - lastNavigate.current < THROTTLE_MS) return;
+      lastNavigate.current = now;
+      router.navigate(href);
+    },
+    [router],
+  );
+
+  return { push, back: router.back, replace: router.replace, navigate };
 }

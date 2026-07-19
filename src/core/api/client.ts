@@ -53,19 +53,32 @@ apiClient.interceptors.request.use((config) => {
   if (token) {
     config.headers.Authorization = `Bearer ${token}`
   }
+  console.log(`[API Request] 🚀 ${config.method?.toUpperCase()} -> ${config.url}`, config.data ? JSON.stringify(config.data, null, 2) : '')
   return config
+}, (error) => {
+  console.error('[API Request Error] ❌', error)
+  return Promise.reject(error)
 })
 
 // Interceptor de Response
 apiClient.interceptors.response.use(
-  (response) => response,
+  (response) => {
+    console.log(`[API Response] ✅ ${response.status} <- ${response.config.url}`, response.data ? JSON.stringify(response.data, null, 2) : '')
+    return response
+  },
   async (error: AxiosError) => {
+    console.error(`[API Response Error] ❌ ${error.config?.method?.toUpperCase()} <- ${error.config?.url || ''}`, {
+      status: error.response?.status,
+      data: error.response?.data,
+      message: error.message,
+      code: error.code,
+    })
     // Casteamos el config a nuestra interfaz personalizada
     const originalRequest = error.config as CustomAxiosRequestConfig
 
     // Verificamos que originalRequest exista para evitar errores si la petición falló drásticamente
     if (error.response?.status === 401 && originalRequest && !originalRequest._retry) {
-      
+
       if (isRefreshing) {
         return new Promise<string>((resolve, reject) => {
           failedQueue.push({ resolve, reject })
@@ -87,7 +100,7 @@ apiClient.interceptors.response.use(
 
         // Tipamos la respuesta esperada del backend de forma genérica
         const { data } = await axios.post<{ accessToken: string; refreshToken: string }>(
-          `${API_BASE_URL}/refresh`, 
+          `${API_BASE_URL}/refresh`,
           { refreshToken: currentRefreshToken }
         )
 

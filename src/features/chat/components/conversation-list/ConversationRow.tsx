@@ -4,6 +4,7 @@ import { useRef } from "react";
 import { Animated, Image, StyleSheet, Text, TouchableOpacity, View } from "react-native";
 import { Spacing } from '@/src/core/theme';
 import { strings } from '@/src/core/i18n/es';
+import { useUserStore } from '@/src/core/store/user.store';
 
 function formatTime(isoString?: string): string {
   if (!isoString) return "";
@@ -44,6 +45,10 @@ function formatTime(isoString?: string): string {
 /** Conversation row with avatar, name, preview, and time, with spring press animation @param props.item - Conversation data @param props.onPress - Tap handler @param props.onLongPress - Long-press handler */
 export default function ConversationRow({ item, onPress, onLongPress }: { item: Conversation, onPress: () => void, onLongPress?: () => void }) {
   const scale = useRef(new Animated.Value(1)).current;
+  const currentUserId = useUserStore((s) => s.user?.id ?? "currentUser");
+  const contact = item.isGroup ? null : item.members?.find((m) => m.userId !== currentUserId);
+  const conversationName = item.name ?? contact?.displayName ?? contact?.username ?? "Unnamed Chat";
+  const avatarUrl = item.groupPicture ?? contact?.profilePic;
 
   const onPressIn = () =>
     Animated.spring(scale, {
@@ -72,7 +77,7 @@ export default function ConversationRow({ item, onPress, onLongPress }: { item: 
       <Animated.View style={[styles.convoRow, { transform: [{ scale }] }]}>
         <View style={styles.avatarContainer}>
           <Image 
-            source={item.groupPicture ? { uri: item.groupPicture } : require("@/assets/images/default-avatar.jpg")} 
+            source={avatarUrl ? { uri: avatarUrl } : require("@/assets/images/default-avatar.jpg")} 
             style={styles.convoAvatar} 
           />
         </View>
@@ -80,7 +85,7 @@ export default function ConversationRow({ item, onPress, onLongPress }: { item: 
         <View style={styles.convoContent}>
           <View style={styles.convoHeader}>
             <Text style={styles.convoName} numberOfLines={1}>
-              {item.name ?? "Unnamed Chat"}
+              {conversationName}
             </Text>
             <Text style={styles.convoTime}>{formatTime(item.lastMessageTime)}</Text>
           </View>

@@ -26,6 +26,8 @@ interface ChatInputProps {
   recipientName?: string;
   blocked?: boolean;
   groupMembers?: GroupMember[] | null;
+  onTypingStart?: () => void;
+  onTypingStop?: () => void;
 }
 
 /** Message composer with text input, attachment menu, and @-mention support @param props.onSend - Send callback @param props.onHeightChange - Input height change callback @param props.recipientName - Chat recipient name @param props.blocked - Whether user is blocked @param props.groupMembers - Group members for mentions */
@@ -35,6 +37,8 @@ export default function ChatInput({
   recipientName,
   blocked = false,
   groupMembers,
+  onTypingStart,
+  onTypingStop,
 }: ChatInputProps) {
   const [message, setMessage] = useState("");
   const [inputHeight, setInputHeight] = useState(BASE_LINE_HEIGHT);
@@ -44,6 +48,17 @@ export default function ChatInput({
   const messageRef = useRef(message);
   messageRef.current = message;
   const showToast = useToastStore((s) => s.showToast);
+
+  const isTypingRef = useRef(false);
+  const typingTimeoutRef = useRef<any>(null);
+
+  useEffect(() => {
+    return () => {
+      if (typingTimeoutRef.current) {
+        clearTimeout(typingTimeoutRef.current);
+      }
+    };
+  }, []);
 
   const isGroup = !!groupMembers;
   const {
@@ -69,8 +84,33 @@ export default function ChatInput({
       messageRef.current = text;
       const cursorPos = selection.start + (text.length - prevLen);
       detectAutocomplete(text, Math.max(0, cursorPos));
+
+      // Typing status logic
+      if (text.length > 0) {
+        if (!isTypingRef.current) {
+          isTypingRef.current = true;
+          onTypingStart?.();
+        }
+
+        if (typingTimeoutRef.current) {
+          clearTimeout(typingTimeoutRef.current);
+        }
+
+        typingTimeoutRef.current = setTimeout(() => {
+          isTypingRef.current = false;
+          onTypingStop?.();
+        }, 2000);
+      } else {
+        if (isTypingRef.current) {
+          isTypingRef.current = false;
+          onTypingStop?.();
+        }
+        if (typingTimeoutRef.current) {
+          clearTimeout(typingTimeoutRef.current);
+        }
+      }
     },
-    [detectAutocomplete, selection.start],
+    [detectAutocomplete, selection.start, onTypingStart, onTypingStop],
   );
 
   const handleMentionSelect = useCallback(
@@ -97,6 +137,15 @@ export default function ChatInput({
     setMessage("");
     setAttachments([]);
     setShowAttachmentMenu(false);
+
+    // Reset typing status immediately
+    if (isTypingRef.current) {
+      isTypingRef.current = false;
+      onTypingStop?.();
+    }
+    if (typingTimeoutRef.current) {
+      clearTimeout(typingTimeoutRef.current);
+    }
   };
 
   const handleContentSizeChange = useCallback(
