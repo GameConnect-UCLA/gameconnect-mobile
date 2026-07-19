@@ -1,5 +1,4 @@
-/** Main chat list screen with active users and conversations */
-import React, { useState } from 'react'
+import React, { useState, useMemo } from 'react'
 import {
   View,
   Text,
@@ -20,22 +19,48 @@ import SearchBar from '@/src/core/components/SearchBar'
 import { useChatSearch } from '../hooks/useChatSearch'
 import { useConversations } from '../hooks/useConversations'
 import { useChatStore } from '../store/chat.store'
-import { leaveGroup, getCurrentUserId } from '../api/chat.api'
+import { leaveGroup, getCurrentUserId, startConversation } from '../api/chat.api'
+
 import { GroupRole } from '../types/chat.types'
 import type { Conversation } from '../types/chat.types'
 import { useConfirmDialog } from '@/src/core/hooks/useConfirmDialog'
 import { useToastStore } from '@/src/core/store/toast.store'
 import { useNavigation } from '@/src/core/hooks/useNavigation'
+import { useGlobalSocket } from '../hooks/useGlobalSocket'
 
 const BG = require('@/assets/images/bgbody.png')
 
 /** Chat list screen with active users row, search, conversation rows, and FAB */
 export default function ChatListScreen() {
   const { conversations } = useConversations()
+  const { onlineUsers } = useGlobalSocket()
+  const currentUserId = getCurrentUserId()
+
+  const visibleActiveUsers = useMemo(() => {
+    const active: any[] = []
+    const seenIds = new Set<string>()
+    for (const c of conversations) {
+      if (!c.isGroup) {
+        const contact = c.members?.find((m) => m.userId !== currentUserId)
+        if (contact && onlineUsers.includes(contact.userId)) {
+          if (!seenIds.has(contact.userId)) {
+            seenIds.add(contact.userId)
+            active.push({
+              id: contact.userId,
+              username: contact.displayName ?? contact.username ?? 'Unknown',
+              profilePic: contact.profilePic ?? null,
+              conversationId: c.id
+            })
+          }
+        }
+      }
+    }
+    return active
+  }, [conversations, onlineUsers, currentUserId])
+
   const hideConversation = useChatStore((s) => s.hideConversation)
   const hiddenConversationIds = useChatStore((s) => s.hiddenConversationIds)
-  const visibleActiveUsers: any[] = []
-  const { push, back } = useNavigation()
+  const { navigate, back } = useNavigation()
   const [selectedConvo, setSelectedConvo] = useState<Conversation | null>(null)
   const [showActions, setShowActions] = useState(false)
   const [showNewConvo, setShowNewConvo] = useState(false)
@@ -50,7 +75,7 @@ export default function ChatListScreen() {
   const handleOpenChat = () => {
     if (!selectedConvo) return
     setShowActions(false)
-    push(`/chat/${selectedConvo.id}`)
+    navigate(`/chat/${selectedConvo.id}`)
   }
 
   const handleMute = () => {
@@ -115,7 +140,7 @@ export default function ChatListScreen() {
           <TouchableOpacity
             style={styles.headerBtn}
             hitSlop={{ top: 8, bottom: 8, left: 8, right: 8 }}
-            onPress={() => push('/chat/newgroup')}
+            onPress={() => navigate('/chat/newgroup')}
           >
             <Ionicons
               name="people-circle"
@@ -140,7 +165,7 @@ export default function ChatListScreen() {
                   <ActiveAvatar
                     key={u.id}
                     user={u}
-                    onPress={() => push(`/chat/${u.conversationId}`)}
+                    onPress={() => navigate(`/chat/${u.conversationId}`)}
                   />
                 ))}
               </ScrollView>
@@ -160,7 +185,7 @@ export default function ChatListScreen() {
                 <ConversationRow
                   key={c.id}
                   item={c}
-                  onPress={() => push(`/chat/${c.id}`)}
+                  onPress={() => navigate(`/chat/${c.id}`)}
                   onLongPress={() => handleLongPress(c)}
                 />
               ))}
@@ -199,9 +224,17 @@ export default function ChatListScreen() {
                   <ConversationRow
                     key={u.id}
                     item={u}
-                    onPress={() => push(`/chat/${u.id}`)}
+                    onPress={async () => {
+                      try {
+                        const conversation = await startConversation(u.id)
+                        navigate(`/chat/${conversation.id}`)
+                      } catch (err) {
+                        console.error('Failed to start conversation:', err)
+                      }
+                    }}
                   />
                 ))
+
               )}
             </View>
           )}

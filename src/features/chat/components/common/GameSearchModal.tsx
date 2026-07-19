@@ -60,6 +60,11 @@ export default function GameSearchModal({
     if (timerRef.current) clearTimeout(timerRef.current);
 
     timerRef.current = setTimeout(async () => {
+      if (!query.trim()) {
+        setResults([]);
+        setLoading(false);
+        return;
+      }
       setLoading(true);
       try {
         const data = await searchGameProfiles(query);

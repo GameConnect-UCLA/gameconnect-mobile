@@ -154,14 +154,14 @@ export default function ChatDirectScreen() {
     return map;
   }, [conversation?.members]);
 
-  const contact = conversation?.members?.[0];
+  const currentUserId = useUserStore((s) => s.user?.id ?? "currentUser");
+  const contact = conversation?.members?.find((m) => m.userId !== currentUserId);
   const isGroupChat = conversation?.isGroup ?? false;
   const displayName = conversation?.name ?? contact?.username ?? "Unknown";
   const avatarSource = isGroupChat
     ? (conversation?.groupPicture ? { uri: conversation.groupPicture } : DEFAULT_AVATAR)
     : (contact?.profilePic ? { uri: contact.profilePic } : DEFAULT_AVATAR);
 
-  const currentUserId = useUserStore((s) => s.user?.id ?? "currentUser");
   const blockedUserIds = useChatStore((s) => s.blockedUserIds);
   const isBlocked = !isGroupChat && contact?.userId
     ? blockedUserIds.includes(contact.userId)
@@ -306,6 +306,9 @@ export default function ChatDirectScreen() {
             insetsTop={insets.top}
             isGroup={isGroupChat}
             memberCount={conversation?.memberCount}
+            onlineUsers={socket.onlineUsers}
+            typingUsers={socket.typingUsers}
+            recipientId={contact?.userId}
           />
 
           <ChatSearchBar
@@ -376,7 +379,15 @@ export default function ChatDirectScreen() {
           {replyingTo && (
             <ReplyBar message={replyingTo} onCancel={handleCancelReply} />
           )}
-          <ChatInput onSend={handleSend} onHeightChange={handleHeightChange} recipientName={displayName} blocked={isBlocked} groupMembers={isGroupChat ? conversation?.members : null} />
+          <ChatInput
+            onSend={handleSend}
+            onHeightChange={handleHeightChange}
+            recipientName={displayName}
+            blocked={isBlocked}
+            groupMembers={isGroupChat ? conversation?.members : null}
+            onTypingStart={socket.startTyping}
+            onTypingStop={socket.stopTyping}
+          />
         </KeyboardStickyView>
 
         <ChatOverflowMenu

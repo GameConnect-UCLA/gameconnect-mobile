@@ -21,9 +21,12 @@ interface ChatHeaderProps {
   insetsTop: number;
   isGroup?: boolean;
   memberCount?: number;
+  onlineUsers?: string[];
+  typingUsers?: string[];
+  recipientId?: string;
 }
 
-/** Top bar showing chat avatar, name, back/search/overflow buttons @param props.displayName - Conversation name @param props.avatarSource - Avatar image source @param props.onBack - Navigate back @param props.onInfoPress - Navigate to info @param props.onMenuPress - Open overflow menu @param props.onSearchPress - Toggle search @param props.insetsTop - Safe area top inset @param props.isGroup - Group flag @param props.memberCount - Group member count */
+/** Top bar showing chat avatar, name, back/search/overflow buttons */
 export default function ChatHeader({
   displayName,
   avatarSource,
@@ -34,7 +37,14 @@ export default function ChatHeader({
   insetsTop,
   isGroup,
   memberCount,
+  onlineUsers = [],
+  typingUsers = [],
+  recipientId,
 }: ChatHeaderProps) {
+  const isUserActive = !isGroup
+    ? (onlineUsers.includes(recipientId ?? "") || typingUsers.includes(recipientId ?? ""))
+    : typingUsers.length > 0;
+
   return (
     <View style={styles.header}>
       <View style={[styles.headerContent, { paddingTop: insetsTop + 10 }]}>
@@ -46,10 +56,22 @@ export default function ChatHeader({
           <Image source={avatarSource} style={styles.avatar} />
           <View style={styles.userTextInfo}>
             <Text style={styles.userName}>{displayName}</Text>
-            <Text style={styles.userStatus}>
-              {isGroup
-                ? `${memberCount ?? 1} members`
-                : "last seen recently"}
+            <Text style={[styles.userStatus, isUserActive ? { color: "#037c2b", fontWeight: "600" } : null]}>
+              {isGroup ? (
+                typingUsers.length > 0 ? (
+                  `${typingUsers.length} typing...`
+                ) : (
+                  `${memberCount ?? 1} members`
+                )
+              ) : (
+                typingUsers.includes(recipientId ?? "") ? (
+                  "typing..."
+                ) : onlineUsers.includes(recipientId ?? "") ? (
+                  "online"
+                ) : (
+                  "offline"
+                )
+              )}
             </Text>
           </View>
         </TouchableOpacity>

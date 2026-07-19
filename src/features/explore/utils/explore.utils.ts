@@ -55,9 +55,9 @@ export function matchesActiveFilter(post: Post, activeFilter: FilterKey) {
     case 'posts':
       return !post.isReview
     case 'juegos':
-      return post.reviewedGame.length > 0
+      return !!post.reviewedGame && post.reviewedGame.length > 0
     case 'tags':
-      return (post.media?.hashtags?.length ?? 0) > 0
+      return (post.hashtags?.length ?? 0) > 0
     default:
       return true
   }

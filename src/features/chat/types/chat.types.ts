@@ -45,6 +45,7 @@ export type GroupMember = {
   // UI-enhancement fields
   username?: string
   profilePic?: string | null
+  displayName?: string | null
 }
 
 // Attachment type for media content

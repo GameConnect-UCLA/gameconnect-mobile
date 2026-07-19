@@ -9,6 +9,7 @@ import axios from "axios";
 
 const login = async (credentials: LoginCredentials): Promise<AuthResponse> => {
   const { data } = await apiClient.post("/login", credentials);
+  console.info("Login data:", data);
   return data;
 };
 

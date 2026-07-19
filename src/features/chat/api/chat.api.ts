@@ -2,7 +2,8 @@
 import { apiClient } from '@/src/core/api/client'
 import { useUserStore } from '@/src/core/store/user.store'
 import { useChatStore } from '../store/chat.store'
-import type { Attachment, Conversation, Message, GameInfoCard } from '../types/chat.types'
+import type { Attachment, Conversation, Message, GameInfoCard, ActiveUser } from '../types/chat.types'
+
 
 /** Get the current user ID from the user store @returns Current user ID string */
 export const getCurrentUserId = (): string => {
@@ -52,10 +53,12 @@ export const clearChatHistory = async (conversationId: string): Promise<void> =>
 
 export const blockUser = async (userId: string): Promise<void> => {
   await apiClient.post('/chat/users/block', { userId })
+  useChatStore.getState().blockUser(userId)
 }
 
 export const unblockUser = async (userId: string): Promise<void> => {
   await apiClient.post('/chat/users/unblock', { userId })
+  useChatStore.getState().unblockUser(userId)
 }
 
 export const isBlocked = (userId: string): boolean => {
@@ -102,3 +105,16 @@ export const addMemberToGroup = async (conversationId: string, userId: string): 
 export const transferOwnership = async (conversationId: string, memberId: string): Promise<void> => {
   await apiClient.post('/chat/groups/transfer-ownership', { conversationId, memberId })
 }
+
+/** Search remote users via Meilisearch @param query Search query string @returns List of active users */
+export const searchRemoteUsers = async (query: string): Promise<ActiveUser[]> => {
+  const { data } = await apiClient.get<any[]>('/chat/users/search', {
+    params: { q: query },
+  })
+  return (data ?? []).map((user: any) => ({
+    id: user.id,
+    username: user.username || user.displayName || 'Unknown',
+    profilePic: user.profilePic || null,
+  }))
+}
+
