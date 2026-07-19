@@ -110,7 +110,7 @@ const styles = StyleSheet.create({
   filterRail: { paddingTop: 14, paddingBottom: 2, paddingHorizontal: Spacing.lg },
   filterChip: {
     flexDirection: 'row', alignItems: 'center', paddingHorizontal: Spacing.lg,
-    height: 42, borderRadius: 21, backgroundColor: Colors.primaryDark, marginRight: 10,
+    height: 42, borderRadius: 21, backgroundColor: 'rgba(11, 75, 130, 0.45)', marginRight: 10,
   },
   filterChipActive: { backgroundColor: Colors.primaryDark, transform: [{ scale: 1.03 }] },
   filterIcon: { marginRight: 7 },

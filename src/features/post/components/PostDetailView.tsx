@@ -95,7 +95,7 @@ export const PostDetailView = ({
                 {post.isReview && (
                   <View style={styles.reviewInfo}>
                     <Text style={styles.reviewLabel}>Reseña de:</Text>
-                    <Text style={styles.reviewGame}>{post.reviewedGame}</Text>
+                    <Text style={styles.reviewGame}>{post.title}</Text>
                   </View>
                 )}
               </View>

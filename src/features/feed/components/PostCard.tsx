@@ -1,7 +1,9 @@
 /** Post card/item component with author, media gallery, hashtags, and action buttons. */
 
-import { usePostStore } from '../store/post.store'
+import { useNavigation } from '@/src/core/hooks/useNavigation'
 import { useToastStore } from '@/src/core/store/toast.store'
+import { Colors, Radii, Spacing, Typography } from '@/src/core/theme'
+import type { Post } from '@/src/core/types/post.types'
 import { useLikePost } from '@/src/features/post/hooks/useLikePost'
 import { Ionicons } from '@expo/vector-icons'
 import React, { useCallback, useEffect, useRef, useState } from 'react'
@@ -14,9 +16,7 @@ import {
   TouchableOpacity,
   View,
 } from 'react-native'
-import type { Post } from '@/src/core/types/post.types'
-import { Colors, Spacing, Radii, Typography } from '@/src/core/theme'
-import { useNavigation } from '@/src/core/hooks/useNavigation'
+import { usePostStore } from '../store/post.store'
 
 /** Props for rendering a post in list (item) variant. */
 export interface PostItemProps {
@@ -192,7 +192,7 @@ export default function PostCard({
   const galleryRef = useRef<ScrollView>(null)
 
   const isSaved = favoriteIds.includes(post?.id ?? itemId ?? '')
-  const displayedTitle = post?.isReview ? post?.reviewedGame : post?.title
+  const displayedTitle = post?.title
   const contentPreview = post?.content?.slice(0, 160) ?? ''
   const displayLikes = post?.likesCounter ?? 0
 
@@ -323,7 +323,7 @@ export default function PostCard({
           ) : (
             <TouchableOpacity activeOpacity={0.9} onPress={() => handleImagePress(post.media?.urls?.[0] ?? '', 0)}>
               <View style={[styles.mediaFrame, styles.singleMediaFrame, { width: mediaWidth }]}>
-                <Image source={{ uri: `${post.media?.urls?.[0]}?t=${new Date().getTime()}`}} style={styles.mediaImage} />
+                <Image source={{ uri: `${post.media?.urls?.[0]}?t=${new Date().getTime()}` }} style={styles.mediaImage} />
               </View>
             </TouchableOpacity>
           )}

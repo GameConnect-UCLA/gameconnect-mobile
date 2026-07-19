@@ -60,8 +60,8 @@ export const createPost = async (post: Partial<Post>): Promise<Post> => {
   },
   hashtags: post.hashtags,
   isReview: post.isReview,
-/* reviewedGame: post.reviewedGame,
-  reviewScore: post.reviewScore, */
+  reviewedGame: post.reviewedGame,
+  reviewScore: post.reviewScore,
   isRepost: post.isRepost,
 }
 
