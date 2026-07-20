@@ -1,7 +1,7 @@
 /** Hook for searching conversations with local + remote (stub) fallback */
-import { useState, useMemo } from "react";
-import { useQuery } from "@tanstack/react-query";
 import { useDebounce } from "@/src/core/hooks/useDebounce";
+import { useQuery } from "@tanstack/react-query";
+import { useMemo, useState } from "react";
 import { searchRemoteUsers } from "../api/chat.api";
 import type { Conversation } from "../types/chat.types";
 
@@ -10,7 +10,7 @@ async function searchUsers(query: string): Promise<Conversation[]> {
     const users = await searchRemoteUsers(query);
     return users.map((u) => ({
       id: u.id,
-      name: u.username,
+      name: u.displayName ?? u.username,
       groupPicture: u.profilePic,
       createdBy: u.id,
       createdAt: new Date().toISOString(),

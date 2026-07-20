@@ -85,7 +85,13 @@ export type Message = {
 export type ActiveUser = {
   id: string
   username: string
+  displayName?: string | null
+  searchableText?: string | null
+  type?: 'user'
+  rankingScore?: number | null
+  bio?: string | null
   profilePic: string | null
+  verified?: boolean | null
   conversationId?: string
 }
 

@@ -2,7 +2,7 @@
 import { apiClient } from '@/src/core/api/client'
 import { useUserStore } from '@/src/core/store/user.store'
 import { useChatStore } from '../store/chat.store'
-import type { Attachment, Conversation, Message, GameInfoCard, ActiveUser } from '../types/chat.types'
+import type { ActiveUser, Attachment, Conversation, GameInfoCard, Message } from '../types/chat.types'
 
 
 /** Get the current user ID from the user store @returns Current user ID string */
@@ -108,13 +108,27 @@ export const transferOwnership = async (conversationId: string, memberId: string
 
 /** Search remote users via Meilisearch @param query Search query string @returns List of active users */
 export const searchRemoteUsers = async (query: string): Promise<ActiveUser[]> => {
-  const { data } = await apiClient.get<any[]>('/chat/users/search', {
-    params: { q: query },
+  const { data } = await apiClient.get<any>('/search', {
+    params: {
+      q: query,
+      type: 'user',
+      limit: 10,
+      offset: 0,
+    },
   })
-  return (data ?? []).map((user: any) => ({
+
+  const hits = Array.isArray(data) ? data : (data?.hits ?? [])
+
+  return hits.map((user: any) => ({
     id: user.id,
     username: user.username || user.displayName || 'Unknown',
+    displayName: user.displayName ?? null,
+    searchableText: user.searchableText ?? null,
+    type: user.type ?? 'user',
+    rankingScore: user.rankingScore ?? null,
+    bio: user.bio ?? null,
     profilePic: user.profilePic || null,
+    verified: user.verified ?? null,
   }))
 }
 
