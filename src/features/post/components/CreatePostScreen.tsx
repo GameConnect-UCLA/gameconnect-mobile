@@ -6,7 +6,6 @@ import React, { useCallback, useMemo, useRef, useState } from 'react';
 import {
   Image,
   ImageBackground,
-  KeyboardAvoidingView,
   ScrollView,
   StatusBar,
   StyleSheet,
@@ -16,6 +15,7 @@ import {
   View,
   ActivityIndicator,
 } from 'react-native';
+import { KeyboardAwareScrollView } from 'react-native-keyboard-controller';
 import { SafeAreaView } from 'react-native-safe-area-context';
 
 import { useToastStore } from '@/src/core/store/toast.store';
@@ -293,25 +293,22 @@ export default function CreatePostScreen() {
     <ImageBackground source={require('@/assets/images/bgbody.png')} style={styles.background}>
       <StatusBar barStyle="dark-content" translucent backgroundColor="transparent" />
       <SafeAreaView style={styles.safeArea} edges={['top']}>
-        <KeyboardAvoidingView
-          behavior="height"
-          style={styles.flex}
-        >
-          <View style={styles.headerRow}>
-            <TouchableOpacity onPress={() => back()} style={styles.backButton}>
-              <Ionicons name="chevron-back" size={28} color={Colors.text.primary} />
-            </TouchableOpacity>
-            <Text style={styles.headerTitle}>{isReview ? 'Crear Reseña' : 'Crear Post'}</Text>
-            <View style={styles.headerSpacer} />
-          </View>
+        <View style={styles.headerRow}>
+          <TouchableOpacity onPress={() => back()} style={styles.backButton}>
+            <Ionicons name="chevron-back" size={28} color={Colors.text.primary} />
+          </TouchableOpacity>
+          <Text style={styles.headerTitle}>{isReview ? 'Crear Reseña' : 'Crear Post'}</Text>
+          <View style={styles.headerSpacer} />
+        </View>
 
-          <ScrollView
-            ref={scrollRef}
-            contentContainerStyle={styles.scrollContent}
-            keyboardShouldPersistTaps="handled"
-            showsVerticalScrollIndicator={false}
-          >
-            <View style={styles.formCard}>
+        <KeyboardAwareScrollView
+          ref={scrollRef as any}
+          contentContainerStyle={styles.scrollContent}
+          keyboardShouldPersistTaps="handled"
+          showsVerticalScrollIndicator={false}
+          bottomOffset={20}
+        >
+          <View style={styles.formCard}>
               <View style={styles.toggleRow}>
                 <View>
                   <Text style={styles.sectionLabel}>Tipo de publicación</Text>
@@ -573,10 +570,9 @@ export default function CreatePostScreen() {
                 <Text style={styles.submitButtonText}>Publicar post</Text>
               </TouchableOpacity>
             </View>
-          </ScrollView>
-        </KeyboardAvoidingView>
-      </SafeAreaView>
-    </ImageBackground>
+          </KeyboardAwareScrollView>
+        </SafeAreaView>
+      </ImageBackground>
   );
 }
 
