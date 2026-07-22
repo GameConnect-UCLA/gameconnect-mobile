@@ -24,4 +24,5 @@ export interface GameProfile {
   tags: string[]
   description: string
   reviews: GameReview[]
+  isFollowing?: boolean
 }

@@ -2,6 +2,7 @@
 import { Ionicons } from "@expo/vector-icons";
 import React from "react";
 import {
+  ActivityIndicator,
   Image,
   ImageBackground,
   ScrollView,
@@ -12,16 +13,18 @@ import {
 } from "react-native";
 import { useQuery } from "@tanstack/react-query";
 import { SafeAreaView } from "react-native-safe-area-context";
+import { useRouter } from "expo-router"; // ✅ Importar useRouter
 import PostCard from "@/src/features/feed/components/PostCard";
 import { fetchUserPosts } from "@/src/features/post/api/post.api";
 import { Colors, Spacing, Radii, Typography } from "@/src/core/theme";
 import { useNavigation } from "@/src/core/hooks/useNavigation";
-import { User } from "../types/user.types";
+import { profileApi } from "../api/profile.api";
+import { useFollowUser } from "../hooks/useFollowUser";
 
 const BG_IMAGE = require("@/assets/images/bgbody.png");
 
 interface ProfileViewProps {
-  user: User;
+  userId: string;
   isSelf?: boolean;
   onEditPress?: () => void;
   onAddPeoplePress?: () => void;
@@ -29,30 +32,63 @@ interface ProfileViewProps {
   onViewAllGamesPress?: () => void;
   onBackPress?: () => void;
   onSettingsPress?: () => void;
-  onFollowPress?: () => void;
 }
 
-/** User profile screen with cover, stats, favorites, and posts @param user User data @param isSelf Is current user @param onEditPress Edit callback @param onAddPeoplePress Add people callback @param onAddGamePress Add game callback @param onViewAllGamesPress View all games callback @param onBackPress Back callback @param onSettingsPress Settings callback @param onFollowPress Follow callback @returns ProfileView component */
+/** User profile screen.
+ * Fetches its own data via useQuery(['userProfile', userId]) so that
+ * after a follow/unfollow mutation invalidates the query, the button
+ * label and counters update automatically without a full reload.
+ */
 const ProfileView: React.FC<ProfileViewProps> = ({
-  user,
+  userId,
   isSelf = false,
   onEditPress,
   onAddPeoplePress,
   onAddGamePress,
   onBackPress,
   onSettingsPress,
-  onFollowPress,
 }) => {
   const { back } = useNavigation();
+  const router = useRouter(); // ✅ Inicializar router
+  const followMutation = useFollowUser();
 
-  const { data: userPosts = [] } = useQuery({
-    queryKey: ['posts', 'user', user.id],
-    queryFn: () => fetchUserPosts(user.id),
-    enabled: !!user.id,
+  // Live profile query — invalidated by useFollowUser on success
+  const { data: profile, isLoading: profileLoading } = useQuery({
+    queryKey: ["userProfile", userId],
+    queryFn: () => profileApi.getUser(userId),
+    staleTime: 30_000,
+    enabled: !!userId,
   });
 
-  const displayName = user.displayName ? user.displayName : "";
-  const bioLine = user.bio?.split("\n").filter(Boolean).join(" | ") || "";
+  const { data: userPosts = [] } = useQuery({
+    queryKey: ["posts", "user", userId],
+    queryFn: () => fetchUserPosts(userId),
+    enabled: !!userId,
+  });
+
+  if (profileLoading || !profile) {
+    return (
+      <View style={{ flex: 1, justifyContent: "center", alignItems: "center" }}>
+        <ActivityIndicator size="large" color={Colors.primary} />
+      </View>
+    );
+  }
+
+  const displayName = profile.displayName ?? "";
+  const bioLine = profile.bio?.split("\n").filter(Boolean).join(" | ") ?? "";
+
+  // followersCount / followingCount / isFollowing come from getPublicProfile
+  // which now returns them. For isSelf the /users/me endpoint doesn't return
+  // them, so we fall back to profile.stats if present.
+  const followersCount =
+    (profile as any).followersCount ?? profile.stats?.followers ?? 0;
+  const followingCount =
+    (profile as any).followingCount ?? profile.stats?.following ?? 0;
+  const isFollowing: boolean = (profile as any).isFollowing ?? false;
+
+  const handleFollowPress = () => {
+    followMutation.mutate(userId);
+  };
 
   const renderBioWithIcon = () => {
     if (!bioLine) return null;
@@ -88,7 +124,7 @@ const ProfileView: React.FC<ProfileViewProps> = ({
         >
           <View style={styles.coverContainer}>
             <ImageBackground
-              source={{ uri: user.coverPic }}
+              source={{ uri: profile.coverPic }}
               style={styles.coverImage}
               resizeMode="cover"
             >
@@ -116,7 +152,7 @@ const ProfileView: React.FC<ProfileViewProps> = ({
               </View>
               <View style={styles.avatarWrapper}>
                 <Image
-                  source={{ uri: user.profilePic }}
+                  source={{ uri: profile.profilePic }}
                   style={styles.avatar}
                 />
               </View>
@@ -142,15 +178,21 @@ const ProfileView: React.FC<ProfileViewProps> = ({
                     </TouchableOpacity>
                   ) : (
                     <TouchableOpacity
-                      onPress={onFollowPress}
-                      style={styles.followButton}
+                      onPress={handleFollowPress}
+                      disabled={followMutation.isPending}
+                      style={[
+                        styles.followButton,
+                        isFollowing && styles.followingButton,
+                      ]}
                     >
                       <Ionicons
-                        name="person-add-outline"
+                        name={isFollowing ? "checkmark-outline" : "person-add-outline"}
                         size={20}
                         color="white"
                       />
-                      <Text style={styles.followButtonText}>Seguir</Text>
+                      <Text style={styles.followButtonText}>
+                        {isFollowing ? "Siguiendo" : "Seguir"}
+                      </Text>
                     </TouchableOpacity>
                   )}
                   {isSelf && (
@@ -168,7 +210,7 @@ const ProfileView: React.FC<ProfileViewProps> = ({
                 </View>
               </View>
 
-              <Text style={styles.userUsername}>@{user.username}</Text>
+              <Text style={styles.userUsername}>@{profile.username}</Text>
 
               {renderBioWithIcon()}
 
@@ -176,23 +218,32 @@ const ProfileView: React.FC<ProfileViewProps> = ({
                 <Ionicons name="calendar-outline" size={16} color="#666" />
                 <Text style={styles.joinDate}>
                   {" "}
-                  Se unió en {user.createdAt}
+                  Se unió en {profile.createdAt}
                 </Text>
               </View>
 
+              {/* ✅ Contadores clickeables */}
               <View style={styles.statsContainer}>
                 <View style={styles.statItem}>
                   <Text style={styles.statNumber}>{userPosts.length || 0}</Text>
                   <Text style={styles.statLabel}>Posts</Text>
                 </View>
-                <View style={styles.statItem}>
-                  <Text style={styles.statNumber}>{user.stats?.followers || 0}</Text>
+
+                <TouchableOpacity
+                  style={styles.statItem}
+                  onPress={() => router.push(`/user/${userId}/followers`)}
+                >
+                  <Text style={styles.statNumber}>{followersCount}</Text>
                   <Text style={styles.statLabel}>Seguidores</Text>
-                </View>
-                <View style={styles.statItem}>
-                  <Text style={styles.statNumber}>{user.stats?.following || 0}</Text>
+                </TouchableOpacity>
+
+                <TouchableOpacity
+                  style={styles.statItem}
+                  onPress={() => router.push(`/user/${userId}/following`)}
+                >
+                  <Text style={styles.statNumber}>{followingCount}</Text>
                   <Text style={styles.statLabel}>Siguiendo</Text>
-                </View>
+                </TouchableOpacity>
               </View>
 
               <View style={styles.separatorLine} />
@@ -226,18 +277,28 @@ const ProfileView: React.FC<ProfileViewProps> = ({
                   showsHorizontalScrollIndicator={false}
                   contentContainerStyle={styles.gamesScrollContent}
                 >
-                  {user.favoriteGames &&
-                    user.favoriteGames.map((game: any) => (
-                      <View key={game.id} style={styles.gameCard}>
-                        <Image
-                          source={{ uri: game.imageUrl }}
-                          style={styles.gameImage}
-                        />
-                        <Text style={styles.gameNameLabel} numberOfLines={1}>
-                          {game.name}
-                        </Text>
-                      </View>
-                    ))}
+                  {profile.favoriteGames &&
+                    profile.favoriteGames.map((gameItem: any) => {
+                      const gameId = gameItem.game?.id || gameItem.gameId || gameItem.id;
+                      const imageUrl = gameItem.game?.metadata?.cover_url || gameItem.game?.metadata?.imageUrl || gameItem.game?.metadata?.coverUrl || gameItem.imageUrl;
+                      const name = gameItem.game?.metadata?.name || gameItem.game?.metadata?.title || gameItem.name || 'Juego';
+
+                      return (
+                        <TouchableOpacity
+                          key={gameItem.id}
+                          style={styles.gameCard}
+                          onPress={() => router.push(`/game/${gameId}`)}
+                        >
+                          <Image
+                            source={{ uri: imageUrl }}
+                            style={styles.gameImage}
+                          />
+                          <Text style={styles.gameNameLabel} numberOfLines={1}>
+                            {name}
+                          </Text>
+                        </TouchableOpacity>
+                      );
+                    })}
                 </ScrollView>
               </View>
 
@@ -254,7 +315,7 @@ const ProfileView: React.FC<ProfileViewProps> = ({
                     userAvatar={post.authorUser?.profilePic}
                     title={post.title}
                     content={post.content}
-                    imageUrl={post.media?.urls?.[0] ?? ''}
+                    imageUrl={post.media?.urls?.[0] ?? ""}
                     likes={post.likesCounter}
                     comments={post.commentsCounter}
                   />
@@ -358,6 +419,9 @@ const styles = StyleSheet.create({
     paddingVertical: 6,
     borderRadius: 20,
     gap: 5,
+  },
+  followingButton: {
+    backgroundColor: "rgba(0,0,0,0.25)",
   },
   followButtonText: {
     color: "white",

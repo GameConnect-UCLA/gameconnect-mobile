@@ -3,11 +3,10 @@ import ProfileView from '@/src/features/profile/components/ProfileView'
 import { useGetMe } from '@/src/features/profile/hooks/useGetMe'
 import { useNavigation } from '@/src/core/hooks/useNavigation'
 
-export default function ProfileScreen() { 
+export default function ProfileScreen() {
   const { push, back } = useNavigation()
   const { data: user, isLoading, isError, refetch } = useGetMe()
 
-  
   if (isLoading) {
     return (
       <View style={{ flex: 1, justifyContent: 'center', alignItems: 'center' }}>
@@ -31,7 +30,7 @@ export default function ProfileScreen() {
 
   return (
     <ProfileView
-      user={user}
+      userId={user.id}
       isSelf={true}
       onEditPress={() => push('/user/edit-profile')}
       onViewAllGamesPress={() => push('/user/favorite-games')}
@@ -42,3 +41,4 @@ export default function ProfileScreen() {
     />
   )
 }
+
