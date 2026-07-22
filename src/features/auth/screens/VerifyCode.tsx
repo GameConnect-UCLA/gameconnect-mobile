@@ -1,31 +1,27 @@
 import { useState } from 'react'
-import { StyleSheet, TextInput, Pressable, Text, ActivityIndicator } from 'react-native'
+import { StyleSheet, TextInput, Pressable, Text } from 'react-native'
 import { Link, router, useLocalSearchParams } from 'expo-router'
-import { useMutation } from '@tanstack/react-query'
 import { AuthBackground } from '@/src/features/auth/components/AuthBackground'
 import { AuthCard } from '@/src/features/auth/components/AuthCard'
 import { Colors } from '@/src/core/theme'
 import { useToastStore } from '@/src/core/store/toast.store'
-import { authApi } from '@/src/features/auth/api/auth.api'
 
 export default function VerifyCodeView() {
     const { email } = useLocalSearchParams<{ email: string }>()
     const [code, setCode] = useState('')
     const showToast = useToastStore((s) => s.showToast)
 
-    const { mutate, isPending } = useMutation({
-        mutationFn: () => authApi.verifyRecoveryCode(code),
-        onSuccess: () => {
-            showToast('Código verificado correctamente.', 'success')
-            router.push({
-                pathname: '/recovery',
-                params: { email, code }
-            })
-        },
-        onError: (err: Error) => showToast(err.message || 'Código inválido o expirado.', 'error'),
-    })
-
     const isFormValid = code.trim().length === 6
+
+    const handleVerify = () => {
+        if (!isFormValid) {
+            return showToast('Código inválido', 'error')
+        }
+        router.push({
+            pathname: '/recovery',
+            params: { email, code }
+        })
+    }
 
     return (
         <AuthBackground>
@@ -44,14 +40,10 @@ export default function VerifyCodeView() {
 
                 <Pressable
                     style={[styles.btn, !isFormValid && styles.btnDisabled]}
-                    disabled={!isFormValid || isPending}
-                    onPress={() => mutate()}
+                    disabled={!isFormValid}
+                    onPress={handleVerify}
                 >
-                    {isPending ? (
-                        <ActivityIndicator color="#fff" />
-                    ) : (
-                        <Text style={styles.btnText}>Verificar código</Text>
-                    )}
+                    <Text style={styles.btnText}>Verificar código</Text>
                 </Pressable>
 
                 <Link href="/forgot" style={styles.link}>
