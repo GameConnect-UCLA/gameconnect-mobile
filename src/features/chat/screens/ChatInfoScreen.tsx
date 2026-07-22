@@ -66,17 +66,25 @@ export default function ChatInfoScreen() {
   const [addMemberVisible, setAddMemberVisible] = useState(false);
   const [addMemberSelected, setAddMemberSelected] = useState<string[]>([]);
 
+  const currentUserId = useUserStore((s) => s.user?.id ?? "currentUser");
   const isGroup = conversation?.isGroup ?? false;
-  const displayName = conversation?.name ?? "Unknown";
-  const avatarSource = conversation?.groupPicture
-    ? { uri: conversation.groupPicture }
+  const contact = isGroup
+    ? undefined
+    : conversation?.members?.find((m) => m.userId !== currentUserId);
+  const displayName =
+    conversation?.name ?? contact?.displayName ?? contact?.username ?? "Unknown";
+  const avatarSource = isGroup
+    ? conversation?.groupPicture
+      ? { uri: conversation.groupPicture }
+      : DEFAULT_AVATAR
+    : contact?.profilePic
+    ? { uri: contact.profilePic }
     : DEFAULT_AVATAR;
 
   const blockedUserIds = useChatStore((s) => s.blockedUserIds);
   const isContactBlocked = contactUserId
     ? blockedUserIds.includes(contactUserId)
     : false;
-  const currentUserId = useUserStore((s) => s.user?.id ?? "currentUser");
   const currentMember = conversation?.members?.find(
     (m) => m.userId === currentUserId,
   );
@@ -246,7 +254,7 @@ export default function ChatInfoScreen() {
             >
               <Ionicons name="chevron-back" size={28} color="#1a1a1a" />
             </TouchableOpacity>
-            <Text style={styles.headerTitle}>{conversation?.name}</Text>
+            <Text style={styles.headerTitle}>{displayName}</Text>
             <View style={styles.backButton} />
           </View>
         </View>

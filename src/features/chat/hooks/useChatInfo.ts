@@ -1,5 +1,6 @@
 /** Hook for shared media, links, and contact info for a conversation */
 
+import { useUserStore } from '@/src/core/store/user.store';
 import type {
   ContactInfo,
   Conversation,
@@ -9,7 +10,10 @@ import type {
 
 export function useChatInfo(conversation: Conversation | undefined) {
   const isGroup = conversation?.isGroup ?? false;
-  const contact = conversation?.members?.[0];
+  const currentUserId = useUserStore((s) => s.user?.id);
+  const contact = isGroup
+    ? undefined
+    : conversation?.members?.find((m) => m.userId !== currentUserId);
   const contactUserId = contact?.userId;
 
   const sharedMedia: SharedMediaItem[] = [];
