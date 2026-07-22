@@ -31,8 +31,9 @@ const forgotPassword = async (email: string): Promise<{ message: string }> => {
 };
 
 const resetPassword = async (payload: {
-  password: string;
-  confirmPassword: string;
+  email: string;
+  code: string;
+  newPassword: string;
 }): Promise<{ message: string }> => {
   const { data } = await apiClient.post("/reset-password", payload);
   return data;
@@ -46,6 +47,11 @@ const changePassword = async (payload: {
   return data;
 };
 
+const verifyRecoveryCode = async (code: string): Promise<{ message: string }> => {
+  const { data } = await apiClient.post("/verify-recovery-code", { code });
+  return data;
+};
+
 export const authApi = {
   login,
   register,
@@ -53,6 +59,7 @@ export const authApi = {
   forgotPassword,
   resetPassword,
   changePassword,
+  verifyRecoveryCode,
   logout: async (refreshToken: string): Promise<void> => {
     await apiClient.post('/logout', { refreshToken })
   },

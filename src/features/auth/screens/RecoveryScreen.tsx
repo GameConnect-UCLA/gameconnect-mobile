@@ -1,26 +1,32 @@
 import { useState } from 'react'
 import { StyleSheet, TextInput, Pressable, Text, ActivityIndicator, TouchableOpacity, View } from 'react-native'
 import { Ionicons } from '@expo/vector-icons'
-import { Link, router } from 'expo-router'
+import { Link, router, useLocalSearchParams } from 'expo-router'
 import { useMutation } from '@tanstack/react-query'
 import { AuthBackground } from '@/src/features/auth/components/AuthBackground'
 import { AuthCard } from '@/src/features/auth/components/AuthCard'
 import { Colors } from '@/src/core/theme'
 import { useToastStore } from '@/src/core/store/toast.store'
 import { authApi } from '@/src/features/auth/api/auth.api'
+import { getErrorMessage } from '@/src/core/utils/error.utils'
 
 export default function RecoveryView() {
+  const { email, code } = useLocalSearchParams<{ email: string; code: string }>()
   const [form, setForm] = useState({ password: '', confirmPassword: '' })
   const [showPassword, setShowPassword] = useState(false)
   const [showConfirmPassword, setShowConfirmPassword] = useState(false)
   const showToast = useToastStore((s) => s.showToast)
   const { mutate, isPending } = useMutation({
-    mutationFn: () => authApi.resetPassword(form),
+    mutationFn: () => authApi.resetPassword({
+      email,
+      code,
+      newPassword: form.password,
+    }),
     onSuccess: () => {
       showToast('Contraseña actualizada correctamente.', 'success')
       router.replace('/(auth)/login')
     },
-    onError: (err: Error) => showToast(err.message, 'error'),
+    onError: (err) => showToast(getErrorMessage(err, 'Error al restablecer contraseña.'), 'error'),
   })
   const isFormValid = form.password.trim().length > 0 && form.confirmPassword.trim().length > 0 && form.password === form.confirmPassword
 
