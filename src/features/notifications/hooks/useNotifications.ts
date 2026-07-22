@@ -4,6 +4,7 @@ import { useCallback } from 'react'
 import { useQuery, useMutation, useQueryClient } from '@tanstack/react-query'
 import {
   fetchNotificationsApi,
+  markNotificationAsReadApi,
   acceptFollowRequestApi,
   rejectFollowRequestApi,
 } from '../api/notifications.api'
@@ -31,13 +32,31 @@ export const useNotifications = () => {
     staleTime: 30000,
   })
 
+  const markAsReadMutation = useMutation({
+    mutationFn: markNotificationAsReadApi,
+    onMutate: async (id: string) => {
+      await queryClient.cancelQueries({ queryKey: ['notifications'] })
+      const prev = queryClient.getQueryData<Notification[]>(['notifications'])
+      queryClient.setQueryData<Notification[]>(['notifications'], (old) =>
+        old?.map((n) => (n.id === id ? { ...n, read: true } : n)) ?? old,
+      )
+      return { prev }
+    },
+    onError: (_err, _id, context) => {
+      if (context?.prev) {
+        queryClient.setQueryData(['notifications'], context.prev)
+      }
+    },
+    onSettled: () => {
+      queryClient.invalidateQueries({ queryKey: ['notifications'] })
+    },
+  })
+
   const markAsRead = useCallback(
     (id: string) => {
-      queryClient.setQueryData<Notification[]>(['notifications'], (prev) =>
-        prev?.map((n) => (n.id === id ? { ...n, read: true } : n)) ?? prev,
-      )
+      markAsReadMutation.mutate(id)
     },
-    [queryClient],
+    [markAsReadMutation],
   )
 
   const acceptFollowRequest = useMutation({
