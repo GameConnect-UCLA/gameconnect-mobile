@@ -219,7 +219,7 @@ export default function ChatMessageBubble({
   const hasReply = !!message.replyToMessage;
 
   const imageAttachments = attachments.filter(
-    (a) => a.type === AttachmentType.IMAGE || a.type === AttachmentType.GIF,
+    (a: any) => a.type === AttachmentType.IMAGE || a.type === AttachmentType.GIF,
   );
   const mediaOnly = attachments.length > 0 && !hasText && !hasReply;
 
@@ -236,7 +236,7 @@ export default function ChatMessageBubble({
         />
       )}
 
-      {imageAttachments.map((a, i) => (
+      {imageAttachments.map((a: any, i: number) => (
         <View
           key={`img-${i}`}
           style={
