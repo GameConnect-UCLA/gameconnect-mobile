@@ -19,3 +19,15 @@ export async function searchGameProfiles(query: string): Promise<GameProfile[]> 
   const { data } = await apiClient.get<GameProfile[]>('/games/search', { params: { q: query } })
   return data
 }
+
+export interface ToggleFollowGameResponse {
+  following: boolean
+  followersCount: number
+}
+
+/** Toggle follow/unfollow a game @param gameId Game ID @returns Toggle response */
+export const toggleFollowGame = async (gameId: string): Promise<ToggleFollowGameResponse> => {
+  const { data } = await apiClient.post<ToggleFollowGameResponse>(`/games/${gameId}/follow`)
+  return data
+}
+

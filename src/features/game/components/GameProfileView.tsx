@@ -17,6 +17,7 @@ import type { GameProfile } from '../types/game.types'
 import PostCard from '@/src/features/feed/components/PostCard'
 import { Colors, Spacing, Radii, Typography } from '@/src/core/theme'
 import { useNavigation } from '@/src/core/hooks/useNavigation'
+import { useFollowGame } from '../hooks/useFollowGame'
 
 interface Props {
   game: GameProfile
@@ -25,6 +26,7 @@ interface Props {
 /** Game profile screen with cover, info, tabs, and related posts @param game GameProfile data @returns GameProfileView component */
 export default function GameProfileView({ game }: Props) {
   const { push, back } = useNavigation()
+  const followGameMutation = useFollowGame()
   const [activeTab, setActiveTab] = useState('Reseñas')
   const { height } = useWindowDimensions()
   const relatedPosts: any[] = [];
@@ -41,13 +43,15 @@ export default function GameProfileView({ game }: Props) {
                 <TouchableOpacity onPress={() => back()} style={styles.backButton}>
                   <Ionicons name="chevron-back" size={28} color="#fff" />
                 </TouchableOpacity>
-                <TouchableOpacity
-                  onPress={() => push(`/game/${game.id}/settings`)}
-                  style={styles.editButton}
-                >
-                  <Ionicons name="create-outline" size={18} color="#fff" />
-                  <Text style={styles.editButtonText}>Editar</Text>
-                </TouchableOpacity>
+                <View style={{ flexDirection: 'row', gap: 8 }}>
+                  <TouchableOpacity
+                    onPress={() => push(`/game/${game.id}/settings`)}
+                    style={styles.editButton}
+                  >
+                    <Ionicons name="create-outline" size={18} color="#fff" />
+                    <Text style={styles.editButtonText}>Editar</Text>
+                  </TouchableOpacity>
+                </View>
               </View>
             </View>
 
@@ -68,7 +72,26 @@ export default function GameProfileView({ game }: Props) {
               </Text>
 
               <View style={styles.tagsContainer}>
-                <Text style={styles.tagsLabel}>ETIQUETAS</Text>
+                <View style={{ flexDirection: 'row', justifyContent: 'space-between', alignItems: 'center', marginBottom: 10 }}>
+                  <Text style={styles.tagsLabel}>ETIQUETAS</Text>
+                  <TouchableOpacity
+                    onPress={() => followGameMutation.mutate(game.id)}
+                    disabled={followGameMutation.isPending}
+                    style={[
+                      styles.editButton,
+                      game.isFollowing && { backgroundColor: 'rgba(0, 0, 0, 0.45)' },
+                    ]}
+                  >
+                    <Ionicons
+                      name={game.isFollowing ? "heart" : "heart-outline"}
+                      size={16}
+                      color="#fff"
+                    />
+                    <Text style={styles.editButtonText}>
+                      {game.isFollowing ? "Siguiendo" : "Seguir"}
+                    </Text>
+                  </TouchableOpacity>
+                </View>
                 <View style={styles.tagList}>
                   {game.tags.map((tag, index) => (
                     <View key={index} style={styles.tag}>
