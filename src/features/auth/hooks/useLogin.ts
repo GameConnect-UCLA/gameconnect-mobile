@@ -22,7 +22,7 @@ export const useLogin = () => {
         setAuthenticated(accessToken);
         setUser(user);
       } catch (error: any) {
-        throw Error(error.message);
+        throw error;
       }
     },
     onError: () => {

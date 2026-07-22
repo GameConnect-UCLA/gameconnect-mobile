@@ -16,6 +16,7 @@ import DateOfBirthPicker from "@/src/features/auth/components/DateOfBirthPicker"
 import { Colors } from "@/src/core/theme";
 import { AuthCard } from "@/src/features/auth/components/AuthCard";
 import { AuthBackground } from "@/src/features/auth/components/AuthBackground";
+import { getErrorMessage } from "@/src/core/utils/error.utils";
 
 export default function SignUpView() {
   const [form, setForm] = useState({
@@ -68,7 +69,7 @@ export default function SignUpView() {
         setSuccessMessage("¡Registro Exitoso!");
         router.replace("/(tabs)");
       },
-      onError: (err) => showToast(err.message, "error"),
+      onError: (err) => showToast(getErrorMessage(err, "Error al registrarse"), "error"),
     });
   };
 
