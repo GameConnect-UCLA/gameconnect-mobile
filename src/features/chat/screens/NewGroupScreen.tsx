@@ -18,6 +18,7 @@ import { createGroup } from '../api/chat.api'
 import { useQueryClient } from '@tanstack/react-query'
 import { useToastStore } from '@/src/core/store/toast.store'
 import { useNavigation } from '@/src/core/hooks/useNavigation'
+import { getErrorMessage } from '@/src/core/utils/error.utils'
 
 const BG = require('@/assets/images/bgbody.png')
 
@@ -55,15 +56,15 @@ export default function NewGroupScreen() {
     const trimmedName = groupName.trim()
 
     if (trimmedName.length === 0) {
-      showToast('Group name is required.', 'warning')
+      showToast('El nombre del grupo es obligatorio.', 'warning')
       return
     }
     if (trimmedName.length > 30) {
-      showToast('Group name must be 30 characters or less.', 'warning')
+      showToast('El nombre del grupo debe tener 30 caracteres o menos.', 'warning')
       return
     }
     if (selectedIds.length < 2) {
-      showToast('Select at least 2 members.', 'warning')
+      showToast('Selecciona al menos 2 miembros.', 'warning')
       return
     }
 
@@ -72,8 +73,8 @@ export default function NewGroupScreen() {
       const newConvo = await createGroup(trimmedName, groupPic, selectedIds)
       await queryClient.invalidateQueries({ queryKey: ['conversations'] })
       replace(`/chat/${newConvo.id}`)
-    } catch {
-      showToast('Failed to create group. Please try again.', 'error')
+    } catch (err) {
+      showToast(getErrorMessage(err, 'Error al crear el grupo. Por favor intenta de nuevo.'), 'error')
     } finally {
       setIsCreating(false)
     }

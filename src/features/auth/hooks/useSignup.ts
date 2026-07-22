@@ -21,7 +21,7 @@ export const useSignup = () => {
         setAuthenticated(accessToken);
         setUser(user);
       } catch (error: any) {
-        throw Error(error.message);
+        throw error;
       }
     },
 

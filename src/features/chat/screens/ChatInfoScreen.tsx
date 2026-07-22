@@ -29,6 +29,7 @@ import type { GroupMember } from '../types/chat.types';
 import { useConfirmDialog } from "@/src/core/hooks/useConfirmDialog";
 import { useToastStore } from '@/src/core/store/toast.store';
 import { useNavigation } from '@/src/core/hooks/useNavigation';
+import { getErrorMessage } from "@/src/core/utils/error.utils";
 import { strings } from '@/src/core/i18n/es';
 
 const BG = require("@/assets/images/bgbody.png");
@@ -102,8 +103,8 @@ export default function ChatInfoScreen() {
     if (!selectedMember) return;
     try {
       await promoteMember(selectedMember.id);
-    } catch {
-      showToast("Failed to promote member", "error");
+    } catch (err) {
+      showToast(getErrorMessage(err, "No se pudo ascender al miembro"), "error");
     }
     setMemberActionVisible(false);
     setSelectedMember(null);
@@ -113,8 +114,8 @@ export default function ChatInfoScreen() {
     if (!selectedMember) return;
     try {
       await demoteMember(selectedMember.id);
-    } catch {
-      showToast("Failed to demote member", "error");
+    } catch (err) {
+      showToast(getErrorMessage(err, "No se pudo degradar al miembro"), "error");
     }
     setMemberActionVisible(false);
     setSelectedMember(null);
@@ -123,15 +124,15 @@ export default function ChatInfoScreen() {
   const handleRemoveMember = useCallback(async () => {
     if (!selectedMember) return;
     const ok = await confirm({
-      title: "Remove Member",
-      message: `Are you sure you want to remove ${selectedMember.username ?? "this member"} from the group?`,
-      confirmText: "Remove",
+      title: "Eliminar miembro",
+      message: `¿Estás seguro de que deseas eliminar a ${selectedMember.username ?? "este miembro"} del grupo?`,
+      confirmText: "Eliminar",
     });
     if (ok) {
       try {
         await removeMember(selectedMember.id);
-      } catch {
-        showToast("Failed to remove member", "error");
+      } catch (err) {
+        showToast(getErrorMessage(err, "No se pudo eliminar al miembro"), "error");
       }
       setMemberActionVisible(false);
       setSelectedMember(null);
@@ -150,8 +151,8 @@ export default function ChatInfoScreen() {
     for (const userId of addMemberSelected) {
       try {
         await addMember(userId);
-      } catch {
-        showToast(`Failed to add member ${userId}`, "error");
+      } catch (err) {
+        showToast(getErrorMessage(err, "No se pudo agregar al miembro"), "error");
       }
     }
     setAddMemberSelected([]);
@@ -166,28 +167,28 @@ export default function ChatInfoScreen() {
 
     if (isContactBlocked) {
       const ok = await confirm({
-        title: "Unblock",
-        message: "Are you sure you want to unblock this contact?",
-        confirmText: "Unblock",
+        title: "Desbloquear",
+        message: "¿Estás seguro de que deseas desbloquear a este contacto?",
+        confirmText: "Desbloquear",
       });
       if (ok) {
         try {
           await unblockUser(contactUserId);
-        } catch {
-          showToast("Failed to unblock user.", "error");
+        } catch (err) {
+          showToast(getErrorMessage(err, "No se pudo desbloquear al usuario."), "error");
         }
       }
     } else {
       const ok = await confirm({
-        title: "Block",
-        message: "Are you sure you want to block this contact?",
-        confirmText: "Block",
+        title: "Bloquear",
+        message: "¿Estás seguro de que deseas bloquear a este contacto?",
+        confirmText: "Bloquear",
       });
       if (ok) {
         try {
           await blockUser(contactUserId);
-        } catch {
-          showToast("Failed to block user.", "error");
+        } catch (err) {
+          showToast(getErrorMessage(err, "No se pudo bloquear al usuario."), "error");
         }
       }
     }

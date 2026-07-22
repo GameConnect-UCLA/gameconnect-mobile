@@ -7,6 +7,7 @@ import { AuthCard } from '@/src/features/auth/components/AuthCard'
 import { Colors } from '@/src/core/theme'
 import { useToastStore } from '@/src/core/store/toast.store'
 import { authApi } from '@/src/features/auth/api/auth.api'
+import { getErrorMessage } from '@/src/core/utils/error.utils'
 
 export default function ForgotView() {
   const [email, setEmail] = useState('')
@@ -17,7 +18,7 @@ export default function ForgotView() {
       showToast(data.message, 'success')
       setEmail('')
     },
-    onError: () => showToast('Error al enviar solicitud.', 'error'),
+    onError: (err) => showToast(getErrorMessage(err, 'Error al enviar solicitud.'), 'error'),
   })
   const isFormValid = email.trim().length > 0
 

@@ -162,7 +162,7 @@ export default function ChatInput({
 
   const pickImage = async () => {
     if (attachments.length >= MAX_ATTACHMENTS) {
-      showToast(`Maximum ${MAX_ATTACHMENTS} attachments allowed.`, "warning");
+      showToast(`Máximo ${MAX_ATTACHMENTS} archivos adjuntos permitidos.`, "warning");
       return;
     }
 
