@@ -22,9 +22,16 @@ export interface AccountSettings {
 
 export const getMe = async (): Promise<User> => {
   console.log("Entering getMe func")
-  const { data } = await apiClient.get('/users/me')
+  try {
+    const { data } = await apiClient.get('/users/me')
   console.log("api response", data)
-  return data
+    if (data.status == 401) throw Error(data.message)
+    return data
+  } catch (error) {
+      throw error
+  }
+  
+  
 }
 
 export const getUser = async (userId: string): Promise<User> => {
