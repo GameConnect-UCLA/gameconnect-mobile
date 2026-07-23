@@ -20,6 +20,7 @@ import { Colors, Spacing, Radii, Typography } from "@/src/core/theme";
 import { useNavigation } from "@/src/core/hooks/useNavigation";
 import { profileApi } from "../api/profile.api";
 import { useFollowUser } from "../hooks/useFollowUser";
+import { useUserStore } from "@/src/core/store/user.store";
 
 const BG_IMAGE = require("@/assets/images/bgbody.png");
 
@@ -52,6 +53,8 @@ const ProfileView: React.FC<ProfileViewProps> = ({
   const router = useRouter(); // ✅ Inicializar router
   const followMutation = useFollowUser();
 
+  const storedUser = useUserStore.getState().user
+
   // Live profile query — invalidated by useFollowUser on success
   const { data: profile, isLoading: profileLoading } = useQuery({
     queryKey: ["userProfile", userId],
@@ -74,7 +77,7 @@ const ProfileView: React.FC<ProfileViewProps> = ({
     );
   }
 
-  const displayName = profile.displayName ?? "";
+  const displayName = storedUser?.displayName ?? "";
   const bioLine = profile.bio?.split("\n").filter(Boolean).join(" | ") ?? "";
 
   // followersCount / followingCount / isFollowing come from getPublicProfile
@@ -124,7 +127,7 @@ const ProfileView: React.FC<ProfileViewProps> = ({
         >
           <View style={styles.coverContainer}>
             <ImageBackground
-              source={{ uri: profile.coverPic }}
+              source={{ uri: storedUser?.coverPic }}
               style={styles.coverImage}
               resizeMode="cover"
             >
@@ -152,7 +155,7 @@ const ProfileView: React.FC<ProfileViewProps> = ({
               </View>
               <View style={styles.avatarWrapper}>
                 <Image
-                  source={{ uri: profile.profilePic }}
+                  source={{ uri: storedUser?.profilePic }}
                   style={styles.avatar}
                 />
               </View>

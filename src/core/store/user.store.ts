@@ -12,6 +12,9 @@ type UserState = {
 /** Zustand store caching the current logged-in User. */
 export const useUserStore = create<UserState>((set) => ({
   user: null,
-  setUser: (user) => set({ user }),
+  setUser: (user: User) =>  {
+    console.log("UPDATING USER INFO:", user)
+    set({ user })
+  },
   clearUser: () => set({ user: null }),
 }))

@@ -42,7 +42,8 @@ export const PostDetailView = ({
   const [selectedImageUrl, setSelectedImageUrl] = useState("");
 
   const postId = useMemo(() => post.id, [post.id]);
-  const user = useUserStore.getState().user
+  const { user } = useUserStore.getState()
+  console.log(user); 
   const { data: remoteComments = [], isLoading: isCommentsLoading } =
     usePostComments(postId);
   const { mutate: createCommentMutate, isPending: isCommentPending } =

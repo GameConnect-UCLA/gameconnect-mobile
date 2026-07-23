@@ -13,8 +13,6 @@ export const useProfile = () => {
         throw new Error("No se encontró una sesión de usuario activa");
       }
       const apiUser = await profileApi.updateProfile(user.id, profileData);
-      const { setUser } = useUserStore.getState();
-      setUser(apiUser);
       return apiUser;
     },
     onSuccess: async (apiUser) => {
