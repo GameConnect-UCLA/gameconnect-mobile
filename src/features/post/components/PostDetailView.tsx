@@ -42,8 +42,7 @@ export const PostDetailView = ({
   const [selectedImageUrl, setSelectedImageUrl] = useState("");
 
   const postId = useMemo(() => post.id, [post.id]);
-  const { user } = useUserStore.getState()
-  console.log(user); 
+  const user = useUserStore((s) => s.user)
   const { data: remoteComments = [], isLoading: isCommentsLoading } =
     usePostComments(postId);
   const { mutate: createCommentMutate, isPending: isCommentPending } =
@@ -121,7 +120,7 @@ export const PostDetailView = ({
         <KeyboardStickyView>
           <View style={styles.inputBar}>
             <Image
-              source={user?.profilePic || require("@/assets/images/default-avatar.jpg")}
+              source={user?.profilePic ? { uri: user.profilePic } : require("@/assets/images/default-avatar.jpg")}
               style={styles.inputAvatar}  
             />
             <View style={styles.inputBubble}>
