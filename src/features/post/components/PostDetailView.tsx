@@ -121,7 +121,7 @@ export const PostDetailView = ({
         <KeyboardStickyView>
           <View style={styles.inputBar}>
             <Image
-              source={user?.profilePic ?? require("@/assets/images/default-avatar.jpg")}
+              source={user?.profilePic || require("@/assets/images/default-avatar.jpg")}
               style={styles.inputAvatar}  
             />
             <View style={styles.inputBubble}>
