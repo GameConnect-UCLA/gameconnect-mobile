@@ -4,12 +4,14 @@ import { useAuthStore } from '@/src/core/store/auth.store'
 import { useUserStore } from '@/src/core/store/user.store'
 import { getMe } from '@/src/features/profile/api/profile.api'
 import { useQuery } from '@tanstack/react-query'
+import { useLogout } from './useLogout'
 
 /** Reads stored access token on mount. If found, sets the auth store as authenticated.
  * @returns `UseQueryResult<boolean>` — `true` if a valid session exists, `false` otherwise.
  */
 export const useSessionCheck = () => {
   const setAuthenticated = useAuthStore((s) => s.setAuthenticated)
+
   const setUser = useUserStore((s) => s.setUser)
 
   return useQuery({
@@ -26,6 +28,7 @@ export const useSessionCheck = () => {
         return true
       } catch (error) {
         console.error('Session check failed:', error)
+        useLogout()
         return false
       }
     },
