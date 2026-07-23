@@ -1,7 +1,7 @@
 /** Full-screen background image wrapper for auth screens (login, signup, etc.). */
-import { ImageBackground, StyleSheet } from 'react-native';
+import { ImageBackground, ScrollView, StyleSheet } from 'react-native';
 import { ReactNode } from 'react';
-import { KeyboardAwareScrollView } from 'react-native-keyboard-controller';
+import { KeyboardStickyView } from 'react-native-keyboard-controller';
 
 interface AuthBackgroundProps {
   children: ReactNode;
@@ -14,14 +14,15 @@ export function AuthBackground({ children }: AuthBackgroundProps) {
       style={styles.container} 
       resizeMode="cover"
     >
-      <KeyboardAwareScrollView
-        contentContainerStyle={styles.scrollContent}
-        keyboardShouldPersistTaps="handled"
-        showsVerticalScrollIndicator={false}
-        bottomOffset={20}
-      >
-        {children}
-      </KeyboardAwareScrollView>
+      <KeyboardStickyView offset={{ closed: 0, opened: 0 }}>
+        <ScrollView
+          contentContainerStyle={styles.scrollContent}
+          keyboardShouldPersistTaps="handled"
+          showsVerticalScrollIndicator={false}
+        >
+          {children}
+        </ScrollView>
+      </KeyboardStickyView>
     </ImageBackground>
   );
 }
