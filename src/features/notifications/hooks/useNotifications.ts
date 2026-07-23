@@ -24,7 +24,6 @@ export const useNotifications = () => {
     data: notifications = [],
     isLoading,
     isFetching,
-    error,
     refetch,
   } = useQuery({
     queryKey: ['notifications'],
@@ -137,7 +136,7 @@ export const useNotifications = () => {
     notifications,
     isLoading,
     isFetching,
-    error: error ? 'Error al cargar notificaciones.' : null,
+    error: null,
     refreshNotifications: () => refetch(),
     markAsRead,
     handleAcceptFollowRequest: (id: string) => acceptFollowRequest.mutate(id),
