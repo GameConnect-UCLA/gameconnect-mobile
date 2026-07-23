@@ -16,7 +16,7 @@ import Animated, {
   withSpring,
   runOnJS,
 } from "react-native-reanimated";
-import type { Message } from '../../types/chat.types';
+import type { Message, Attachment } from '../../types/chat.types';
 import { AttachmentType } from '../../types/chat.types';
 import { BUBBLE_MAX_WIDTH_RATIO } from "./constants";
 import { formatMessageTime } from "./helpers";
@@ -219,7 +219,7 @@ export default function ChatMessageBubble({
   const hasReply = !!message.replyToMessage;
 
   const imageAttachments = attachments.filter(
-    (a: any) => a.type === AttachmentType.IMAGE || a.type === AttachmentType.GIF,
+    (a: Attachment) => a.type === AttachmentType.IMAGE || a.type === AttachmentType.GIF,
   );
   const mediaOnly = attachments.length > 0 && !hasText && !hasReply;
 
@@ -236,7 +236,7 @@ export default function ChatMessageBubble({
         />
       )}
 
-      {imageAttachments.map((a: any, i: number) => (
+      {imageAttachments.map((a: Attachment, i: number) => (
         <View
           key={`img-${i}`}
           style={

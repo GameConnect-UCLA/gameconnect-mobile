@@ -2,37 +2,85 @@
 import { Ionicons } from '@expo/vector-icons'
 import { Stack, useLocalSearchParams } from 'expo-router'
 import React, { useEffect, useMemo, useRef, useState } from 'react'
-import { Animated, ImageBackground, StatusBar, StyleSheet, Text, TouchableOpacity, View } from 'react-native'
-import { useSafeAreaInsets } from 'react-native-safe-area-context'
-import { normalizeText } from '@/src/core/utils/string'
-import ExplorePlayersGrid from './ExplorePlayersGrid'
-import ExploreSectionCard from './ExploreSectionCard'
-import ExploreStickyHeader from './ExploreStickyHeader'
 import {
-  INITIAL_VISIBLE_POSTS,
-  buildTrendLabel,
-  getLevelFromPosts,
-  matchesActiveFilter,
-  type FeaturedPlayer,
-  type FilterKey,
-} from '../utils/explore.utils'
+  Animated,
+  ImageBackground,
+  StatusBar,
+  StyleSheet,
+  Text,
+  View,
+  ActivityIndicator,
+} from 'react-native'
+import { useSafeAreaInsets } from 'react-native-safe-area-context'
+import ExploreStickyHeader from './ExploreStickyHeader'
+import UserCard from './UserCard'
+import GameCard from './GameCard'
 import PostCard from '@/src/features/feed/components/PostCard'
 import { useNavigation } from '@/src/core/hooks/useNavigation'
-import { useRouter } from 'expo-router'
+import { useDebounce } from '@/src/core/hooks/useDebounce'
+import { useTrendingFeed } from '../hooks/useTrendingFeed'
+import { useSearch } from '../hooks/useSearch'
+import { EmptyState } from '@/src/core/components/EmptyState'
+import { Colors, Spacing, Typography } from '@/src/core/theme'
+import type { FilterKey } from '../utils/explore.utils'
 
-/** Explore screen with search, filters, trends, featured players, and posts @returns ExploreScreen component */
+/** Explore screen with live search, trending feed, and filter tabs */
 export default function ExploreScreen() {
   const { q } = useLocalSearchParams<{ q?: string }>()
   const { back } = useNavigation()
-  const router = useRouter()
+
   const [searchQuery, setSearchQuery] = useState(q?.replace('%23', '#') ?? '')
   const [activeFilter, setActiveFilter] = useState<FilterKey>('todo')
-  const [visibleCount, setVisibleCount] = useState(INITIAL_VISIBLE_POSTS)
 
   const insets = useSafeAreaInsets()
   const [headerHeight, setHeaderHeight] = useState(160)
   const scrollY = useRef(new Animated.Value(0)).current
 
+  const debouncedQuery = useDebounce(searchQuery, 400)
+  const isSearchEmpty = searchQuery.trim() === ''
+
+  // Set active filter to 'tags' if redirected with a hashtag query
+  useEffect(() => {
+    if (q?.startsWith('%23') || q?.startsWith('#')) {
+      setActiveFilter('tags')
+    }
+  }, [q])
+
+  // Build search options for useSearch hook
+  const isTagFilter = activeFilter === 'tags'
+  const searchOptions = {
+    q: isTagFilter ? undefined : debouncedQuery,
+    hashtag: isTagFilter ? debouncedQuery.replace('#', '') : undefined,
+    type:
+      activeFilter === 'gamers'
+        ? ('user' as const)
+        : activeFilter === 'posts'
+        ? ('post' as const)
+        : activeFilter === 'juegos'
+        ? ('game' as const)
+        : undefined,
+    enabled: debouncedQuery.trim().length > 0 && !isSearchEmpty,
+  }
+
+  // Fetch trending feed if search bar is empty
+  const {
+    data: trendingData,
+    fetchNextPage: fetchNextTrendingPage,
+    hasNextPage: hasNextTrendingPage,
+    isFetchingNextPage: isFetchingNextTrendingPage,
+    isLoading: isLoadingTrending,
+  } = useTrendingFeed(10)
+
+  // Fetch search results if search bar is not empty
+  const {
+    data: searchData,
+    fetchNextPage: fetchNextSearchPage,
+    hasNextPage: hasNextSearchPage,
+    isFetchingNextPage: isFetchingNextSearchPage,
+    isLoading: isLoadingSearch,
+  } = useSearch(searchOptions)
+
+  // Combine query heights/offsets for sticky header translation
   const clampedScrollY = Animated.diffClamp(
     scrollY.interpolate({
       inputRange: [0, 1],
@@ -49,22 +97,135 @@ export default function ExploreScreen() {
     extrapolate: 'clamp',
   })
 
-  useEffect(() => {
-    setVisibleCount(INITIAL_VISIBLE_POSTS)
-  }, [searchQuery, activeFilter])
+  // List data mapped reactive to empty/full search
+  const listData = useMemo(() => {
+    if (isSearchEmpty) {
+      return trendingData ? trendingData.pages.flat() : []
+    }
+    return searchData ? searchData.pages.flatMap((page) => page.hits) : []
+  }, [isSearchEmpty, trendingData, searchData])
 
-  const trendTags = useMemo(() => {
-    return []
-  }, [])
+  const handleHashtagPress = (tag: string) => {
+    setActiveFilter('tags')
+    setSearchQuery(tag)
+  }
 
-  const featuredPlayers: FeaturedPlayer[] = []
+  const loadMore = () => {
+    if (isSearchEmpty) {
+      if (hasNextTrendingPage && !isFetchingNextTrendingPage) {
+        fetchNextTrendingPage()
+      }
+    } else {
+      if (hasNextSearchPage && !isFetchingNextSearchPage) {
+        fetchNextSearchPage()
+      }
+    }
+  }
 
-  const filteredPosts: any[] = []
+  const renderItem = ({ item }: { item: any }) => {
+    if (!isSearchEmpty) {
+      if (item.type === 'post') {
+        const mappedPost = {
+          ...item,
+          authorUser: item.authorUser || {
+            displayName: item.displayName || 'Comunidad',
+            username: item.username || 'gameconnect',
+            profilePic: item.profilePic || 'https://i.pravatar.cc/300?img=12',
+          },
+          likesCounter: item.likesCounter ?? 0,
+          commentsCounter: item.commentsCounter ?? 0,
+          createdAt: item.createdAt || new Date().toISOString(),
+          lastModifiedAt: item.lastModifiedAt || new Date().toISOString(),
+          deletedAt: null,
+        }
+        return (
+          <PostCard
+            post={mappedPost}
+            separatorColor="rgba(24, 18, 10, 0.12)"
+            onHashtagPress={handleHashtagPress}
+          />
+        )
+      } else if (item.type === 'user') {
+        return <UserCard user={item} />
+      } else if (item.type === 'game') {
+        return <GameCard game={item} />
+      }
+      return null
+    }
 
-  const visiblePosts = filteredPosts.slice(0, visibleCount)
-  const featuredPosts = visiblePosts.slice(0, 2)
-  const feedPosts = visiblePosts.slice(2)
-  const hasMorePosts = visibleCount < filteredPosts.length
+    // Trending mode: items are pure Post objects
+    return (
+      <PostCard
+        post={item}
+        separatorColor="rgba(24, 18, 10, 0.12)"
+        onHashtagPress={handleHashtagPress}
+      />
+    )
+  }
+
+  const renderHeader = () => {
+    if (isSearchEmpty) {
+      return (
+        <View style={styles.listHeader}>
+          <Ionicons name="flame" size={18} color="#F45A49" />
+          <Text style={styles.listHeaderTitle}>TENDENCIAS AHORA</Text>
+        </View>
+      )
+    }
+    return (
+      <View style={styles.listHeader}>
+        <Ionicons name="search" size={18} color={Colors.primaryDark} />
+        <Text style={styles.listHeaderTitle}>RESULTADOS DE BÚSQUEDA</Text>
+      </View>
+    )
+  }
+
+  const renderEmptyState = () => {
+    if (isSearchEmpty) {
+      if (isLoadingTrending) {
+        return (
+          <View style={styles.centerContainer}>
+            <ActivityIndicator size="large" color={Colors.primaryDark} />
+          </View>
+        )
+      }
+      return (
+        <EmptyState
+          icon="newspaper-outline"
+          title="No hay publicaciones en tendencia"
+          description="Vuelve a intentarlo más tarde."
+        />
+      )
+    }
+
+    if (isLoadingSearch || searchQuery !== debouncedQuery) {
+      return (
+        <View style={styles.centerContainer}>
+          <ActivityIndicator size="large" color={Colors.primaryDark} />
+        </View>
+      )
+    }
+
+    return (
+      <EmptyState
+        icon="search-outline"
+        title="Sin resultados"
+        description={`No encontramos coincidencias para "${searchQuery}"`}
+      />
+    )
+  }
+
+  const renderFooter = () => {
+    const isFetchingNext = isSearchEmpty ? isFetchingNextTrendingPage : isFetchingNextSearchPage
+    if (isFetchingNext) {
+      return (
+        <View style={styles.footerLoader}>
+          <ActivityIndicator size="small" color={Colors.primaryDark} />
+        </View>
+      )
+    }
+    return <View style={styles.footerSpacer} />
+  }
 
   return (
     <View style={styles.screen}>
@@ -77,7 +238,10 @@ export default function ExploreScreen() {
       <Stack.Screen options={{ presentation: 'modal', headerShown: false, title: 'Explorar' }} />
 
       <View style={[styles.safeArea, { marginTop: insets.top, overflow: 'hidden' }]}>
-        <Animated.ScrollView
+        <Animated.FlatList
+          data={listData}
+          keyExtractor={(item: any, index: number) => item.id || `${index}`}
+          renderItem={renderItem}
           showsVerticalScrollIndicator={false}
           contentContainerStyle={[styles.contentContainer, { paddingTop: headerHeight }]}
           keyboardShouldPersistTaps="handled"
@@ -86,48 +250,12 @@ export default function ExploreScreen() {
             { useNativeDriver: true },
           )}
           scrollEventThrottle={16}
-        >
-          <ExploreSectionCard icon={<Ionicons name="flame" size={18} color="#F45A49" />} title="Tendencias ahora">
-            <View style={styles.trendWrap}>
-              {trendTags.map((tag) => (
-                <View key={tag} style={styles.trendChip}>
-                  <Text style={styles.trendChipText}>{tag}</Text>
-                </View>
-              ))}
-            </View>
-          </ExploreSectionCard>
-
-          <ExploreSectionCard
-            icon={<Ionicons name="game-controller" size={18} color="#0B4B82" />}
-            title="Juegos destacados"
-          >
-            {featuredPosts.length > 0 ? (
-              featuredPosts.map((post) => (
-                <PostCard key={post.id} post={post} separatorColor="transparent" onHashtagPress={(tag) => router.replace(`/explore?q=%23${tag}`)} />
-              ))
-            ) : (
-              <View style={styles.emptyState}>
-                <Text style={styles.emptyStateText}>No encontramos juegos con estos filtros.</Text>
-              </View>
-            )}
-          </ExploreSectionCard>
-
-          <ExploreSectionCard icon={<Ionicons name="people" size={18} color="#0B4B82" />} title="Jugadores destacados">
-            <ExplorePlayersGrid players={featuredPlayers} />
-          </ExploreSectionCard>
-
-          <View style={styles.postsSection}>
-            {feedPosts.map((post) => (
-              <PostCard key={post.id} post={post} separatorColor="rgba(24, 18, 10, 0.12)" onHashtagPress={(tag) => router.replace(`/explore?q=%23${tag}`)} />
-            ))}
-
-            {hasMorePosts ? (
-              <TouchableOpacity onPress={() => setVisibleCount(filteredPosts.length)} style={styles.loadMoreButton}>
-                <Text style={styles.loadMoreText}>Cargar más</Text>
-              </TouchableOpacity>
-            ) : null}
-          </View>
-        </Animated.ScrollView>
+          onEndReached={loadMore}
+          onEndReachedThreshold={0.5}
+          ListHeaderComponent={renderHeader}
+          ListEmptyComponent={renderEmptyState}
+          ListFooterComponent={renderFooter}
+        />
 
         <Animated.View
           style={[
@@ -155,16 +283,31 @@ const styles = StyleSheet.create({
   headerWrapper: { position: 'absolute', top: 0, left: 0, right: 0, zIndex: 10 },
   contentContainer: { paddingBottom: 32 },
   backgroundImage: { resizeMode: 'cover' },
-  trendWrap: { flexDirection: 'row', flexWrap: 'wrap', gap: 10, paddingBottom: 8 },
-  trendChip: { paddingHorizontal: 14, paddingVertical: 9, borderRadius: 16, backgroundColor: 'rgba(255, 255, 255, 0.16)' },
-  trendChipText: { color: '#1F1F1F', fontSize: 13, fontWeight: '600' },
-  postsSection: { paddingTop: 6 },
-  emptyState: { paddingVertical: 18, alignItems: 'center' },
-  emptyStateText: { fontSize: 14, color: '#2D2D2D', textAlign: 'center' },
-  loadMoreButton: {
-    marginTop: 8, alignSelf: 'center', minWidth: 182, borderRadius: 22,
-    backgroundColor: '#0B4B82', paddingVertical: 13, paddingHorizontal: 24,
-    alignItems: 'center', justifyContent: 'center',
+  centerContainer: {
+    paddingVertical: 80,
+    alignItems: 'center',
+    justifyContent: 'center',
   },
-  loadMoreText: { color: '#FFFFFF', fontSize: 15, fontWeight: '800', letterSpacing: 0.2 },
+  listHeader: {
+    flexDirection: 'row',
+    alignItems: 'center',
+    gap: Spacing.sm,
+    marginTop: Spacing.lg,
+    marginBottom: Spacing.md,
+    marginHorizontal: Spacing.lg,
+  },
+  listHeaderTitle: {
+    fontSize: Typography.sizes.md,
+    lineHeight: 18,
+    fontWeight: '800',
+    color: '#141414',
+    letterSpacing: 0.2,
+  },
+  footerLoader: {
+    paddingVertical: Spacing.md,
+    alignItems: 'center',
+  },
+  footerSpacer: {
+    height: 16,
+  },
 })

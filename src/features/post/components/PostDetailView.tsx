@@ -6,7 +6,6 @@ import {
   ActivityIndicator,
   Image,
   ImageBackground,
-  KeyboardAvoidingView,
   Modal,
   ScrollView,
   StyleSheet,
@@ -15,6 +14,7 @@ import {
   TouchableOpacity,
   View,
 } from "react-native";
+import { KeyboardStickyView } from "react-native-keyboard-controller";
 import { SafeAreaView } from "react-native-safe-area-context";
 import PostCard from "@/src/features/feed/components/PostCard";
 import { PostComments } from "./PostComments";
@@ -69,54 +69,54 @@ export const PostDetailView = ({
 
   return (
     <ImageBackground source={BG_IMAGE} style={{ flex: 1 }}>
-      <KeyboardAvoidingView behavior={undefined} style={{ flex: 1 }}>
-        <SafeAreaView style={{ flex: 1 }}>
-          <View style={styles.topHeader}>
-            <TouchableOpacity onPress={() => back()}>
-              <Ionicons name="chevron-back" size={28} color="#000" />
-            </TouchableOpacity>
-            <Text style={styles.headerTitle}>Publicación</Text>
-            <View style={{ width: 28 }} />
-          </View>
-          <View style={styles.headerLine} />
+      <SafeAreaView style={{ flex: 1 }}>
+        <View style={styles.topHeader}>
+          <TouchableOpacity onPress={() => back()}>
+            <Ionicons name="chevron-back" size={28} color="#000" />
+          </TouchableOpacity>
+          <Text style={styles.headerTitle}>Publicación</Text>
+          <View style={{ width: 28 }} />
+        </View>
+        <View style={styles.headerLine} />
 
-          <View style={{ flex: 1 }}>
-            <ScrollView
-              showsVerticalScrollIndicator={false}
-              contentContainerStyle={{ paddingBottom: 10 }}
-            >
-              <View style={styles.postContent}>
-                <PostCard
-                  post={post}
-                  hideComment
-                  onImagePress={handleOpenImage}
-                  initialImageIndex={initialImageIndex}
-                />
-                {post.isReview && (
-                  <View style={styles.reviewInfo}>
-                    <Text style={styles.reviewLabel}>Reseña de:</Text>
-                    <Text style={styles.reviewGame}>{post.reviewedGame}</Text>
-                  </View>
-                )}
-              </View>
-              {isCommentsLoading ? (
-                <ActivityIndicator
-                  size="small"
-                  color={Colors.primary}
-                  style={{ marginTop: 30 }}
-                />
-              ) : (
-                <PostComments comments={remoteComments} />
+        <View style={{ flex: 1 }}>
+          <ScrollView
+            showsVerticalScrollIndicator={false}
+            contentContainerStyle={{ paddingBottom: 10 }}
+          >
+            <View style={styles.postContent}>
+              <PostCard
+                post={post}
+                hideComment
+                onImagePress={handleOpenImage}
+                initialImageIndex={initialImageIndex}
+              />
+              {post.isReview && (
+                <View style={styles.reviewInfo}>
+                  <Text style={styles.reviewLabel}>Reseña de:</Text>
+                  <Text style={styles.reviewGame}>{post.title}</Text>
+                </View>
               )}
-            </ScrollView>
-          </View>
-
-          {showSuccess && (
-            <View style={styles.successToast}>
-              <Text style={styles.successText}>Comentario enviado</Text>
             </View>
-          )}
+            {isCommentsLoading ? (
+              <ActivityIndicator
+                size="small"
+                color={Colors.primary}
+                style={{ marginTop: 30 }}
+              />
+            ) : (
+              <PostComments comments={remoteComments} />
+            )}
+          </ScrollView>
+        </View>
 
+        {showSuccess && (
+          <View style={styles.successToast}>
+            <Text style={styles.successText}>Comentario enviado</Text>
+          </View>
+        )}
+
+        <KeyboardStickyView>
           <View style={styles.inputBar}>
             <Image
               source={require("@/assets/images/default-avatar.jpg")}
@@ -143,24 +143,24 @@ export const PostDetailView = ({
               />
             </TouchableOpacity>
           </View>
+        </KeyboardStickyView>
 
-          <Modal visible={isImageModalVisible} transparent animationType="fade">
-            <View style={styles.modalBg}>
-              <TouchableOpacity
-                style={styles.closeModal}
-                onPress={() => setIsImageModalVisible(false)}
-              >
-                <Ionicons name="close-circle" size={45} color="white" />
-              </TouchableOpacity>
-              <Image
-                source={{ uri: selectedImageUrl }}
-                style={styles.fullImage}
-                resizeMode="contain"
-              />
-            </View>
-          </Modal>
-        </SafeAreaView>
-      </KeyboardAvoidingView>
+        <Modal visible={isImageModalVisible} transparent animationType="fade">
+          <View style={styles.modalBg}>
+            <TouchableOpacity
+              style={styles.closeModal}
+              onPress={() => setIsImageModalVisible(false)}
+            >
+              <Ionicons name="close-circle" size={45} color="white" />
+            </TouchableOpacity>
+            <Image
+              source={{ uri: selectedImageUrl }}
+              style={styles.fullImage}
+              resizeMode="contain"
+            />
+          </View>
+        </Modal>
+      </SafeAreaView>
     </ImageBackground>
   );
 };

@@ -60,8 +60,8 @@ export const createPost = async (post: Partial<Post>): Promise<Post> => {
   },
   hashtags: post.hashtags,
   isReview: post.isReview,
-/* reviewedGame: post.reviewedGame,
-  reviewScore: post.reviewScore, */
+  reviewedGame: post.reviewedGame,
+  reviewScore: post.reviewScore,
   isRepost: post.isRepost,
 }
 
@@ -106,6 +106,6 @@ export const createComment = async (postId: string, content: string): Promise<Co
 
 /** Fetch bookmarked posts @param params Pagination @returns Post list */
 export const getBookmarkedPosts = async (params?: { limit?: number; offset?: number }): Promise<Post[]> => {
-  const { data } = await apiClient.get('/posts/bookmarks', { params })
+  const { data } = await apiClient.get('/users/me/favorites', { params })
   return data
 }

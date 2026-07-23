@@ -1,8 +1,11 @@
 /** Post card/item component with author, media gallery, hashtags, and action buttons. */
 
-import { usePostStore } from '../store/post.store'
+import { useNavigation } from '@/src/core/hooks/useNavigation'
 import { useToastStore } from '@/src/core/store/toast.store'
+import { Colors, Radii, Spacing, Typography } from '@/src/core/theme'
+import type { Post } from '@/src/core/types/post.types'
 import { useLikePost } from '@/src/features/post/hooks/useLikePost'
+import { useBookmarkPost } from '@/src/features/post/hooks/useBookmarkPost'
 import { Ionicons } from '@expo/vector-icons'
 import React, { useCallback, useEffect, useRef, useState } from 'react'
 import {
@@ -14,9 +17,7 @@ import {
   TouchableOpacity,
   View,
 } from 'react-native'
-import type { Post } from '@/src/core/types/post.types'
-import { Colors, Spacing, Radii, Typography } from '@/src/core/theme'
-import { useNavigation } from '@/src/core/hooks/useNavigation'
+import { usePostStore } from '../store/post.store'
 
 /** Props for rendering a post in list (item) variant. */
 export interface PostItemProps {
@@ -99,11 +100,12 @@ const ItemVariant: React.FC<ItemVariantProps> = ({
   const favoriteIds = usePostStore((s) => s.favoriteIds)
   const toggleFavorite = usePostStore((s) => s.toggleFavorite)
   const { mutate: likePostMutate } = useLikePost()
+  const { mutate: bookmarkMutate } = useBookmarkPost()
   const [isItemLiked, setIsItemLiked] = useState(false)
   const [itemLikesCount, setItemLikesCount] = useState(itemLikes)
 
   const resolvedId = itemId || post?.id || ''
-  const isItemSaved = favoriteIds.includes(resolvedId)
+  const isItemSaved = (post as any)?.isSaved || favoriteIds.includes(resolvedId)
   const displayItemLikes = isItemLiked ? itemLikesCount + 1 : itemLikesCount
 
   const handleItemLike = () => {
@@ -160,7 +162,10 @@ const ItemVariant: React.FC<ItemVariantProps> = ({
             <Ionicons name="share-social-outline" size={24} color="black" />
           </TouchableOpacity>
         </View>
-        <TouchableOpacity onPress={() => toggleFavorite(resolvedId)}>
+        <TouchableOpacity onPress={() => {
+          toggleFavorite(resolvedId)
+          if (resolvedId) bookmarkMutate(resolvedId)
+        }}>
           <Ionicons
             name={isItemSaved ? 'bookmark' : 'bookmark-outline'}
             size={26}
@@ -184,6 +189,7 @@ export default function PostCard({
   const favoriteIds = usePostStore((state) => state.favoriteIds)
   const showToast = useToastStore((state) => state.showToast)
   const { mutate: likePostMutate, isPending: isLikePending } = useLikePost()
+  const { mutate: bookmarkMutate } = useBookmarkPost()
 
   const { push } = useNavigation()
   const [isLiked, setIsLiked] = useState(post?.isLiked ?? false)
@@ -191,8 +197,8 @@ export default function PostCard({
   const [activeImageIndex, setActiveImageIndex] = useState(0)
   const galleryRef = useRef<ScrollView>(null)
 
-  const isSaved = favoriteIds.includes(post?.id ?? itemId ?? '')
-  const displayedTitle = post?.isReview ? post?.reviewedGame : post?.title
+  const isSaved = post?.isSaved || favoriteIds.includes(post?.id ?? itemId ?? '')
+  const displayedTitle = post?.title
   const contentPreview = post?.content?.slice(0, 160) ?? ''
   const displayLikes = post?.likesCounter ?? 0
 
@@ -323,7 +329,7 @@ export default function PostCard({
           ) : (
             <TouchableOpacity activeOpacity={0.9} onPress={() => handleImagePress(post.media?.urls?.[0] ?? '', 0)}>
               <View style={[styles.mediaFrame, styles.singleMediaFrame, { width: mediaWidth }]}>
-                <Image source={{ uri: `${post.media?.urls?.[0]}?t=${new Date().getTime()}`}} style={styles.mediaImage} />
+                <Image source={{ uri: `${post.media?.urls?.[0]}?t=${new Date().getTime()}` }} style={styles.mediaImage} />
               </View>
             </TouchableOpacity>
           )}
@@ -356,7 +362,10 @@ export default function PostCard({
             <Ionicons name="share-social-outline" size={26} color={Colors.text.primary} />
           </TouchableOpacity>
         </View>
-        <TouchableOpacity onPress={() => toggleFavorite(post.id)}>
+        <TouchableOpacity onPress={() => {
+          toggleFavorite(post.id)
+          bookmarkMutate(post.id)
+        }}>
           <Ionicons name={isSaved ? 'bookmark' : 'bookmark-outline'} size={28} color={isSaved ? '#E8C339' : '#111111'} />
         </TouchableOpacity>
       </View>

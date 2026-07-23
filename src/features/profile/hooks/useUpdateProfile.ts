@@ -5,11 +5,14 @@ import { useToastStore } from "@/src/core/store/toast.store";
 
 export const useProfile = () => {
   const queryClient = useQueryClient();
-  const { setUser } = useUserStore();
+  const { user, setUser } = useUserStore();
   const showToast = useToastStore((s) => s.showToast);
   const mutation = useMutation({
     mutationFn: async (profileData: UpdateProfilePayload) => {
-      const apiUser = await profileApi.updateProfile(profileData);
+      if (!user?.id) {
+        throw new Error("No se encontró una sesión de usuario activa");
+      }
+      const apiUser = await profileApi.updateProfile(user.id, profileData);
       return apiUser;
     },
     onSuccess: async (apiUser) => {

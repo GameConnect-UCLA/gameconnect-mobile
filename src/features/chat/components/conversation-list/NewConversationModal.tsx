@@ -1,27 +1,27 @@
 /** Modal to start a new 1-on-1 conversation */
-import React, { useState, useMemo, useEffect, useRef } from "react";
+import { useDebounce } from "@/src/core/hooks/useDebounce";
+import { Ionicons } from "@expo/vector-icons";
+import { useQuery, useQueryClient } from "@tanstack/react-query";
+import React, { useEffect, useMemo, useRef, useState } from "react";
 import {
-  View,
-  Text,
-  TextInput,
-  TouchableOpacity,
-  FlatList,
-  Image,
-  StyleSheet,
-  Modal,
-  ActivityIndicator,
-  Keyboard,
+    ActivityIndicator,
+    FlatList,
+    Image,
+    Keyboard,
+    Modal,
+    StyleSheet,
+    Text,
+    TextInput,
+    TouchableOpacity,
+    View,
 } from "react-native";
 import { KeyboardAvoidingView } from "react-native-keyboard-controller";
-import { Ionicons } from "@expo/vector-icons";
-import { useQueryClient, useQuery } from "@tanstack/react-query";
-import { startConversation, searchRemoteUsers } from '../../api/chat.api';
+import { searchRemoteUsers, startConversation } from '../../api/chat.api';
 import { useChatStore } from '../../store/chat.store';
-import { useDebounce } from "@/src/core/hooks/useDebounce";
 import type { ActiveUser } from '../../types/chat.types';
 
-import { Colors, Spacing, Typography } from '@/src/core/theme';
 import { useNavigation } from '@/src/core/hooks/useNavigation';
+import { Colors, Spacing, Typography } from '@/src/core/theme';
 
 interface NewConversationModalProps {
   visible: boolean;
@@ -91,7 +91,7 @@ export default function NewConversationModal({
         style={styles.avatar}
       />
       <View style={styles.userInfo}>
-        <Text style={styles.username}>{item.username}</Text>
+        <Text style={styles.username}>{item.displayName ?? item.username}</Text>
       </View>
       <Ionicons name="chevron-forward" size={20} color="#999" />
     </TouchableOpacity>

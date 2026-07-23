@@ -3,7 +3,6 @@ import { Ionicons } from "@expo/vector-icons";
 import React, { useState } from "react";
 import {
   ImageBackground,
-  KeyboardAvoidingView,
   StyleSheet,
   Text,
   TextInput,
@@ -11,6 +10,7 @@ import {
   View,
   ActivityIndicator,
 } from "react-native";
+import { KeyboardAwareScrollView } from "react-native-keyboard-controller";
 import { SafeAreaView } from "react-native-safe-area-context";
 import { useMutation } from "@tanstack/react-query";
 import { useToastStore } from "@/src/core/store/toast.store";
@@ -59,7 +59,12 @@ export const ChangePasswordView = () => {
   return (
     <ImageBackground source={BG_IMAGE} style={{ flex: 1 }}>
       <SafeAreaView style={{ flex: 1 }}>
-        <KeyboardAvoidingView behavior="height" style={{ flex: 1 }}>
+        <KeyboardAwareScrollView
+          contentContainerStyle={{ flexGrow: 1 }}
+          keyboardShouldPersistTaps="handled"
+          showsVerticalScrollIndicator={false}
+          bottomOffset={20}
+        >
           <View style={styles.header}>
             <TouchableOpacity onPress={() => back()} style={styles.backBtn}>
               <Ionicons name="chevron-back" size={30} color="#000" />
@@ -139,7 +144,7 @@ export const ChangePasswordView = () => {
               </TouchableOpacity>
             </View>
           </View>
-        </KeyboardAvoidingView>
+        </KeyboardAwareScrollView>
       </SafeAreaView>
     </ImageBackground>
   );

@@ -16,6 +16,8 @@ import { Colors } from "@/src/core/theme";
 import { AuthBackground } from "@/src/features/auth/components/AuthBackground";
 import { AuthCard } from "@/src/features/auth/components/AuthCard";
 
+import { getErrorMessage } from "@/src/core/utils/error.utils";
+
 export default function LoginView() {
   const [form, setForm] = useState({ email: "", password: "" });
   const [showPassword, setShowPassword] = useState(false);
@@ -27,7 +29,7 @@ export default function LoginView() {
       return showToast("Por favor, rellena todos los campos", "warning");
     mutate(form, {
       onSuccess: () => router.replace("/(tabs)"),
-      onError: (err) => showToast(err.message, "error"),
+      onError: (err) => showToast(getErrorMessage(err, "Error al iniciar sesión"), "error"),
     });
   };
 

@@ -22,6 +22,7 @@ import { useConversation } from '../hooks/useConversation';
 import { useGroupMembers } from '../hooks/useGroupMembers';
 import { useChatStore } from '../store/chat.store';
 import { useUserStore } from '@/src/core/store/user.store';
+import { getErrorMessage } from "@/src/core/utils/error.utils";
 import type { Attachment, GameInfoCard, Message } from '../types/chat.types';
 import { deleteMessage } from '../api/chat.api';
 import { useToastStore } from '@/src/core/store/toast.store';
@@ -247,8 +248,8 @@ export default function ChatDirectScreen() {
       await leaveGroup();
       useChatStore.getState().hideConversation(id);
       back();
-    } catch {
-      showToast("Failed to leave group.", "error");
+    } catch (err) {
+      showToast(getErrorMessage(err, "No se pudo salir del grupo."), "error");
     }
   }, [id, leaveGroup, back, showToast]);
 

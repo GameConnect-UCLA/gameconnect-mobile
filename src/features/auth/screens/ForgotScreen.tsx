@@ -1,12 +1,13 @@
 import { useState } from 'react'
 import { StyleSheet, TextInput, Pressable, Text, ActivityIndicator } from 'react-native'
-import { Link } from 'expo-router'
+import { Link, router } from 'expo-router'
 import { useMutation } from '@tanstack/react-query'
 import { AuthBackground } from '@/src/features/auth/components/AuthBackground'
 import { AuthCard } from '@/src/features/auth/components/AuthCard'
 import { Colors } from '@/src/core/theme'
 import { useToastStore } from '@/src/core/store/toast.store'
 import { authApi } from '@/src/features/auth/api/auth.api'
+import { getErrorMessage } from '@/src/core/utils/error.utils'
 
 export default function ForgotView() {
   const [email, setEmail] = useState('')
@@ -14,10 +15,10 @@ export default function ForgotView() {
   const { mutate, isPending } = useMutation({
     mutationFn: () => authApi.forgotPassword(email),
     onSuccess: (data) => {
-      showToast(data.message, 'success')
-      setEmail('')
+      showToast(data.message || 'Código enviado con éxito.', 'success')
+      router.push({ pathname: '/(auth)/verify-code', params: { email } })
     },
-    onError: () => showToast('Error al enviar solicitud.', 'error'),
+    onError: (err) => showToast(getErrorMessage(err, 'Error al enviar solicitud.'), 'error'),
   })
   const isFormValid = email.trim().length > 0
 
@@ -32,11 +33,17 @@ export default function ForgotView() {
         <Pressable style={[styles.btn, !isFormValid && styles.btnDisabled]} disabled={!isFormValid || isPending} onPress={() => mutate()}>
           {isPending ? <ActivityIndicator color="#fff" /> : <Text style={styles.btnText}>Enviar solicitud</Text>}
         </Pressable>
+        <Link
+          href={{
+            pathname: '/verify-code',
+            params: { email },
+          }}
+          style={styles.link}
+        >
+          <Text style={styles.linkText}>Codigo de Verificacion</Text>
+        </Link>
         <Link href="/(auth)/login" style={styles.link}>
           <Text style={styles.linkText}>Volver al inicio</Text>
-        </Link>
-        <Link href="/(auth)/recovery" style={styles.link}>
-          <Text style={styles.linkText}>Recuperar Contraseña</Text>
         </Link>
       </AuthCard>
     </AuthBackground>

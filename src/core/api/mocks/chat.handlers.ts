@@ -1,13 +1,29 @@
-import { mockRoutes } from './index'
-import * as mockChat from '@/src/mocks/mock-chat'
 import type { Conversation, GroupMember, Message } from '@/src/features/chat/types/chat.types'
 import { GroupRole } from '@/src/features/chat/types/chat.types'
+import * as mockChat from '@/src/mocks/mock-chat'
+import { mockUsersList } from '@/src/mocks/mock-users-list'
+import { mockRoutes } from './index'
 
 let mockIdCounter = 0
 
 function parseBody(config: { data?: unknown }) {
   const raw = config.data || '{}'
   return typeof raw === 'string' ? JSON.parse(raw) : raw
+}
+
+function parseSearchParams(config: { params?: Record<string, unknown>; url?: string }) {
+  const searchParams = new URLSearchParams(
+    typeof config.url === 'string' && config.url.includes('?')
+      ? config.url.split('?')[1]
+      : '',
+  )
+
+  return {
+    q: String(config.params?.q ?? searchParams.get('q') ?? ''),
+    type: String(config.params?.type ?? searchParams.get('type') ?? ''),
+    limit: Number(config.params?.limit ?? searchParams.get('limit') ?? 10),
+    offset: Number(config.params?.offset ?? searchParams.get('offset') ?? 0),
+  }
 }
 
 function getCurrentUserId(): string {
@@ -22,6 +38,46 @@ function getCurrentUserId(): string {
 
 mockRoutes.set('/chat/conversations', () => {
   return [...mockChat.CONVERSATIONS]
+})
+
+mockRoutes.set('/search', (config) => {
+  const { q, type, limit, offset } = parseSearchParams(config)
+
+  if (type !== 'user') {
+    return {
+      hits: [],
+      total: 0,
+      limit,
+      offset,
+    }
+  }
+
+  const normalizedQuery = q.trim().toLowerCase()
+  const results = mockUsersList
+    .map((user, index) => ({
+      ...user,
+      type: 'user' as const,
+      searchableText: user.bio
+        ? `${user.displayName} ${user.username} ${user.bio}`
+        : `${user.displayName} ${user.username}`,
+      rankingScore: index + 1,
+      verified: false,
+    }))
+    .filter((user) => {
+      if (!normalizedQuery) return true
+      return [user.displayName, user.username, user.bio, user.searchableText]
+        .filter(Boolean)
+        .some((value) => String(value).toLowerCase().includes(normalizedQuery))
+    })
+
+  const hits = results.slice(offset, offset + limit)
+
+  return {
+    hits,
+    total: results.length,
+    limit,
+    offset,
+  }
 })
 
 mockRoutes.set('/chat/conversations/', (config) => {

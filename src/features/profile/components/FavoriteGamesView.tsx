@@ -1,5 +1,5 @@
 /** Favorite games screen */
-import { useMockGameProfile } from "@/src/features/game/hooks/useGameProfiles";
+import { useGameProfiles } from "@/src/features/game/hooks/useGameProfiles";
 import { Ionicons } from "@expo/vector-icons";
 import React, { useMemo, useState } from "react";
 import {
@@ -25,14 +25,14 @@ interface FavoriteGamesViewProps {
 
 /** Favorite games grid with search @param onBack Back callback @returns FavoriteGamesView component */
 const FavoriteGamesView: React.FC<FavoriteGamesViewProps> = ({ onBack }) => {
-  const allGames = useMockGameProfile();
+  const { data: allGames = [] } = useGameProfiles();
   const { push } = useNavigation();
   const [searchQuery, setSearchQuery] = useState("");
 
   const games = useMemo(() => {
     if (!searchQuery.trim()) return allGames;
     const q = normalizeText(searchQuery);
-    return allGames.filter((g) => normalizeText(g.name).includes(q));
+    return allGames.filter((g) => normalizeText(g.title || (g as any).name || '').includes(q));
   }, [allGames, searchQuery]);
 
   return (
@@ -76,14 +76,14 @@ const FavoriteGamesView: React.FC<FavoriteGamesViewProps> = ({ onBack }) => {
                   onPress={() => push(`/game/${game.id}`)}
                 >
                   <Image
-                    source={{ uri: game.imageUrl }}
+                    source={{ uri: game.coverUrl || (game as any).imageUrl }}
                     style={styles.gameImage}
                   />
                   <Text style={styles.gameTitle} numberOfLines={1}>
-                    {game.name}
+                    {game.title || (game as any).name}
                   </Text>
                   <Text style={styles.gameDescription} numberOfLines={4}>
-                    {game.description}
+                    {game.description || (game as any).metadata?.description || (game as any).metadata?.summary || ''}
                   </Text>
                 </TouchableOpacity>
               ))}

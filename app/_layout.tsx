@@ -8,6 +8,7 @@ import { GestureHandlerRootView } from 'react-native-gesture-handler';
 import { KeyboardProvider } from 'react-native-keyboard-controller';
 import { useAuthStore } from '@/src/core/store/auth.store'
 import { useSessionCheck } from '@/src/features/auth/hooks'
+import { LanguageProvider } from '@/src/core/context/LanguageContext';
 
 function AuthNavigator() {
   const { isAuthenticated } = useAuthStore()
@@ -36,13 +37,16 @@ function AuthNavigator() {
 export default function RootLayout() {
   return (
     <GestureHandlerRootView style={{ flex: 1 }}>
-      <QueryClientProvider client={queryClient}>
-        <KeyboardProvider>
-          <AuthNavigator />
-          <AppToast />
-          <ConfirmDialog />
-        </KeyboardProvider>
-      </QueryClientProvider>
+      <LanguageProvider>
+        <QueryClientProvider client={queryClient}>
+          <KeyboardProvider>
+            <AuthNavigator />
+            <AppToast />
+            <ConfirmDialog />
+          </KeyboardProvider>
+        </QueryClientProvider>
+      </LanguageProvider>
     </GestureHandlerRootView>
   );
 }
+
