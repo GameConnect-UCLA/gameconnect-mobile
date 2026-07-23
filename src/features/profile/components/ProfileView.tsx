@@ -20,6 +20,7 @@ import { Colors, Spacing, Radii, Typography } from "@/src/core/theme";
 import { useNavigation } from "@/src/core/hooks/useNavigation";
 import { profileApi } from "../api/profile.api";
 import { useFollowUser } from "../hooks/useFollowUser";
+import { useUserStore } from "@/src/core/store/user.store";
 
 const BG_IMAGE = require("@/assets/images/bgbody.png");
 
@@ -52,6 +53,8 @@ const ProfileView: React.FC<ProfileViewProps> = ({
   const router = useRouter(); // ✅ Inicializar router
   const followMutation = useFollowUser();
 
+  const storedUser = useUserStore.getState().user
+
   // Live profile query — invalidated by useFollowUser on success
   const { data: profile, isLoading: profileLoading } = useQuery({
     queryKey: ["userProfile", userId],
@@ -66,7 +69,9 @@ const ProfileView: React.FC<ProfileViewProps> = ({
     enabled: !!userId,
   });
 
-  if (profileLoading || !profile) {
+  const user = isSelf ? storedUser : profile
+
+  if (profileLoading || !user) {
     return (
       <View style={{ flex: 1, justifyContent: "center", alignItems: "center" }}>
         <ActivityIndicator size="large" color={Colors.primary} />
@@ -74,17 +79,17 @@ const ProfileView: React.FC<ProfileViewProps> = ({
     );
   }
 
-  const displayName = profile.displayName ?? "";
-  const bioLine = profile.bio?.split("\n").filter(Boolean).join(" | ") ?? "";
+  const displayName = user.displayName ?? "";
+  const bioLine = user.bio?.split("\n").filter(Boolean).join(" | ") ?? "";
 
   // followersCount / followingCount / isFollowing come from getPublicProfile
   // which now returns them. For isSelf the /users/me endpoint doesn't return
   // them, so we fall back to profile.stats if present.
   const followersCount =
-    (profile as any).followersCount ?? profile.stats?.followers ?? 0;
+    (user as any).followersCount ?? user.stats?.followers ?? 0;
   const followingCount =
-    (profile as any).followingCount ?? profile.stats?.following ?? 0;
-  const isFollowing: boolean = (profile as any).isFollowing ?? false;
+    (user as any).followingCount ?? user.stats?.following ?? 0;
+  const isFollowing: boolean = (user as any).isFollowing ?? false;
 
   const handleFollowPress = () => {
     followMutation.mutate(userId);
@@ -124,7 +129,7 @@ const ProfileView: React.FC<ProfileViewProps> = ({
         >
           <View style={styles.coverContainer}>
             <ImageBackground
-              source={{ uri: profile.coverPic }}
+              source={{ uri: user.coverPic }}
               style={styles.coverImage}
               resizeMode="cover"
             >
@@ -152,7 +157,7 @@ const ProfileView: React.FC<ProfileViewProps> = ({
               </View>
               <View style={styles.avatarWrapper}>
                 <Image
-                  source={{ uri: profile.profilePic }}
+                  source={{ uri: user.profilePic }}
                   style={styles.avatar}
                 />
               </View>
@@ -210,7 +215,7 @@ const ProfileView: React.FC<ProfileViewProps> = ({
                 </View>
               </View>
 
-              <Text style={styles.userUsername}>@{profile.username}</Text>
+              <Text style={styles.userUsername}>@{user.username}</Text>
 
               {renderBioWithIcon()}
 
@@ -218,7 +223,7 @@ const ProfileView: React.FC<ProfileViewProps> = ({
                 <Ionicons name="calendar-outline" size={16} color="#666" />
                 <Text style={styles.joinDate}>
                   {" "}
-                  Se unió en {profile.createdAt}
+                  Se unió en {user.createdAt}
                 </Text>
               </View>
 
@@ -277,8 +282,8 @@ const ProfileView: React.FC<ProfileViewProps> = ({
                   showsHorizontalScrollIndicator={false}
                   contentContainerStyle={styles.gamesScrollContent}
                 >
-                  {profile.favoriteGames &&
-                    profile.favoriteGames.map((gameItem: any) => {
+                  {user.favoriteGames &&
+                    user.favoriteGames.map((gameItem: any) => {
                       const gameId = gameItem.game?.id || gameItem.gameId || gameItem.id;
                       const imageUrl = gameItem.game?.metadata?.cover_url || gameItem.game?.metadata?.imageUrl || gameItem.game?.metadata?.coverUrl || gameItem.imageUrl;
                       const name = gameItem.game?.metadata?.name || gameItem.game?.metadata?.title || gameItem.name || 'Juego';

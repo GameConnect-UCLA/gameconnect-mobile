@@ -4,6 +4,7 @@ import React from 'react'
 import { Image, StyleSheet, Text, TouchableOpacity, View } from 'react-native'
 import { Colors, Spacing, Radii, Typography } from '@/src/core/theme'
 import { useNavigation } from '@/src/core/hooks/useNavigation'
+import { useUserStore } from '@/src/core/store/user.store'
 
 interface Props {
   comments: Comment[]
@@ -12,7 +13,6 @@ interface Props {
 /** Display list of comments for a post @param comments Comment array @returns PostComments component */
 export const PostComments: React.FC<Props> = ({ comments }) => {
   const { push } = useNavigation()
-
   return (
     <View style={styles.container}>
       <Text style={styles.title}>Comentarios ({comments.length})</Text>
@@ -25,12 +25,12 @@ export const PostComments: React.FC<Props> = ({ comments }) => {
           <View key={comment.id} style={styles.commentWrapper}>
             <TouchableOpacity
               activeOpacity={0.7}
-              onPress={() => push(`/user/${comment.authorUser.username}`)}
+              onPress={() => push(`/user/${comment.author}`)}
               style={styles.commentRow}
             >
               <Image source={{ uri: comment.authorUser.profilePic }} style={styles.avatar} />
               <View style={styles.bubble}>
-                <Text style={styles.authorName}>{comment.authorUser.displayName}</Text>
+                <Text style={styles.authorName}>{comment.authorUser.displayName ?? comment.authorUser.username}</Text>
                 <Text style={styles.commentContent}>{comment.content}</Text>
               </View>
             </TouchableOpacity>

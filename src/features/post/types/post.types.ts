@@ -8,6 +8,7 @@ export interface PostMedia {
 /** Comment on a post */
 export interface Comment {
   id: string;
+  author: string; 
   authorUser: {
     displayName: string;
     username: string;
