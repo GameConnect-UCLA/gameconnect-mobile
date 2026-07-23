@@ -23,6 +23,7 @@ import { useNavigation } from "@/src/core/hooks/useNavigation";
 import { usePostComments } from "@/src/features/post/hooks/usePostComments";
 import { useCreateComment } from "@/src/features/post/hooks/useCreateComment";
 import { useToastStore } from "@/src/core/store/toast.store";
+import { useUserStore } from "@/src/core/store/user.store";
 
 const BG_IMAGE = require("@/assets/images/bgbody.png");
 
@@ -41,7 +42,7 @@ export const PostDetailView = ({
   const [selectedImageUrl, setSelectedImageUrl] = useState("");
 
   const postId = useMemo(() => post.id, [post.id]);
-
+  const user = useUserStore.getState().user
   const { data: remoteComments = [], isLoading: isCommentsLoading } =
     usePostComments(postId);
   const { mutate: createCommentMutate, isPending: isCommentPending } =
@@ -119,7 +120,7 @@ export const PostDetailView = ({
         <KeyboardStickyView>
           <View style={styles.inputBar}>
             <Image
-              source={require("@/assets/images/default-avatar.jpg")}
+              source={user?.profilePic ?? require("@/assets/images/default-avatar.jpg")}
               style={styles.inputAvatar}  
             />
             <View style={styles.inputBubble}>
