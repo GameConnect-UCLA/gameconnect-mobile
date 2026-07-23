@@ -1,4 +1,4 @@
-import { useMutation, useQuery, useQueryClient } from "@tanstack/react-query";
+import { useMutation, useQueryClient } from "@tanstack/react-query";
 import { profileApi, UpdateProfilePayload } from "../api/profile.api";
 import { useUserStore } from "@/src/core/store/user.store";
 import { useToastStore } from "@/src/core/store/toast.store";
@@ -15,9 +15,10 @@ export const useProfile = () => {
       const apiUser = await profileApi.updateProfile(user.id, profileData);
       return apiUser;
     },
-    onSuccess: async (apiUser) => {
-      setUser(apiUser);
-      await queryClient.invalidateQueries({ queryKey: ["update-profile"] });
+    onSuccess: async () => {
+      const fullUser = await profileApi.getMe();
+      setUser(fullUser);
+      await queryClient.invalidateQueries({ queryKey: ["userProfile", user?.id] });
     },
     onError: (e) => showToast(e.message, "error"),
   });
