@@ -16,18 +16,18 @@ export const useSessionCheck = () => {
     queryKey: ['sessionCheck'],
     queryFn: async () => {
       const token = await secureStore.get(secureStore.KEYS.ACCESS_TOKEN)
-      if (token) {
-        setAuthenticated(token)
-        try {
-          const user = await getMe()
-          setUser(user)
-        } catch (error) {
-          console.error('Failed to retrieve user profile on session check:', error)
-        }
-        return true
-      }
+      if (!token) return false
 
-      return false
+      try {
+        const user = await getMe()
+        const latestToken = await secureStore.get(secureStore.KEYS.ACCESS_TOKEN)
+        if (latestToken) setAuthenticated(latestToken)
+        setUser(user)
+        return true
+      } catch (error) {
+        console.error('Session check failed:', error)
+        return false
+      }
     },
     staleTime: Infinity,
     retry: false,
