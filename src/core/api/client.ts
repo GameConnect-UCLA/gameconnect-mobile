@@ -41,9 +41,9 @@ const processQueue = (error: any, token: string | null = null) => {
 }
 
 export const handleLogout = (message: string = 'Sesión expirada. Inicia sesión de nuevo.') => {
-  secureStore.clearAll()
   useAuthStore.getState().reset()
   queryClient.clear()
+  secureStore.clearAll()
   useToastStore.getState().showToast(message, 'error')
 }
 

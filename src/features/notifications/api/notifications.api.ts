@@ -72,9 +72,13 @@ const mapBackendNotification = (item: any): Notification => {
 
 /** Fetch all notifications for current user @returns Notification list */
 export const fetchNotificationsApi = async (): Promise<Notification[]> => {
-  const { data } = await apiClient.get<any[]>('/notifications')
-  if (!Array.isArray(data)) return []
-  return data.map(mapBackendNotification)
+  try {
+    const { data } = await apiClient.get<any[]>('/notifications')
+    if (!Array.isArray(data)) return []
+    return data.map(mapBackendNotification)
+  } catch {
+    return []
+  }
 }
 
 /** Mark a notification as read @param id Notification ID */
